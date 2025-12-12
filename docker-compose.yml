@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: teacher2025_app
+    build: .
+    ports:
+      - "8083:80"
+      - "8084:443"
+    volumes:
+      - .:/var/www/html
+      - d:/librarie_skj:/home/skjacth/domains/skj.ac.th/public_html/librarie_skj:cached
+    environment:
+      # Database connection settings for CodeIgniter
+      DB_HOST: skj2025_db
+      DB_PORT: 3306
+      DB_USERNAME: root
+      DB_PASSWORD: rootpassword
+    networks:
+      - skj2025_default
+
+networks:
+  skj2025_default:
+    external: true

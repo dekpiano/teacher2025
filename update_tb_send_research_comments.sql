@@ -1,0 +1,13 @@
+ALTER TABLE `tb_send_research` CHANGE `seres_ID` `seres_ID` INT(5) NOT NULL AUTO_INCREMENT COMMENT 'รหัสงานวิจัย';
+ALTER TABLE `tb_send_research` CHANGE `seres_research_name` `seres_research_name` VARCHAR(255) NOT NULL COMMENT 'ชื่องานวิจัย';
+ALTER TABLE `tb_send_research` CHANGE `seres_namesubject` `seres_namesubject` VARCHAR(255) NOT NULL COMMENT 'ชื่อรายวิชา';
+ALTER TABLE `tb_send_research` CHANGE `seres_coursecode` `seres_coursecode` VARCHAR(10) NOT NULL COMMENT 'รหัสวิชา';
+ALTER TABLE `tb_send_research` CHANGE `seres_gradelevel` `seres_gradelevel` VARCHAR(2) NOT NULL COMMENT 'ระดับชั้น';
+ALTER TABLE `tb_send_research` CHANGE `seres_sendcomment` `seres_sendcomment` TEXT NOT NULL COMMENT 'รายละเอียดเพิ่มเติม';
+ALTER TABLE `tb_send_research` CHANGE `seres_createdate` `seres_createdate` DATETIME NOT NULL DEFAULT current_timestamp() COMMENT 'วันที่ส่ง';
+ALTER TABLE `tb_send_research` CHANGE `seres_usersend` `seres_usersend` VARCHAR(20) NOT NULL COMMENT 'ผู้ส่ง';
+ALTER TABLE `tb_send_research` CHANGE `seres_learning` `seres_learning` VARCHAR(15) NOT NULL COMMENT 'กลุ่มสาระ';
+ALTER TABLE `tb_send_research` CHANGE `seres_year` `seres_year` VARCHAR(4) NOT NULL COMMENT 'ปีการศึกษา';
+ALTER TABLE `tb_send_research` CHANGE `seres_term` `seres_term` VARCHAR(1) NOT NULL COMMENT 'ภาคเรียน';
+ALTER TABLE `tb_send_research` CHANGE `seres_file` `seres_file` TEXT NOT NULL COMMENT 'ไฟล์งานวิจัย';
+ALTER TABLE `tb_send_research` CHANGE `seres_status` `seres_status` VARCHAR(30) NOT NULL DEFAULT 'ส่งแล้ว' COMMENT 'สถานะการส่ง';
