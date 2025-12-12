@@ -454,6 +454,12 @@ class ControllerSaveScoreRepeat extends BaseController
         // Fetch CheckRepeat data
         $data['CheckRepeat'] = $this->db->table('tb_register_onoff')->select('onoff_detail,onoff_year')->where('onoff_id',7)->get()->getResult();
 
+        // Fetch teacher data for report
+        $data['teacher_data'] = $this->personnelDb->table('tb_personnel')
+            ->select('pers_prefix, pers_firstname, pers_lastname')
+            ->where('pers_id', $loginId)
+            ->get()->getRow();
+
         // Base query for student data
         $baseStudentQuery = function ($class = null) use ($loginId, $reportRegisterYear, $reportSubjectID) {
             $builder = $this->db->table('skjacth_academic.tb_register');

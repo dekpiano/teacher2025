@@ -86,7 +86,7 @@
         <tr>
             <td style="width: 50px"> </td>
             <td style="width: 100px">ครูผู้สอน </td>
-            <td><?= session('fullname'); ?></td>
+            <td><?= $teacher_data->pers_prefix . $teacher_data->pers_firstname . ' ' . $teacher_data->pers_lastname; ?></td>
         </tr>
         <tr>
             <td> </td>

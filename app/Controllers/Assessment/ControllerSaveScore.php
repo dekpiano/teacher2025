@@ -368,6 +368,12 @@ class ControllerSaveScore extends BaseController
             ->where('regscore_subjectID', $subject->SubjectID)
             ->get()->getResult();
 
+        // Fetch teacher data for report
+        $data['teacher_data'] = $this->personnelDb->table('tb_personnel')
+            ->select('pers_prefix, pers_firstname, pers_lastname')
+            ->where('pers_id', $loginId)
+            ->get()->getRow();
+
         // Base query for student data
         $baseStudentQuery = function ($class = null) use ($loginId, $reportRegisterYear, $reportSubjectID) {
             $builder = $this->db->table('tb_register');
