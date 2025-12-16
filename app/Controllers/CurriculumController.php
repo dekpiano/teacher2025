@@ -151,6 +151,7 @@ class CurriculumController extends BaseController
                 'seplan_gradelevel'   => $post['seplan_gradelevel'] ?? null,
                 'seplan_typeplan'     => $type['type_name'], // Keep old column for now
                 'seplan_typeplan_id'  => $type['type_id'],   // New column
+                'seplan_createdate'   => date('Y-m-d H:i:s'), // บันทึกวันที่ส่ง
             ];
         }
 
@@ -812,7 +813,8 @@ class CurriculumController extends BaseController
                         'seplan_status2'      => "รอตรวจ",
                         'seplan_gradelevel'   => $Class[1] ?? 'ไม่ระบุ',
                         'seplan_typeplan'     => $type['type_name'], // Old column
-                        'seplan_typeplan_id'  => $type['type_id']    // New column
+                        'seplan_typeplan_id'  => $type['type_id'],   // New column
+                        'seplan_createdate'   => date('Y-m-d H:i:s'), // บันทึกวันที่ส่ง
                     ];
                 }
                 $response[] = ['status' => 'prepared', 'subject' => $value->SubjectCode];
