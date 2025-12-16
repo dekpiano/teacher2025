@@ -47,11 +47,16 @@
         </tr>
         <tr>
             <td style="width: 50%;text-align: right;padding-right: 10px;">ชั้นมัธยมศึกษาปีที่
-                <?php $sub_room = explode(".",$re_room); //echo $sub_room[1];?></td>
+                <?php 
+                    $sub_room = explode(".", $re_room);
+                    $room_display = isset($sub_room[1]) ? $sub_room[1] : $sub_room[0];
+                    echo $room_display;
+                ?></td>
             <td style="padding-left: 10px;">
                 ระดับมัธยมศึกษา<?php 
-            $sub_level = explode("/",$sub_room[1]);
-           echo $sub_level[0] >= 4?"ตอนปลาย":"ตอนต้น";
+            $sub_level = explode("/", $room_display);
+            $level_val = isset($sub_level[0]) ? intval($sub_level[0]) : 0;
+            echo $level_val >= 4 ? "ตอนปลาย" : "ตอนต้น";
             ?>
             </td>
         </tr>
@@ -61,9 +66,9 @@
 <table class="b" style="width: 100%;margin-top: 30px;">
     <tbody>
         <tr>
-            <td>กลุ่มสาระการเรียนรู้ <?php $FirstGroup = explode("/",$re_subjuct[0]->FirstGroup); echo $FirstGroup[1];?>
+            <td>กลุ่มสาระการเรียนรู้ <?php $FirstGroup = explode("/",$re_subjuct[0]->FirstGroup); echo isset($FirstGroup[1]) ? $FirstGroup[1] : $FirstGroup[0];?>
             </td>
-            <td>สาระการเรียนรู้<?php $SubjectType = explode("/",$re_subjuct[0]->SubjectType); echo $SubjectType[1];?>
+            <td>สาระการเรียนรู้<?php $SubjectType = explode("/",$re_subjuct[0]->SubjectType); echo isset($SubjectType[1]) ? $SubjectType[1] : $SubjectType[0];?>
             </td>
         </tr>
         <tr>
@@ -140,16 +145,29 @@ foreach ($check_student as $key => $v_check_student) {
   
 } 
 
-$avg4 = round(($grade4*100)/$count_all,2);
-$avg35 = round(($grade35*100)/$count_all,2);
-$avg3 = round(($grade3*100)/$count_all,2);
-$avg25 = round(($grade25*100)/$count_all,2);
-$avg2 = round(($grade2*100)/$count_all,2);
-$avg15 = round(($grade15*100)/$count_all,2);
-$avg1 = round(($grade1*100)/$count_all,2);
-$avg0 = round(($grade0*100)/$count_all,2);
-$avgR = round(($gradeR*100)/$count_all,2);;
-$avgMS=round(($gradeMS*100)/$count_all,2);
+if ($count_all > 0) {
+    $avg4 = round(($grade4*100)/$count_all,2);
+    $avg35 = round(($grade35*100)/$count_all,2);
+    $avg3 = round(($grade3*100)/$count_all,2);
+    $avg25 = round(($grade25*100)/$count_all,2);
+    $avg2 = round(($grade2*100)/$count_all,2);
+    $avg15 = round(($grade15*100)/$count_all,2);
+    $avg1 = round(($grade1*100)/$count_all,2);
+    $avg0 = round(($grade0*100)/$count_all,2);
+    $avgR = round(($gradeR*100)/$count_all,2);
+    $avgMS=round(($gradeMS*100)/$count_all,2);
+} else {
+    $avg4 = 0;
+    $avg35 = 0;
+    $avg3 = 0;
+    $avg25 = 0;
+    $avg2 = 0;
+    $avg15 = 0;
+    $avg1 = 0;
+    $avg0 = 0;
+    $avgR = 0;
+    $avgMS = 0;
+}
 
 $avg3_up = $avg3 + $avg35 + $avg4;
 ?>
@@ -258,7 +276,7 @@ $avg3_up = $avg3 + $avg35 + $avg4;
                 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ลงชื่อ.......................................... รองผู้อำนวยการสถานศึกษา
                 </p>
                 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    (นางสาวศรินทร์ทิพย์  กริมเขียว)
+                    (นางสาวอรอุมา  ฉวีทอง)
                 </p>
             </td>
             <td style="text-align: center;">

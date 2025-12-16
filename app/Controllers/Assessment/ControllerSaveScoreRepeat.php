@@ -404,6 +404,7 @@ class ControllerSaveScoreRepeat extends BaseController
             ->where('skjacth_academic.tb_register.TeacherID', $loginId)
             ->where('skjacth_academic.tb_register.RegisterYear', $this->request->getPost('report_yaer'))
             ->where('skjacth_academic.tb_register.SubjectID', $this->request->getPost('report_subject'))
+            ->where('skjacth_academic.tb_register.Grade_Type !=', '')
             ->groupBy('skjacth_academic.tb_students.StudentClass')
             ->orderBy('skjacth_academic.tb_students.StudentClass', 'ASC')
             ->get()->getResult();
@@ -509,19 +510,36 @@ class ControllerSaveScoreRepeat extends BaseController
                 ->orderBy('skjacth_academic.tb_students.StudentClass', 'ASC')
                 ->get()->getResult();
 
+            $isFirstPrinted = false;
             foreach ($levels as $key => $level) {
-                $data['check_student1'] = $baseStudentQuery($level->StudentClass);
+                $check_student_class = $baseStudentQuery($level->StudentClass);
+                
+                // Filter: Check if there are any students with Grade_Type (Repeat Students)
+                $hasRepeat = false;
+                foreach ($check_student_class as $std) {
+                    if ($std->Grade_Type != '') {
+                        $hasRepeat = true;
+                        break;
+                    }
+                }
+                
+                if (!$hasRepeat) {
+                    continue;
+                }
+                
+                $data['check_student1'] = $check_student_class;
                 $data['re_room'] = $level->StudentClass;
 
-                if ($key == 0) {
+                if (!$isFirstPrinted) {
                     $data['check_student'] = $data['check_student1'];
                     $data['test'] = $reportRegisterYear;
-                    $reportFront = view('teacher/register/LearnRepeat/report/ReportLearnRepeatFront', $data);
+                    $reportFront = view('teacher/register/LearnRepeat/Report/ReportLearnRepeatFront', $data);
                     $mpdf->WriteHTML($reportFront);
+                    $isFirstPrinted = true;
                 }
 
                 $mpdf->AddPage();
-                $reportSummary = view('teacher/register/LearnRepeat/report/ReportLearnRepeatSummary', $data);
+                $reportSummary = view('teacher/register/LearnRepeat/Report/ReportLearnRepeatSummary', $data);
                 $mpdf->WriteHTML($reportSummary);
             }
         } else {
@@ -552,11 +570,11 @@ class ControllerSaveScoreRepeat extends BaseController
             $data['test'] = $reportRegisterYear;
             $data['check_student1'] = $data['check_student']; // Ensure check_student1 is set for summary report
 
-            $reportFront = view('teacher/register/LearnRepeat/report/ReportLearnRepeatFront', $data);
+            $reportFront = view('teacher/register/LearnRepeat/Report/ReportLearnRepeatFront', $data);
             $mpdf->WriteHTML($reportFront);
 
             $mpdf->AddPage();
-            $reportSummary = view('teacher/register/LearnRepeat/report/ReportLearnRepeatSummary', $data);
+            $reportSummary = view('teacher/register/LearnRepeat/Report/ReportLearnRepeatSummary', $data);
             $mpdf->WriteHTML($reportSummary);
         }
 
