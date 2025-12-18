@@ -36,7 +36,7 @@ class ControllerSaveScoreRepeat extends BaseController
                                 ->select('
                                     tb_register.SubjectID,
                                     tb_register.RegisterYear,
-                                    tb_register.RegisterClass,
+                                    GROUP_CONCAT(DISTINCT tb_register.RegisterClass ORDER BY tb_register.RegisterClass SEPARATOR ", ") as RegisterClasses,
                                     tb_register.RepeatTeacher,
                                     tb_register.Grade_Type,
                                     tb_subjects.SubjectName,
@@ -52,13 +52,11 @@ class ControllerSaveScoreRepeat extends BaseController
                                 ->where('tb_register.RepeatYear', $register_onoff[0]->onoff_year)
                                 ->where('tb_register.Grade_Type', $register_onoff[0]->onoff_detail)
                                 ->groupBy('tb_register.SubjectID')
-                                ->groupBy('tb_register.RegisterClass')
                                 ->groupBy('tb_register.RegisterYear')
                                 ->groupBy('tb_register.RepeatTeacher')
                                 ->groupBy('tb_register.Grade_Type')
                                 ->groupBy('tb_register.RepeatYear')
-                                ->orderBy('tb_register.RepeatYear','DESC')
-                                ->orderBy('tb_register.RegisterYear','ASC')
+                                ->orderBy('tb_subjects.SubjectCode','ASC')
                                 ->get()->getResult();
         $data['onoff'] = $this->db->table('tb_register_onoff')->where('onoff_id',7)->get()->getResult(); 
         

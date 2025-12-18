@@ -52,7 +52,7 @@
                                     <?php foreach ($check_subject as $key => $v_check_subject) : ?>
                                         <tr>
                                             <td><span class="badge bg-label-primary"><?= esc($v_check_subject->RegisterYear) ?></span></td>
-                                            <td><span class="fw-bold"><?= esc($v_check_subject->RegisterClass) ?></span></td>
+                                            <td><?= esc($v_check_subject->RegisterClasses) ?></td>
                                             <td>
                                                 <div class="d-flex flex-column">
                                                     <span class="fw-medium text-heading"><?= esc($v_check_subject->SubjectName) ?></span>

@@ -26,9 +26,14 @@
                 <tbody>
                     <?php foreach ($check_subject as $key => $v_check_subject) : ?>
                         <tr>
-                            <th><?= $v_check_subject->RegisterYear ?></th>
-                            <td><?= $v_check_subject->RegisterClass ?></td>
-                            <td><?= $v_check_subject->SubjectCode ?> <?= $v_check_subject->SubjectName ?></td>
+                            <td><span class="badge bg-label-primary"><?= esc($v_check_subject->RegisterYear) ?></span></td>
+                            <td><?= esc($v_check_subject->RegisterClasses) ?></td>
+                            <td>
+                                <div class="d-flex flex-column">
+                                    <span class="fw-medium"><?= esc($v_check_subject->SubjectName) ?></span>
+                                    <small class="text-muted"><?= esc($v_check_subject->SubjectCode) ?></small>
+                                </div>
+                            </td>
                             <td><?= $v_check_subject->SubjectUnit ?></td>
                             <td><?= $v_check_subject->SubjectHour ?></td>
                             <td>

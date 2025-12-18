@@ -36,7 +36,7 @@ class ControllerSaveScore extends BaseController
                 ->select('
                     tb_register.SubjectID,
                     tb_register.RegisterYear,
-                    tb_register.RegisterClass,
+                    GROUP_CONCAT(DISTINCT tb_register.RegisterClass ORDER BY tb_register.RegisterClass SEPARATOR ", ") as RegisterClasses,
                     tb_register.TeacherID,
                     tb_subjects.SubjectName,
                     tb_subjects.SubjectCode,
@@ -49,10 +49,9 @@ class ControllerSaveScore extends BaseController
                 ->where('tb_register.RegisterYear', $currentSchoolYear)
                 ->where('tb_subjects.SubjectYear', $currentSchoolYear)
                 ->groupBy('tb_register.SubjectID')
-                ->groupBy('tb_register.RegisterClass')
                 ->groupBy('tb_register.RegisterYear')
                 ->groupBy('tb_register.TeacherID')
-                ->orderBy('tb_register.RegisterClass')
+                ->orderBy('tb_subjects.SubjectCode')
                 ->get()
                 ->getResult();
         } else {

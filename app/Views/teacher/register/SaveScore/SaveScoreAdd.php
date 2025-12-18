@@ -35,6 +35,37 @@
             .col-status {
                 width: 80px;
             }
+            /* Score input wrapper for max label */
+            .score-input-wrapper {
+                position: relative;
+                display: inline-block;
+            }
+            .max-score-label {
+                position: absolute;
+                bottom: -18px;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 11px;
+                color: #6c757d;
+                background: rgba(255, 255, 255, 0.9);
+                padding: 1px 4px;
+                border-radius: 3px;
+                opacity: 0;
+                transition: opacity 0.2s ease;
+                pointer-events: none;
+                white-space: nowrap;
+                z-index: 10;
+            }
+            .score-input-wrapper:hover .max-score-label,
+            .score-input-wrapper .check_score:focus ~ .max-score-label,
+            .score-input-wrapper .study_time:focus ~ .max-score-label {
+                opacity: 1;
+            }
+            /* Adjust table cell to accommodate label */
+            #tb_score td {
+                padding-bottom: 20px;
+                vertical-align: top;
+            }
         </style>
         <?php if (!empty($set_score)) : ?>
             <div class="row justify-content-center mb-3">
@@ -483,6 +514,29 @@
         });
 
         const Toast = Swal.mixin({ toast: true, position: 'bottom-end', showConfirmButton: false, timer: 2500, timerProgressBar: true, didOpen: (toast) => { toast.addEventListener('mouseenter', Swal.stopTimer); toast.addEventListener('mouseleave', Swal.resumeTimer); } });
+
+        // --- Score Max Label Setup ---
+        // Wrap each score/time input with wrapper and add max label
+        function setupMaxScoreLabels() {
+            $('.check_score, .study_time').each(function() {
+                var $input = $(this);
+                
+                // Skip if already wrapped
+                if ($input.parent().hasClass('score-input-wrapper')) {
+                    return;
+                }
+                
+                var maxValue = $input.attr('check-score-key') || $input.attr('check-time');
+                if (maxValue) {
+                    $input.wrap('<div class="score-input-wrapper"></div>');
+                    $input.after('<span class="max-score-label">/' + maxValue + '</span>');
+                }
+            });
+        }
+        
+        // Initialize labels on page load
+        setupMaxScoreLabels();
+        // --- End Score Max Label Setup ---
 
         $(document).on('input', '.check_score, .study_time', function() {
             var inputField = $(this);
