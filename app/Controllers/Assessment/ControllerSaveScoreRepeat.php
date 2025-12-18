@@ -29,6 +29,9 @@ class ControllerSaveScoreRepeat extends BaseController
         $data['teacher'] = $this->personnelDb->table('tb_personnel')->select('pers_id,pers_img')->where('pers_id',$this->session->get('person_id'))->get()->getResult();
         $data['OnOff'] = $this->db->table('tb_send_plan_setup')->select('*')->get()->getResult();
         $register_onoff = $this->db->table('tb_register_onoff')->select('*')->where('onoff_id',7)->get()->getResult();
+        
+        // ดึงข้อมูลรายวิชาเรียนซ้ำทั้งหมดที่ครูคนนี้รับผิดชอบ
+        // กรองเฉพาะปีที่เปิดลงทะเบียนเรียนซ้ำ (RepeatYear = onoff_year)
         $data['check_subject'] = $this->db->table('tb_register')
                                 ->select('
                                     tb_register.SubjectID,
@@ -44,21 +47,17 @@ class ControllerSaveScoreRepeat extends BaseController
                                     tb_register.RepeatYear
                                 ')
                                 ->join('tb_subjects','tb_subjects.SubjectID = tb_register.SubjectID')
-                                //->where('TeacherID',$this->session->get('person_id'))
-                                //->where('tb_register.Grade_Type !=',"")
-                                ->where('tb_register.RepeatYear',$register_onoff[0]->onoff_year)
-                                ->where('tb_register.Grade_Type',$register_onoff[0]->onoff_detail)
                                 ->where('tb_register.RepeatTeacher',$this->session->get('person_id'))
-                                //->where('tb_subjects.SubjectYear',$register_onoff[0]->onoff_year)
-                                //->where('tb_register.RegisterYear',$register_onoff[0]->onoff_year)
+                                ->where('tb_register.RepeatTeacher !=', '')
+                                ->where('tb_register.RepeatYear', $register_onoff[0]->onoff_year)
+                                ->where('tb_register.Grade_Type', $register_onoff[0]->onoff_detail)
                                 ->groupBy('tb_register.SubjectID')
                                 ->groupBy('tb_register.RegisterClass')
                                 ->groupBy('tb_register.RegisterYear')
                                 ->groupBy('tb_register.RepeatTeacher')
                                 ->groupBy('tb_register.Grade_Type')
-                                ->groupBy('tb_register.RepeatYear')   
-                                //->groupBy('tb_subjects.SubjectName')
-                                //->groupBy('tb_register.RegisterYear')
+                                ->groupBy('tb_register.RepeatYear')
+                                ->orderBy('tb_register.RepeatYear','DESC')
                                 ->orderBy('tb_register.RegisterYear','ASC')
                                 ->get()->getResult();
         $data['onoff'] = $this->db->table('tb_register_onoff')->where('onoff_id',7)->get()->getResult(); 
@@ -481,6 +480,7 @@ class ControllerSaveScoreRepeat extends BaseController
                 ->where('skjacth_academic.tb_register.RegisterYear', $reportRegisterYear)
                 ->where('skjacth_academic.tb_subjects.SubjectYear', $reportRegisterYear)
                 ->where('skjacth_academic.tb_register.SubjectID', $reportSubjectID)
+                ->where('skjacth_academic.tb_students.StudentBehavior !=', 'จำหน่าย')
                 ->orderBy('skjacth_academic.tb_students.StudentClass', 'ASC')
                 ->orderBy('skjacth_academic.tb_students.StudentNumber', 'ASC');
 
@@ -495,9 +495,10 @@ class ControllerSaveScoreRepeat extends BaseController
 
         if ($selectPrint == "all") {
             $data['CheckPrint'] = "all";
-            $data['re_room'] = $subject->SubjectClass;
+            $data['re_room'] = "ทุกห้อง";
             $data['re_teacher'] = "";
 
+            // ดึงรายชื่อห้องทั้งหมด
             $levels = $this->db->table('skjacth_academic.tb_register')
                 ->select('skjacth_academic.tb_students.StudentClass')
                 ->join('skjacth_academic.tb_subjects', 'skjacth_academic.tb_subjects.SubjectID = skjacth_academic.tb_register.SubjectID')
@@ -510,7 +511,16 @@ class ControllerSaveScoreRepeat extends BaseController
                 ->orderBy('skjacth_academic.tb_students.StudentClass', 'ASC')
                 ->get()->getResult();
 
-            $isFirstPrinted = false;
+            // ดึงข้อมูลนักเรียนทุกห้องรวมกันสำหรับหน้าปก
+            $allStudents = $baseStudentQuery(null); // ไม่กรองห้อง = ดึงทุกห้อง
+            $data['check_student'] = $allStudents;
+            $data['test'] = $reportRegisterYear;
+
+            // พิมพ์หน้าปก (คำนวณจากทุกห้อง)
+            $reportFront = view('teacher/register/LearnRepeat/Report/ReportLearnRepeatFront', $data);
+            $mpdf->WriteHTML($reportFront);
+
+            // พิมพ์รายงานสรุปแต่ละห้อง
             foreach ($levels as $key => $level) {
                 $check_student_class = $baseStudentQuery($level->StudentClass);
                 
@@ -529,14 +539,6 @@ class ControllerSaveScoreRepeat extends BaseController
                 
                 $data['check_student1'] = $check_student_class;
                 $data['re_room'] = $level->StudentClass;
-
-                if (!$isFirstPrinted) {
-                    $data['check_student'] = $data['check_student1'];
-                    $data['test'] = $reportRegisterYear;
-                    $reportFront = view('teacher/register/LearnRepeat/Report/ReportLearnRepeatFront', $data);
-                    $mpdf->WriteHTML($reportFront);
-                    $isFirstPrinted = true;
-                }
 
                 $mpdf->AddPage();
                 $reportSummary = view('teacher/register/LearnRepeat/Report/ReportLearnRepeatSummary', $data);

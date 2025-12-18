@@ -6,21 +6,22 @@
 
 <?= $this->section('content') ?>
 
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="card-title mb-0">
-            <i class="bi bi-book"></i> รายวิชา <?= esc(@$check_student[0]->SubjectCode) ?> <?= esc(@$check_student[0]->SubjectName) ?> (เรียนซ้ำ)
-            <br>
-            <span style="font-size: 0.9em;">
-                ปีการศึกษาที่เรียน: <?= esc(@$onoff[0]->onoff_year) ?> 
-                | ครั้งที่: <?= esc(@$onoff[0]->onoff_detail) ?>
-                | ผู้สอน: <?= esc(@$teacher[0]->pers_prefix . @$teacher[0]->pers_firstname . ' ' . @$teacher[0]->pers_lastname) ?>
-            </span>
-        </h5>
+<div class="card h-100">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+            <h5 class="mb-1 text-primary d-flex align-items-center">
+                <i class="bi bi-journal-bookmark-fill me-2"></i> รายวิชา <?= esc(@$check_student[0]->SubjectCode) ?> <?= esc(@$check_student[0]->SubjectName) ?> (เรียนซ้ำ)
+            </h5>
+            <small class="text-muted d-block">
+                ปีการศึกษา: <span class="fw-bold"><?= esc(@$onoff[0]->onoff_year) ?></span> 
+                <span class="mx-1">|</span> ครั้งที่: <span class="fw-bold"><?= esc(@$onoff[0]->onoff_detail) ?></span>
+                <span class="mx-1">|</span> ผู้สอน: <?= esc(@$teacher[0]->pers_prefix . @$teacher[0]->pers_firstname . ' ' . @$teacher[0]->pers_lastname) ?>
+            </small>
+        </div>
         <div>
             <?php if (!empty($set_score)) : ?>
                 <button type="button" id="chcek_score" subject-id="<?= esc(@$check_student[0]->SubjectID) ?>" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#myModal">
-                    <i class="bi bi-gear"></i> ตั้งค่าคะแนน
+                    <i class="bi bi-gear-fill me-1"></i> ตั้งค่าคะแนน
                 </button>
             <?php endif; ?>
         </div>
@@ -178,41 +179,31 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="row mb-3">
-                        <label for="before_middle_score" class="col-sm-4 col-form-label">ก่อนกลางภาค</label>
-                        <div class="col-sm-8">
-                            <input id="before_middle_score" name="before_middle_score" type="text" placeholder="คะแนนที่เก็บ" class="form-control score">
-                            <input name="before_middle" type="hidden" value="ก่อนกลางภาค">
-                        </div>
+                    <div class="form-floating mb-3">
+                        <input id="before_middle_score" name="before_middle_score" type="text" placeholder="คะแนนที่เก็บ" class="form-control score">
+                        <label for="before_middle_score">ก่อนกลางภาค</label>
+                        <input name="before_middle" type="hidden" value="ก่อนกลางภาค">
                     </div>
-                    <div class="row mb-3">
-                        <label for="test_midterm_score" class="col-sm-4 col-form-label">สอบกลางภาค</label>
-                        <div class="col-sm-8">
-                            <input id="test_midterm_score" type="text" name="test_midterm_score" placeholder="คะแนนที่เก็บ" class="form-control score">
-                            <input name="test_midterm" type="hidden" value="สอบกลางภาค">
-                        </div>
+                    <div class="form-floating mb-3">
+                        <input id="test_midterm_score" type="text" name="test_midterm_score" placeholder="คะแนนที่เก็บ" class="form-control score">
+                        <label for="test_midterm_score">สอบกลางภาค</label>
+                        <input name="test_midterm" type="hidden" value="สอบกลางภาค">
                     </div>
-                    <div class="row mb-3">
-                        <label for="after_midterm_score" class="col-sm-4 col-form-label">หลังกลางภาค</label>
-                        <div class="col-sm-8">
-                            <input id="after_midterm_score" name="after_midterm_score" type="text" placeholder="คะแนนที่เก็บ" class="form-control score">
-                            <input name="after_midterm" type="hidden" value="หลังกลางภาค">
-                        </div>
+                    <div class="form-floating mb-3">
+                        <input id="after_midterm_score" name="after_midterm_score" type="text" placeholder="คะแนนที่เก็บ" class="form-control score">
+                        <label for="after_midterm_score">หลังกลางภาค</label>
+                        <input name="after_midterm" type="hidden" value="หลังกลางภาค">
                     </div>
-                    <div class="row mb-3">
-                        <label for="final_exam_score" class="col-sm-4 col-form-label">สอบปลายภาค</label>
-                        <div class="col-sm-8">
-                            <input id="final_exam_score" name="final_exam_score" type="text" placeholder="คะแนนที่เก็บ" class="form-control score">
-                            <input name="final_exam" type="hidden" value="สอบปลายภาค">
-                        </div>
+                    <div class="form-floating mb-3">
+                        <input id="final_exam_score" name="final_exam_score" type="text" placeholder="คะแนนที่เก็บ" class="form-control score">
+                        <label for="final_exam_score">สอบปลายภาค</label>
+                        <input name="final_exam" type="hidden" value="สอบปลายภาค">
                     </div>
-                    <div class="row mb-3">
-                        <label for="sum" class="col-sm-4 col-form-label">รวมคะแนน</label>
-                        <div class="col-sm-8">
-                            <input id="sum" type="text" name="sum" placeholder="คะแนนรวม" class="form-control" readonly>
-                        </div>
+                    <div class="form-floating mb-3">
+                        <input id="sum" type="text" name="sum" placeholder="คะแนนรวม" class="form-control" readonly>
+                        <label for="sum">รวมคะแนน</label>
                     </div>
-                    <div class="form-text">**หมายเหตุ คะแนนรวมต้องเท่ากับ 100 คะแนน</div>
+                    <div class="form-text text-danger">**หมายเหตุ คะแนนรวมต้องเท่ากับ 100 คะแนน</div>
                     <input id="regscore_subjectID" type="hidden" name="regscore_subjectID" value="<?= esc(@$check_student[0]->SubjectID); ?>">
                 </div>
                 <div class="modal-footer">
