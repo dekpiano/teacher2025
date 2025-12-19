@@ -45,6 +45,11 @@
                             ];
                         }
                     }
+                    
+                    // Sort groupedPlans: Main Subject First
+                    usort($groupedPlans, function($a, $b) {
+                        return ($b->seplan_is_main_subject ?? 0) - ($a->seplan_is_main_subject ?? 0);
+                    });
 
 
                     ?>
@@ -54,13 +59,17 @@
                 <div class="col-12 mb-4" data-course-code="<?= esc($v_planNew->seplan_coursecode) ?>"
                     data-is-main-subject="<?= esc($v_planNew->seplan_is_main_subject ?? 0) ?>">
                     <div class="card">
-                        <div class="card-header bg-light">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
                             <h5 class="card-title mb-0">
+                                <?php if (($v_planNew->seplan_is_main_subject ?? 0) == 1) : ?>
+                                    <span class="badge bg-label-primary me-2">แผนหลัก</span>
+                                <?php endif; ?>
                                 <strong><?= esc($v_planNew->seplan_coursecode) ?></strong> -
                                 <?= esc($v_planNew->seplan_namesubject) ?>
-                                <small class="">(ชั้น ม.<?= esc($v_planNew->seplan_gradelevel) ?> |
+                                <small class="text-muted">(ชั้น ม.<?= esc($v_planNew->seplan_gradelevel) ?> |
                                     <?= esc($v_planNew->seplan_typesubject) ?>)</small>
                             </h5>
+                            <small class="text-muted"><i class="bi bi-person-fill me-1"></i> ครูผู้สอน: <?= esc($teacher_info->pers_prefix . $teacher_info->pers_firstname . ' ' . $teacher_info->pers_lastname) ?></small>
                         </div>
                         <div class="table-responsive text-nowrap">
                             <table class="table table-striped">
