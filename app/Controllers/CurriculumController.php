@@ -1018,13 +1018,13 @@ class CurriculumController extends BaseController
             ->get()->getResult();
 
         $data['plans'] = $this->curriculumModel
-            ->select('tb_send_plan.seplan_ID, tb_send_plan.seplan_coursecode, tb_send_plan.seplan_namesubject, tb_send_plan.seplan_gradelevel, tb_send_plan.seplan_typesubject, tb_send_plan.seplan_year, tb_send_plan.seplan_term, tb_send_plan.seplan_usersend, tb_send_plan.seplan_learning, tb_send_plan.seplan_file, tb_send_plan.seplan_status1, tb_send_plan.seplan_status2, tb_send_plan.seplan_typeplan_id, u.pers_firstname, u.pers_lastname') 
+            ->select('tb_send_plan.seplan_ID, tb_send_plan.seplan_coursecode, tb_send_plan.seplan_namesubject, tb_send_plan.seplan_gradelevel, tb_send_plan.seplan_typesubject, tb_send_plan.seplan_year, tb_send_plan.seplan_term, tb_send_plan.seplan_usersend, tb_send_plan.seplan_learning, tb_send_plan.seplan_file, tb_send_plan.seplan_status1, tb_send_plan.seplan_status2, tb_send_plan.seplan_typeplan_id, tb_send_plan.seplan_typeplan, tb_send_plan_type.type_name, u.pers_firstname, u.pers_lastname') 
             ->join($this->db_personnel->database . '.tb_personnel as u', 'u.pers_id = tb_send_plan.seplan_usersend')
             ->join('tb_send_plan_type', 'tb_send_plan_type.type_id = tb_send_plan.seplan_typeplan_id', 'left') // Added join
             ->where('tb_send_plan.seplan_usersend', $teacher_id)
             ->where('tb_send_plan.seplan_year', $year)
             ->where('tb_send_plan.seplan_term', $term)
-            ->groupBy(['tb_send_plan.seplan_ID', 'tb_send_plan.seplan_coursecode', 'tb_send_plan.seplan_namesubject', 'tb_send_plan.seplan_gradelevel', 'tb_send_plan.seplan_typesubject', 'tb_send_plan.seplan_year', 'tb_send_plan.seplan_term', 'tb_send_plan.seplan_usersend', 'tb_send_plan.seplan_learning', 'tb_send_plan.seplan_file', 'tb_send_plan.seplan_status1', 'tb_send_plan.seplan_status2', 'tb_send_plan.seplan_typeplan_id', 'u.pers_firstname', 'u.pers_lastname'])
+            ->groupBy(['tb_send_plan.seplan_ID', 'tb_send_plan.seplan_coursecode', 'tb_send_plan.seplan_namesubject', 'tb_send_plan.seplan_gradelevel', 'tb_send_plan.seplan_typesubject', 'tb_send_plan.seplan_year', 'tb_send_plan.seplan_term', 'tb_send_plan.seplan_usersend', 'tb_send_plan.seplan_learning', 'tb_send_plan.seplan_file', 'tb_send_plan.seplan_status1', 'tb_send_plan.seplan_status2', 'tb_send_plan.seplan_typeplan_id', 'tb_send_plan.seplan_typeplan', 'tb_send_plan_type.type_name', 'u.pers_firstname', 'u.pers_lastname'])
             ->orderBy('tb_send_plan.seplan_namesubject', 'ASC')
             ->get()->getResult();
 

@@ -50,6 +50,9 @@
                 <?php 
                     $sub_room = explode(".", $re_room);
                     $room_display = isset($sub_room[1]) ? $sub_room[1] : $sub_room[0];
+                    if ($room_display == "ทุกห้อง") {
+                         $room_display = str_replace("ม.", "", $re_subjuct[0]->SubjectClass);
+                    }
                     echo $room_display;
                 ?></td>
             <td style="padding-left: 10px;">

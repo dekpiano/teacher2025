@@ -217,6 +217,15 @@ $(document).ready(function() {
         const planId = $(this).data('plan-id');
         const status = $(this).val();
 
+        Swal.fire({
+            title: 'กำลังบันทึก...',
+            text: 'กรุณารอสักครู่',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
         $.ajax({
             url: '<?= site_url('curriculum/update_status1') ?>',
             method: 'POST',
@@ -225,12 +234,17 @@ $(document).ready(function() {
                 status: status
             },
             success: function(response) {
+                Swal.close();
                 if (response.success) {
-                    Swal.fire('สำเร็จ!', 'อัปเดตสถานะเรียบร้อย', 'success');
-                    const selectElement = $(
-                        `.seplan_status1[data-plan-id='${planId}']`);
-                    selectElement.removeClass(
-                        'bg-label-success bg-label-danger bg-label-warning');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'สำเร็จ!',
+                        text: 'อัปเดตสถานะเรียบร้อย',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    const selectElement = $(`.seplan_status1[data-plan-id='${planId}']`);
+                    selectElement.removeClass('bg-label-success bg-label-danger bg-label-warning');
                     if (status === 'ผ่าน') {
                         selectElement.addClass('bg-label-success');
                     } else if (status === 'ไม่ผ่าน') {
@@ -241,6 +255,10 @@ $(document).ready(function() {
                 } else {
                     Swal.fire('ผิดพลาด!', 'ไม่สามารถอัปเดตสถานะได้', 'error');
                 }
+            },
+            error: function() {
+                Swal.close();
+                Swal.fire('ผิดพลาด!', 'เกิดข้อผิดพลาดในการเชื่อมต่อ', 'error');
             }
         });
     });
@@ -272,6 +290,10 @@ $(document).ready(function() {
 
     // Save comment
     $('#save-comment').on('click', function() {
+        const $btn = $(this);
+        const originalText = $btn.html();
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> กำลังบันทึก...');
+
         const planId = $('#plan_id').val();
         const commentType = $('#comment_type').val();
         const comment = $('#comment-text').val();
@@ -291,6 +313,12 @@ $(document).ready(function() {
                 } else {
                     Swal.fire('ผิดพลาด!', 'ไม่สามารถบันทึกความคิดเห็นได้', 'error');
                 }
+            },
+            error: function() {
+                Swal.fire('ผิดพลาด!', 'เกิดข้อผิดพลาดในการเชื่อมต่อ', 'error');
+            },
+            complete: function() {
+                $btn.prop('disabled', false).html(originalText);
             }
         });
     });
