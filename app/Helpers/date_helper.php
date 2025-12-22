@@ -18,3 +18,19 @@ if (!function_exists('thai_date_and_time')) {
         return "$date $month $year $hour:$minute:$second";
     }
 }
+
+if (!function_exists('thai_date')) {
+    function thai_date($time)
+    {
+        $thai_months = [
+            'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.',
+            'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'
+        ];
+
+        $date = date('j', $time);
+        $month = $thai_months[date('n', $time) - 1];
+        $year = date('Y', $time) + 543; // Convert to Buddhist year
+
+        return "$date $month $year";
+    }
+}

@@ -17,6 +17,7 @@ class Home extends BaseController
         $db = db_connect(); // Default database connection
         $db_personnel = db_connect('personnel');
         $db_affairs = db_connect('affairs');
+        $db_skj = db_connect('skj');
 
         // --- Get Latest Year/Term ---
         $latestYear = null;
@@ -62,13 +63,56 @@ class Home extends BaseController
                                 ->get()
                                 ->getResult();
 
+        // --- Get Learning Group Name ---
+        $learningGroupName = $session->get('pers_learning');
+        if ($learningGroupName) {
+            $learningGroup = $db_skj->table('tb_learning')
+                                    ->where('lear_id', $learningGroupName)
+                                    ->get()
+                                    ->getRow();
+            if ($learningGroup) {
+                $learningGroupName = $learningGroup->lear_namethai;
+            }
+        }
+
+        // --- Stats ---
+        $subjectCount = 0;
+        if ($session->get('person_id')) {
+            $query = $db->table('tb_register')
+                               ->select('SubjectID')
+                               ->where('TeacherID', $session->get('person_id'));
+            
+            if (isset($latestEntry)) {
+                $query->where('RegisterYear', $latestEntry);
+            } else {
+                $query->where('RegisterYear LIKE', '%'.($latestYear).'%');
+            }
+
+            $subjectCount = $query->groupBy('SubjectID')
+                               ->get()
+                               ->getNumRows();
+        }
+
+        $studentCount = 0;
+        if ($homeroomClass) {
+            $studentCount = $db->table('tb_students')
+                               ->where('StudentClass', 'ม.'.$homeroomClass->Reg_Class)
+                               ->where('StudentBehavior !=', 'จำหน่าย')
+                               ->countAllResults();
+        }
+
         // Prepare data for the view
         $data = [
             'title'                 => 'หน้าแรก',
             'CheckHomeVisitManager' => $CheckHomeVisitManager,
             'OnOff'                 => $OnOff,
             'teacher'               => $teacher,
-            'homeroomClass'         => $homeroomClass
+            'homeroomClass'         => $homeroomClass,
+            'subjectCount'          => $subjectCount,
+            'studentCount'          => $studentCount,
+            'latestYear'            => $latestYear,
+            'latestEntry'           => $latestEntry ?? ($latestYear),
+            'learningGroupName'     => $learningGroupName
         ];
 
         // Load the view, which will in turn use the main layout

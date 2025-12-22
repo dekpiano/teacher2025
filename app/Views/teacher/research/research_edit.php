@@ -6,87 +6,137 @@
 
 <?= $this->section('content') ?>
 
-<div class="card">
-    <div class="card-header">
-        <h4 class="card-title mb-0">แก้ไขงานวิจัยในชั้นเรียน</h4>
+<style>
+    .edit-research-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    .form-header-edit {
+        background: #fff;
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        border-left: 6px solid #ffab00; /* Yellow for edit */
+    }
+    .luxe-edit-card {
+        background: #fff;
+        border-radius: 1.25rem;
+        padding: 2.5rem;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.04);
+        border: 1px solid rgba(0,0,0,0.01);
+    }
+    .readonly-field {
+        background-color: #f8f9fa !important;
+        cursor: not-allowed;
+    }
+    .current-file-box {
+        background: rgba(105, 108, 255, 0.04);
+        border: 1px solid rgba(105, 108, 255, 0.1);
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+    }
+</style>
+
+<div class="edit-research-container py-3">
+    <!-- Form Header -->
+    <div class="form-header-edit d-flex justify-content-between align-items-center">
+        <div>
+            <h3 class="fw-bold mb-1 text-dark">แก้ไขข้อมูลงานวิจัย</h3>
+            <p class="text-muted mb-0 small">ภาคเรียน <?= esc($research['seres_term'].'/'.$research['seres_year']) ?> | <?= esc($research['seres_coursecode']) ?></p>
+        </div>
+        <div>
+            <?php 
+                $status = trim($research['seres_status']);
+                $badgeClass = 'bg-label-warning';
+                if($status == 'ส่งแล้ว') $badgeClass = 'bg-label-primary';
+                if($status == 'ตรวจแล้ว') $badgeClass = 'bg-label-success';
+            ?>
+            <span class="badge <?= $badgeClass ?> rounded-pill px-3 py-1"><?= $status ?></span>
+        </div>
     </div>
-    <div class="card-body">
+
+    <!-- Main Edit Form -->
+    <div class="luxe-edit-card">
         <form class="needs-validation" novalidate id="form_edit_research" action="<?= site_url('research/update-research') ?>" method="post" enctype="multipart/form-data">
-             <input type="hidden" name="seres_ID" value="<?= esc($research['seres_ID'] ?? '') ?>">
-            <div class="row">
+            <input type="hidden" name="seres_ID" value="<?= esc($research['seres_ID'] ?? '') ?>">
+            
+            <div class="row g-4">
                 <div class="col-md-8">
-                    <div class="form-floating mb-3">
+                    <div class="form-floating mb-4">
                         <input type="text" class="form-control" id="seres_research_name" name="seres_research_name" placeholder="ชื่องานวิจัย" value="<?= esc($research['seres_research_name'] ?? '') ?>" required>
-                        <label for="seres_research_name">ชื่องานวิจัย</label>
+                        <label for="seres_research_name">หัวข้อ/ชื่องานวิจัยในชั้นเรียน</label>
                     </div>
-                    <div class="form-floating mb-3">
-                        <input type="text" class="form-control" id="seres_namesubject" name="seres_namesubject" placeholder="ชื่อรายวิชา" value="<?= esc($research['seres_namesubject'] ?? '') ?>" required readonly>
-                        <label for="seres_namesubject">ชื่อรายวิชา (ไม่สามารถแก้ไขได้)</label>
+
+                    <div class="form-floating mb-4">
+                        <input type="text" class="form-control readonly-field" id="seres_namesubject" placeholder="ชื่อรายวิชา" value="<?= esc($research['seres_namesubject'] ?? '') ?>" disabled>
+                        <label for="seres_namesubject">ชื่อรายวิชา (แก้ไขไม่ได้)</label>
                     </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-floating mb-3">
-                                <input type="text" class="form-control" id="seres_coursecode" name="seres_coursecode" placeholder="รหัสวิชา" value="<?= esc($research['seres_coursecode'] ?? '') ?>" required readonly>
-                                <label for="seres_coursecode">รหัสวิชา (ไม่สามารถแก้ไขได้)</label>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-sm-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control readonly-field" id="seres_coursecode" placeholder="รหัสวิชา" value="<?= esc($research['seres_coursecode'] ?? '') ?>" disabled>
+                                <label for="seres_coursecode">รหัสวิชา (แก้ไขไม่ได้)</label>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                             <div class="form-floating mb-3">
-                                <select class="form-select" id="seres_gradelevel" name="seres_gradelevel" required readonly>
-                                     <?php for ($i = 1; $i <= 6; $i++): ?>
-                                        <option value="<?= $i ?>" <?= (isset($research['seres_gradelevel']) && $research['seres_gradelevel'] == $i) ? 'selected' : '' ?>>ม.<?= $i ?></option>
-                                    <?php endfor; ?>
-                                </select>
-                                <label for="seres_gradelevel">ระดับชั้น (ไม่สามารถแก้ไขได้)</label>
+                        <div class="col-sm-6">
+                            <div class="form-floating">
+                                <?php 
+                                    $grade = esc($research['seres_gradelevel'] ?? '');
+                                    $display_grade = "มัธยมศึกษาปีที่ " . $grade;
+                                ?>
+                                <input type="text" class="form-control readonly-field" id="seres_gradelevel" value="<?= $display_grade ?>" disabled>
+                                <label for="seres_gradelevel">ระดับชั้น (แก้ไขไม่ได้)</label>
                             </div>
                         </div>
                     </div>
-                     <div class="form-floating mb-3">
-                        <textarea class="form-control" placeholder="รายละเอียดเพิ่มเติม/หมายเหตุ" id="seres_sendcomment" name="seres_sendcomment" style="height: 100px"><?= esc($research['seres_sendcomment'] ?? '') ?></textarea>
-                        <label for="seres_sendcomment">รายละเอียดเพิ่มเติม/หมายเหตุ</label>
+
+                    <div class="form-floating mb-4">
+                        <textarea class="form-control" placeholder="รายละเอียดเพิ่มเติม" id="seres_sendcomment" name="seres_sendcomment" style="height: 120px"><?= esc($research['seres_sendcomment'] ?? '') ?></textarea>
+                        <label for="seres_sendcomment">รายละเอียดเพิ่มเติม / บทคัดย่อโดยย่อ</label>
                     </div>
-                     <div class="mb-3">
-                        <label for="seres_file" class="form-label">อัปโหลดไฟล์ใหม่ (ถ้าต้องการ)</label>
-                        <input class="form-control" type="file" id="seres_file" name="seres_file" accept="application/pdf">
-                        <div class="form-text">หากไม่เลือกไฟล์ใหม่ ไฟล์เดิมจะยังคงอยู่</div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark d-block">อัปเดตไฟล์งานวิจัย (PDF)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="bi bi-cloud-upload text-primary"></i></span>
+                            <input class="form-control" type="file" id="seres_file" name="seres_file" accept=".pdf">
+                        </div>
+                        <div class="form-text small">ปล่อยว่างไว้หากไม่ต้องการเปลี่ยนไฟล์ใหม่</div>
                     </div>
                 </div>
-                 <div class="col-md-4">
-                    <div class="card bg-light">
-                        <div class="card-body">
-                             <h5 class="card-title">ไฟล์ปัจจุบัน</h5>
-                             <?php if (!empty($research['seres_file'])): ?>
-                                <p><a href="<?= env('upload.server.baseurl.research') . esc($research['seres_year']) . '/' . esc($research['seres_term']) . '/' . rawurlencode($research['seres_file']) ?>" target="_blank"><i class="bi bi-file-earmark-arrow-down"></i> <?= esc($research['seres_file']) ?></a></p>
-                            <?php else: ?>
-                                <p class="text-muted">ยังไม่มีไฟล์</p>
-                            <?php endif; ?>
 
-                            <h5 class="card-title mt-3">สถานะ</h5>
-                             <p class="card-text">
-                                <?php if (trim($research['seres_status']) == 'ส่งแล้ว') : ?>
-                                    <span class="badge bg-success">ส่งแล้ว</span>
-                                <?php elseif (trim($research['seres_status']) == 'ตรวจแล้ว') : ?>
-                                    <span class="badge bg-success">ตรวจแล้ว</span>
-                                <?php else : ?>
-                                    <span class="badge bg-warning">รอดำเนินการ</span>
-                                <?php endif; ?>
-                            </p>
+                <!-- File Status Sidebar -->
+                <div class="col-md-4">
+                    <div class="current-file-box h-100">
+                        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-file-earmark-check me-1"></i> ไฟล์ปัจจุบัน</h6>
+                        <?php if (!empty($research['seres_file'])): ?>
+                            <div class="d-grid mb-4">
+                                <a href="<?= env('upload.server.baseurl.research') . esc($research['seres_year']) . '/' . esc($research['seres_term']) . '/' . rawurlencode($research['seres_file']) ?>" 
+                                   target="_blank" class="btn btn-label-primary btn-sm">
+                                    <i class="bi bi-file-earmark-pdf me-1"></i> เปิดดูไฟล์เดิม
+                                </a>
+                                <small class="text-muted mt-2 d-block text-truncate"><?= esc($research['seres_file']) ?></small>
+                            </div>
+                        <?php else: ?>
+                            <p class="small text-muted mb-4">ยังไม่ได้แนบไฟล์</p>
+                        <?php endif; ?>
 
-                            <h5 class="card-title mt-3">ไฟล์ที่รองรับ</h5>
-                            <p class="card-text">
-                                ระบบรองรับไฟล์ PDF เท่านั้น
-                            </p>
-                        </div>
+                        <hr class="my-4 opacity-50">
+                        
+                        <h6 class="fw-bold text-dark mb-2">ข้อจำกัดการแก้ไข</h6>
+                        <p class="small text-muted mb-0">คุณไม่สามารถแก้ไข รายวิชา, รหัสวิชา และระดับชั้นได้ หากต้องการแก้ไขข้อมูลเหล่านี้ กรุณาลบและสร้างรายการใหม่</p>
                     </div>
                 </div>
             </div>
-             <div class="mt-4 text-center">
-                <button type="submit" class="btn btn-primary btn-lg">
-                    <i class="bi bi-save me-2"></i> บันทึกการแก้ไข
+
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-center gap-3 mt-5">
+                <a href="<?= site_url('research') ?>" class="btn btn-label-secondary btn-lg px-5">ยกเลิก</a>
+                <button type="submit" class="btn btn-primary btn-lg px-5 shadow">
+                    <i class="bi bi-check-circle-fill me-2"></i> บันทึกการแก้ไข
                 </button>
-                 <a href="<?= site_url('research') ?>" class="btn btn-secondary btn-lg">
-                    <i class="bi bi-x-circle me-2"></i> กลับหน้าหลัก
-                </a>
             </div>
         </form>
     </div>
@@ -97,62 +147,21 @@
 <?= $this->section('scripts') ?>
 <script>
 $(document).ready(function() {
-    // Form validation
-    (function() {
-        'use strict';
-        window.addEventListener('load', function() {
-            var forms = document.getElementsByClassName('needs-validation');
-            var validation = Array.prototype.filter.call(forms, function(form) {
-                form.addEventListener('submit', function(event) {
-                    if (form.checkValidity() === false) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                    }
-                    form.classList.add('was-validated');
-                }, false);
-            });
-        }, false);
-    })();
-
-    // Handle file input change event for PDF validation
-    const fileInput = document.getElementById('seres_file');
-    if (fileInput) {
-        fileInput.addEventListener('change', function() {
-            const file = this.files[0];
-            if (file) {
-                const fileName = file.name;
-                const fileExt = fileName.split('.').pop().toLowerCase();
-                if (fileExt !== 'pdf') {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'ผิดพลาด!',
-                        text: 'ระบบรองรับไฟล์ PDF เท่านั้น',
-                    });
-                    this.value = ''; // Clear the file input
-                }
-            }
-        });
-    }
-
-    // Handle form submission via AJAX for update_research
     $('#form_edit_research').on('submit', function(e) {
         e.preventDefault();
         
-        // Check standard HTML5 validation first
         if (this.checkValidity() === false) {
             this.classList.add('was-validated');
             return;
         }
 
-        var formData = new FormData(this); // Use FormData for file uploads
+        var formData = new FormData(this);
         const submitButton = $(this).find('button[type="submit"]');
         
-        // Show Loading Swal
         Swal.fire({
-            title: 'กำลังบันทึกข้อมูล...',
-            text: 'กรุณารอสักครู่',
+            title: 'กำลังอัปเดตข้อมูล...',
+            text: 'ระบบกำลังดำเนินการบันทึกข้อมูลและไฟล์ใหม่',
             allowOutsideClick: false,
-            allowEscapeKey: false,
             didOpen: () => {
                 Swal.showLoading();
             }
@@ -165,29 +174,33 @@ $(document).ready(function() {
             type: 'POST',
             data: formData,
             dataType: 'json',
-            processData: false, // Important: tell jQuery not to process the data
-            contentType: false, // Important: tell jQuery not to set contentType
+            processData: false,
+            contentType: false,
             success: function(response) {
                 if (response.status === 'success') {
                     Swal.fire({
                         icon: 'success',
-                        title: 'สำเร็จ',
+                        title: 'อัปเดตสําเร็จ!',
                         text: response.message,
-                        showConfirmButton: true
+                        timer: 2000,
+                        showConfirmButton: false
                     }).then(() => {
-                        window.location.href = '<?= site_url('research') ?>'; // Redirect to main page after update
+                        window.location.href = '<?= site_url('research') ?>';
                     });
                 } else {
-                    Swal.fire('ผิดพลาด', response.message, 'error');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'อัปเดตไม่สำเร็จ',
+                        text: response.message
+                    });
                 }
             },
             error: function(xhr, status, error) {
-                console.error('AJAX Error:', status, error, xhr.responseText);
-                let msg = 'เกิดข้อผิดพลาดในการส่งข้อมูล';
-                if(xhr.responseJSON && xhr.responseJSON.message) {
-                    msg += ': ' + xhr.responseJSON.message;
-                }
-                Swal.fire('ผิดพลาด', msg, 'error');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด',
+                    text: 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้ในขณะนี้'
+                });
             },
             complete: function() {
                 submitButton.prop('disabled', false);

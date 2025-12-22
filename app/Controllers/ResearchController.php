@@ -207,12 +207,7 @@ class ResearchController extends BaseController
 
         $updateData = [
             'seres_research_name' => $post['seres_research_name'] ?? $research['seres_research_name'],
-            'seres_namesubject'   => $post['seres_namesubject'] ?? $research['seres_namesubject'],
-            'seres_coursecode'    => $post['seres_coursecode'] ?? $research['seres_coursecode'],
-            'seres_gradelevel'    => $post['seres_gradelevel'] ?? $research['seres_gradelevel'],
             'seres_sendcomment'   => nl2br(htmlentities($post['seres_sendcomment'] ?? $research['seres_sendcomment'], ENT_QUOTES, 'UTF-8')),
-            // Status should not be updated by the sender directly, only via review process
-            // 'seres_status'        => $post['seres_status'] ?? $research['seres_status'],
         ];
 
         $file = $this->request->getFile('seres_file');

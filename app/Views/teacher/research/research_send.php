@@ -19,93 +19,152 @@ if ($onOffSetting && is_object($onOffSetting)) {
 }
 ?>
 
-<?php if($is_system_on): ?>
-<div class="alert alert-success d-flex align-items-center" role="alert">
-    <i class="bi bi-check-circle-fill me-2"></i>
-    <div>
-        <strong>แจ้งเตือน!</strong> ระบบเปิดให้ส่งงานวิจัยในชั้นเรียน
-        <strong> (สิ้นสุด: <?= $deadline ? thai_date_and_time(strtotime($deadline)) : '-' ?>)</strong>
-    </div>
-</div>
-<?php else: ?>
-<div class="alert alert-danger d-flex align-items-center" role="alert">
-    <i class="bi bi-exclamation-triangle-fill me-2"></i>
-    <div>
-        <strong>แจ้งเตือน!</strong> ขณะนี้ระบบปิดรับส่งงานวิจัยในชั้นเรียน
-    </div>
-</div>
-<?php endif; ?>
+<style>
+    .send-research-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    .form-header-luxe {
+        background: #fff;
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        border-left: 6px solid #696cff;
+    }
+    .luxe-input-card {
+        background: #fff;
+        border-radius: 1.25rem;
+        padding: 2.5rem;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.04);
+        border: 1px solid rgba(0,0,0,0.01);
+    }
+    .guide-card {
+        border: none;
+        border-radius: 1rem;
+        background: rgba(105, 108, 255, 0.04);
+        border: 1px dashed rgba(105, 108, 255, 0.2);
+    }
+    .icon-circle {
+        width: 50px;
+        height: 50px;
+        background: #696cff;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        font-size: 1.25rem;
+        box-shadow: 0 5px 15px rgba(105, 108, 255, 0.4);
+    }
+</style>
 
-<div class="card">
-    <div class="card-header">
-        <h4 class="card-title mb-0">ส่งงานวิจัยในชั้นเรียน</h4>
+<div class="send-research-container py-3">
+    <!-- Form Header -->
+    <div class="form-header-luxe d-flex justify-content-between align-items-center">
+        <div>
+            <h3 class="fw-bold mb-1 text-dark">บันทึกส่งงานวิจัยใหม่</h3>
+            <p class="text-muted mb-0 small">กรอกรายละเอียดงานวิจัยสำหรับภาคเรียน <?= esc($onOffSetting->seres_setup_term.'/'.$onOffSetting->seres_setup_year) ?></p>
+        </div>
+        <div class="text-end">
+            <?php if($is_system_on): ?>
+                <span class="badge bg-label-success rounded-pill px-3 py-1">
+                    <i class="bi bi-unlock-fill me-1"></i> ระบบเปิดอยู่
+                </span>
+                <div class="mt-1 small text-muted">ครบกำหนด: <?= thai_date_and_time(strtotime($deadline)) ?></div>
+            <?php else: ?>
+                <span class="badge bg-label-danger rounded-pill px-3 py-1">
+                    <i class="bi bi-lock-fill me-1"></i> ระบบปิดแล้ว
+                </span>
+            <?php endif; ?>
+        </div>
     </div>
-    <div class="card-body">
+
+    <!-- Main Entry Form -->
+    <div class="luxe-input-card">
         <form class="needs-validation" novalidate id="form_insert_research" action="<?= site_url('research/insert-research') ?>" method="post" enctype="multipart/form-data">
-            <div class="row">
+            <div class="row g-4">
                 <div class="col-md-8">
-                    <div class="form-floating mb-3">
-                        <input type="text" class="form-control" id="seres_research_name" name="seres_research_name" placeholder="ชื่องานวิจัย" required>
-                        <label for="seres_research_name">ชื่องานวิจัย</label>
-                        <div class="invalid-feedback">กรุณากรอกชื่อหัวข้อวิจัย</div>
+                    <div class="icon-circle">
+                        <i class="bi bi-pencil-square"></i>
                     </div>
-                    <div class="form-floating mb-3">
+                    
+                    <div class="form-floating mb-4">
+                        <input type="text" class="form-control" id="seres_research_name" name="seres_research_name" placeholder="ชื่องานวิจัย" required>
+                        <label for="seres_research_name">หัวข้อ/ชื่องานวิจัยในชั้นเรียน</label>
+                        <div class="invalid-feedback">กรุณากรอกชื่อเรื่องงานวิจัย</div>
+                    </div>
+
+                    <div class="form-floating mb-4">
                         <input type="text" class="form-control" id="seres_namesubject" name="seres_namesubject" placeholder="ชื่อรายวิชา" required>
-                        <label for="seres_namesubject">ชื่อรายวิชา</label>
+                        <label for="seres_namesubject">ชื่อรายวิชาที่ทำวิจัย</label>
                         <div class="invalid-feedback">กรุณากรอกชื่อรายวิชา</div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-floating mb-3">
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-sm-6">
+                            <div class="form-floating">
                                 <input type="text" class="form-control" id="seres_coursecode" name="seres_coursecode" placeholder="รหัสวิชา" required>
                                 <label for="seres_coursecode">รหัสวิชา</label>
                                 <div class="invalid-feedback">กรุณากรอกรหัสวิชา</div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                             <div class="form-floating mb-3">
+                        <div class="col-sm-6">
+                            <div class="form-floating">
                                 <select class="form-select" id="seres_gradelevel" name="seres_gradelevel" required>
-                                    <option value="" selected disabled>เลือก...</option>
-                                    <option value="1">ม.1</option>
-                                    <option value="2">ม.2</option>
-                                    <option value="3">ม.3</option>
-                                    <option value="4">ม.4</option>
-                                    <option value="5">ม.5</option>
-                                    <option value="6">ม.6</option>
+                                    <option value="" selected disabled>เลือกชั้นเรียน...</option>
+                                    <?php for($i=1; $i<=6; $i++): ?>
+                                        <option value="<?= $i ?>">มัธยมศึกษาปีที่ <?= $i ?></option>
+                                    <?php endfor; ?>
                                 </select>
                                 <label for="seres_gradelevel">ระดับชั้น</label>
-                                <div class="invalid-feedback">กรุณาเลือกระดับชั้น</div>
                             </div>
                         </div>
                     </div>
-                     <div class="form-floating mb-3">
-                        <textarea class="form-control" placeholder="รายละเอียดเพิ่มเติม/หมายเหตุ" id="seres_sendcomment" name="seres_sendcomment" style="height: 100px"></textarea>
-                        <label for="seres_sendcomment">รายละเอียดเพิ่มเติม/หมายเหตุ</label>
+
+                    <div class="form-floating mb-4">
+                        <textarea class="form-control" placeholder="รายละเอียดเพิ่มเติม" id="seres_sendcomment" name="seres_sendcomment" style="height: 120px"></textarea>
+                        <label for="seres_sendcomment">รายละเอียดเพิ่มเติม / บทคัดย่อโดยย่อ (ถ้ามี)</label>
                     </div>
-                     <div class="mb-3">
-                        <label for="seres_file" class="form-label">อัปโหลดไฟล์งานวิจัย</label>
-                        <input class="form-control" type="file" id="seres_file" name="seres_file" accept="application/pdf" required>
-                        <div class="invalid-feedback">กรุณาเลือกไฟล์งานวิจัย</div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark d-block">แนบไฟล์งานวิจัย (PDF)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="bi bi-file-pdf text-danger"></i></span>
+                            <input class="form-control" type="file" id="seres_file" name="seres_file" accept=".pdf" required>
+                        </div>
+                        <div class="form-text small">รองรับไฟล์รูปแบบ PDF เท่านั้น (ขนาดไม่เกิน 50MB)</div>
                     </div>
                 </div>
-                 <div class="col-md-4">
-                    <div class="card bg-light">
-                        <div class="card-body">
-                            <h5 class="card-title">คำแนะนำ</h5>
-                            <p class="card-text">
-                                กรุณากรอกข้อมูลและอัปโหลดไฟล์งานวิจัยให้ครบถ้วนก่อนกดบันทึก
-                            </p>
-                            <h5 class="card-title mt-3">ไฟล์ที่รองรับ</h5>
-                            <p class="card-text">
-                                ระบบรองรับไฟล์ PDF เท่านั้น
-                            </p>
-                        </div>
+
+                <!-- Guidance Sidebar -->
+                <div class="col-md-4">
+                    <div class="guide-card p-4 h-100">
+                        <h6 class="fw-bold text-primary mb-3"><i class="bi bi-info-circle me-1"></i> ข้อแนะนำการส่ง</h6>
+                        <ul class="list-unstyled small text-muted mb-0">
+                            <li class="mb-3 d-flex align-items-start">
+                                <i class="bi bi-check2-circle text-success me-2 mt-1"></i>
+                                <div>ตรวจสอบความถูกต้องของชื่อรหัสวิชาและระดับชั้นก่อนส่ง</div>
+                            </li>
+                            <li class="mb-3 d-flex align-items-start">
+                                <i class="bi bi-check2-circle text-success me-2 mt-1"></i>
+                                <div>ไฟล์ควรเป็น PDF ที่ผ่านการตรวจสอบความเรียบร้อยแล้ว</div>
+                            </li>
+                            <li class="mb-3 d-flex align-items-start">
+                                <i class="bi bi-check2-circle text-success me-2 mt-1"></i>
+                                <div>ในกรณีที่สอนหลายวิชา ให้แยกส่งทีละรายวิชา</div>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
-             <div class="mt-4 text-center">
-                <button type="submit" class="btn btn-primary btn-lg" <?= $is_system_on ? '' : 'disabled' ?>>
-                    <i class="bi bi-save me-2"></i> บันทึกและส่งงานวิจัย
+
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-center gap-3 mt-5">
+                <a href="<?= site_url('research') ?>" class="btn btn-label-secondary btn-lg px-5">ยกเลิก</a>
+                <button type="submit" class="btn btn-primary btn-lg px-5 shadow" <?= $is_system_on ? '' : 'disabled' ?>>
+                    <i class="bi bi-send-fill me-2"></i> บันทึกและส่งงาน
                 </button>
             </div>
         </form>
@@ -117,62 +176,22 @@ if ($onOffSetting && is_object($onOffSetting)) {
 <?= $this->section('scripts') ?>
 <script>
 $(document).ready(function() {
-    // Form validation
-    (function() {
-        'use strict';
-        window.addEventListener('load', function() {
-            var forms = document.getElementsByClassName('needs-validation');
-            var validation = Array.prototype.filter.call(forms, function(form) {
-                form.addEventListener('submit', function(event) {
-                    if (form.checkValidity() === false) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                    }
-                    form.classList.add('was-validated');
-                }, false);
-            });
-        }, false);
-    })();
-
-    // Handle file input change event for PDF validation
-    const fileInput = document.getElementById('seres_file');
-    if (fileInput) {
-        fileInput.addEventListener('change', function() {
-            const file = this.files[0];
-            if (file) {
-                const fileName = file.name;
-                const fileExt = fileName.split('.').pop().toLowerCase();
-                if (fileExt !== 'pdf') {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'ผิดพลาด!',
-                        text: 'ระบบรองรับไฟล์ PDF เท่านั้น',
-                    });
-                    this.value = ''; // Clear the file input
-                }
-            }
-        });
-    }
-
     // Handle form submission via AJAX for insert_research
     $('#form_insert_research').on('submit', function(e) {
         e.preventDefault();
         
-        // Check standard HTML5 validation first
         if (this.checkValidity() === false) {
             this.classList.add('was-validated');
             return;
         }
 
-        var formData = new FormData(this); // Use FormData for file uploads
+        var formData = new FormData(this);
         const submitButton = $(this).find('button[type="submit"]');
         
-        // Show Loading Swal
         Swal.fire({
-            title: 'กำลังบันทึกข้อมูล...',
-            text: 'กรุณารอสักครู่',
+            title: 'กำลังส่งข้อมูล...',
+            text: 'ระบบกำลังดําเนินการอัปโหลดไฟล์งานวิจัย',
             allowOutsideClick: false,
-            allowEscapeKey: false,
             didOpen: () => {
                 Swal.showLoading();
             }
@@ -185,36 +204,32 @@ $(document).ready(function() {
             type: 'POST',
             data: formData,
             dataType: 'json',
-            processData: false, // Important: tell jQuery not to process the data
-            contentType: false, // Important: tell jQuery not to set contentType
+            processData: false,
+            contentType: false,
             success: function(response) {
                 if (response.status === 'success') {
                     Swal.fire({
                         icon: 'success',
-                        title: 'สำเร็จ',
+                        title: 'ส่งงานวิจัยสําเร็จ!',
                         text: response.message,
-                        showConfirmButton: true
+                        timer: 2000,
+                        showConfirmButton: false
                     }).then(() => {
-                        window.location.href = '<?= site_url('research') ?>'; // Redirect to main page after success
+                        window.location.href = '<?= site_url('research') ?>';
                     });
                 } else {
                     Swal.fire({
                         icon: 'error',
-                        title: 'ผิดพลาด',
+                        title: 'การส่งล้มเหลว',
                         text: response.message
                     });
                 }
             },
             error: function(xhr, status, error) {
-                console.error('AJAX Error:', status, error, xhr.responseText);
-                let msg = 'เกิดข้อผิดพลาดในการส่งข้อมูล';
-                if(xhr.responseJSON && xhr.responseJSON.message) {
-                    msg += ': ' + xhr.responseJSON.message;
-                }
                 Swal.fire({
                     icon: 'error',
-                    title: 'ผิดพลาด',
-                    text: msg
+                    title: 'เกิดข้อผิดพลาด',
+                    text: 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้ในขณะนี้'
                 });
             },
             complete: function() {
