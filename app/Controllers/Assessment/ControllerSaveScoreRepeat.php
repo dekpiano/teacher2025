@@ -458,8 +458,12 @@ class ControllerSaveScoreRepeat extends BaseController
             ->where('pers_id', $loginId)
             ->get()->getRow();
 
+        // ดึงข้อมูล onoff_year สำหรับกรอง RepeatYear
+        $checkRepeat = $this->db->table('tb_register_onoff')->select('onoff_year')->where('onoff_id', 7)->get()->getRow();
+        $currentRepeatYear = $checkRepeat ? $checkRepeat->onoff_year : '';
+
         // Base query for student data
-        $baseStudentQuery = function ($class = null) use ($loginId, $reportRegisterYear, $reportSubjectID) {
+        $baseStudentQuery = function ($class = null) use ($loginId, $reportRegisterYear, $reportSubjectID, $currentRepeatYear) {
             $builder = $this->db->table('skjacth_academic.tb_register');
             $builder->select('
                     skjacth_academic.tb_register.SubjectID, skjacth_academic.tb_register.RegisterYear, skjacth_academic.tb_register.RegisterClass,
@@ -470,7 +474,8 @@ class ControllerSaveScoreRepeat extends BaseController
                     skjacth_academic.tb_students.StudentLastName, skjacth_academic.tb_students.StudentNumber, skjacth_academic.tb_students.StudentClass,
                     skjacth_academic.tb_students.StudentCode, skjacth_academic.tb_students.StudentStatus, skjacth_academic.tb_students.StudentBehavior,
                     skjacth_academic.tb_register.Grade_Type,
-                    skjacth_academic.tb_register.RepeatStatus
+                    skjacth_academic.tb_register.RepeatStatus,
+                    skjacth_academic.tb_register.RepeatYear
                 ')
                 ->join('skjacth_academic.tb_subjects', 'skjacth_academic.tb_subjects.SubjectID = skjacth_academic.tb_register.SubjectID')
                 ->join('skjacth_academic.tb_students', 'skjacth_academic.tb_students.StudentID = skjacth_academic.tb_register.StudentID')
@@ -478,6 +483,7 @@ class ControllerSaveScoreRepeat extends BaseController
                 ->where('skjacth_academic.tb_register.RegisterYear', $reportRegisterYear)
                 ->where('skjacth_academic.tb_subjects.SubjectYear', $reportRegisterYear)
                 ->where('skjacth_academic.tb_register.SubjectID', $reportSubjectID)
+                ->where('skjacth_academic.tb_register.RepeatYear', $currentRepeatYear)
                 ->where('skjacth_academic.tb_students.StudentBehavior !=', 'จำหน่าย')
                 ->orderBy('skjacth_academic.tb_students.StudentClass', 'ASC')
                 ->orderBy('skjacth_academic.tb_students.StudentNumber', 'ASC');
