@@ -978,7 +978,7 @@ class CurriculumController extends BaseController
     public function checkPlanHeadDetail($teacher_id = null, $year = null, $term = null)
     {
         if ($teacher_id === null) {
-            return redirect()->to('curriculum/check-plan-head')->with('error', 'ไม่ได้ระบุรหัสครู');
+            return redirect()->to('assessment-head/check-plan')->with('error', 'ไม่ได้ระบุรหัสครู');
         }
 
         $data['teacher_info'] = $this->db_personnel->table('tb_personnel')

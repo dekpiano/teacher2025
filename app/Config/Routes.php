@@ -55,19 +55,41 @@ $routes->get('login/googleCallback', 'Login::googleCallback');
         $routes->get('deleteObjective/(:num)/(:num)', 'ClubController::deleteObjective/$1/$2');
     });
 
-    // Assessment Routes
-    $routes->group('assessment', static function ($routes) {
-        $routes->get('', 'AssessmentController::index');
-        $routes->get('save-score-main', 'AssessmentController::saveScoreMain');
-        $routes->get('save-score-normal', 'Assessment\ControllerSaveScore::normal');
-        $routes->get('add-score-normal/(:any)/(:num)/(:any)', 'AssessmentController::add/$1/$2/$3');
-        $routes->post('process-save-score-normal', 'AssessmentController::insertScore');
-        
-        $routes->get('add/(:num)/(:num)/(:num)/(:any)', 'AssessmentController::add/$1/$2/$3/$4');
-        $routes->post('insert', 'AssessmentController::insertScore');
-        $routes->post('update', 'AssessmentController::updateScore');
-        $routes->post('report', 'AssessmentController::report'); // Placeholder for report
+    // Assessment Routes for Head of Department
+    $routes->group('assessment-head', ['namespace' => 'App\Controllers\Assessment'], static function ($routes) {
+        $routes->get('check-score', 'ControllerCheckScore::checkScoreHead');
+        $routes->get('check-score-detail/(:any)', 'ControllerCheckScore::checkScoreHeadDetail/$1');
+        $routes->get('check-score-detail/(:any)/(:any)', 'ControllerCheckScore::checkScoreHeadDetail/$1/$2');
+        $routes->get('check-score-student/(:any)/(:any)/(:any)/(:any)', 'ControllerCheckScore::checkScoreHeadStudentDetail/$1/$2/$3/$4');
+        $routes->post('ajax-get-student-scores', 'ControllerCheckScore::ajaxGetStudentScores');
 
+        // Curriculum Routes for Head of Department
+        $routes->get('check-plan', '\App\Controllers\CurriculumController::checkPlanHead');
+        $routes->get('check-plan-detail/(:any)', '\App\Controllers\CurriculumController::checkPlanHeadDetail/$1');
+        $routes->get('check-plan-detail/(:any)/(:num)/(:num)', '\App\Controllers\CurriculumController::checkPlanHeadDetail/$1/$2/$3');
+        $routes->post('update_status1', '\App\Controllers\CurriculumController::update_status1');
+        $routes->post('get_comment', '\App\Controllers\CurriculumController::get_comment');
+        $routes->post('save_comment', '\App\Controllers\CurriculumController::save_comment');
+    });
+
+    // Assessment Routes
+    $routes->group('assessment', ['namespace' => 'App\Controllers\Assessment'], static function ($routes) {
+        $routes->get('', 'ControllerSaveScore::normal');
+        $routes->get('save-score-main', 'ControllerSaveScore::normal');
+        $routes->get('save-score-normal', 'ControllerSaveScore::normal');
+
+        $routes->get('add-score-normal/(:any)/(:num)/(:any)', 'ControllerSaveScore::saveScoreAdd/$1/$2/$3');
+        $routes->get('add/(:num)/(:num)/(:num)/(:any)', 'ControllerSaveScore::saveScoreAdd/$1/$2/$3/$4');
+        
+        $routes->post('process-save-score-normal', 'ControllerSaveScore::insertScore');
+        $routes->post('insert', 'ControllerSaveScore::insertScore');
+        $routes->post('update', 'ControllerSaveScore::updateScore'); // Note: check if updateScore exists or if it should be settingScore/insertScore
+        $routes->post('report', 'ControllerSaveScore::ReportLearnNormal');
+        $routes->post('setting-score/(:any)', 'ControllerSaveScore::settingScore/$1');
+        $routes->post('edit-score', 'ControllerSaveScore::editScore');
+        $routes->post('autosave-score', 'ControllerSaveScore::autosaveScore');
+        $routes->post('check-room-report', 'ControllerSaveScore::checkroomReport');
+    });
         // Repeat Score Routes
         $routes->get('save-score-repeat', 'Assessment\ControllerSaveScoreRepeat::normal');
         $routes->get('save-score-repeat-add/(:any)/(:any)', 'Assessment\ControllerSaveScoreRepeat::saveScoreRepeatAdd/$1/$2');
@@ -92,7 +114,7 @@ $routes->get('login/googleCallback', 'Login::googleCallback');
             $routes->post('checkroom-report', 'ControllerSaveScore::checkroomReport');
         });
         $routes->post('report-learn-normal', 'Assessment\ControllerSaveScore::ReportLearnNormal');
-    });
+
 
     // Curriculum Routes
     $routes->group('curriculum', static function ($routes) {
@@ -110,13 +132,7 @@ $routes->get('login/googleCallback', 'Login::googleCallback');
         $routes->get('download-plan/(:num)/(:num)/(:any)', 'CurriculumController::loadPlan/$1/$2/$3');
         $routes->get('download-plan-zip/(:any)', 'CurriculumController::downloadPlanZip/$1');
 
-        // Routes for Head of Department
-        $routes->get('check-plan-head', 'CurriculumController::checkPlanHead');
-        $routes->get('check-plan-head-detail/(:any)', 'CurriculumController::checkPlanHeadDetail/$1');
-        $routes->get('check-plan-head-detail/(:any)/(:num)/(:num)', 'CurriculumController::checkPlanHeadDetail/$1/$2/$3');
-        $routes->post('update_status1', 'CurriculumController::update_status1');
-        $routes->post('get_comment', 'CurriculumController::get_comment');
-        $routes->post('save_comment', 'CurriculumController::save_comment');
+        $routes->get('download-plan-zip/(:any)', 'CurriculumController::downloadPlanZip/$1');
     });
 
     // Research Routes

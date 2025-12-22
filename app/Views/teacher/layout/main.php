@@ -242,6 +242,28 @@
                             </li>
                         </ul>
                     </li>
+
+                    <?php if (session()->get('pers_groupleade') !== null && session()->get('pers_groupleade') !== ''): ?>
+                    <li class="menu-header small text-uppercase"><span class="menu-header-text">หัวหน้ากลุ่มสาระ</span></li>
+                    <li class="menu-item <?= is_open_segment([['assessment-head', 'check-plan'], ['assessment-head', 'check-plan-detail'], ['assessment-head', 'check-score'], ['assessment-head', 'check-score-detail']], $segments) ?>">
+                        <a href="javascript:void(0);" class="menu-link menu-toggle">
+                            <i class="menu-icon tf-icons bi-shield-check"></i>
+                            <div data-i18n="เมนูหัวหน้ากลุ่มสาระ">เมนูหัวหน้ากลุ่มสาระ</div>
+                        </a>
+                        <ul class="menu-sub">
+                            <li class="menu-item <?= is_active_segment(['assessment-head', 'check-plan'], $segments) || is_active_segment(['assessment-head', 'check-plan-detail'], $segments) ? 'active' : '' ?>">
+                                <a href="<?= base_url('assessment-head/check-plan') ?>" class="menu-link">
+                                    <div data-i18n="ตรวจแผนการสอน">ตรวจแผนการสอน</div>
+                                </a>
+                            </li>
+                            <li class="menu-item <?= is_active_segment(['assessment-head', 'check-score'], $segments) || is_active_segment(['assessment-head', 'check-score-detail'], $segments) || is_active_segment(['assessment-head', 'check-score-student'], $segments) ? 'active' : '' ?>">
+                                <a href="<?= base_url('assessment-head/check-score') ?>" class="menu-link">
+                                    <div data-i18n="ตรวจสอบคะแนน">ตรวจสอบคะแนน</div>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <?php endif; ?>
                 </ul>
             </aside>
             <!-- / Menu -->

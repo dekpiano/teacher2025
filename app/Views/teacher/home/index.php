@@ -254,18 +254,6 @@
 								</div>
 								<div class="desc">ดาวน์โหลดแผนการสอนที่ได้รับอนุมัติแล้ว</div>
 							</a>
-							<?php if (session()->get('pers_groupleade') !== null && session()->get('pers_groupleade') !== ''): ?>
-							<a role="listitem" class="tile" href="<?= base_url('curriculum/check-plan-head') ?>" aria-label="ตรวจแผน หน.กลุ่มสาระ">
-								<div class="meta">
-									<div class="title">
-										<div class="icon"><i class="bi bi-clipboard-check"></i></div>
-										<span>ตรวจแผน (หน.กลุ่มสาระ)</span>
-									</div>
-									<div class="chev"><i class="bi bi-arrow-right-circle-fill text-muted"></i></div>
-								</div>
-								<div class="desc">ตรวจสอบและอนุมัติแผนการสอนของครูในกลุ่มสาระ</div>
-							</a>
-							<?php endif; ?>
 						</div>
 					</div>
 				</div>

@@ -1,12 +1,10 @@
 <?= $this->extend('teacher/layout/main') ?>
 
 <?= $this->section('title') ?>
-<?= esc($title ?? 'เลือกครูเพื่อตรวจแผน') ?>
+<?= esc($title) ?>
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
-
-
 
 <style>
     .teacher-card {
@@ -44,7 +42,7 @@
         overflow: hidden;
         text-overflow: ellipsis;
     }
-    .btn-view-plans {
+    .btn-view-scores {
         border-radius: 8px;
         padding: 0.5rem 1.25rem;
         font-weight: 600;
@@ -60,11 +58,11 @@
 <div class="container-xxl flex-grow-1">
     <div class="page-header d-flex align-items-center">
         <div class="avatar avatar-md bg-label-primary me-3 flex-shrink-0">
-            <i class="bi bi-people-fill fs-3"></i>
+            <i class="bi bi-clipboard-data fs-3"></i>
         </div>
         <div>
-            <h4 class="fw-bold mb-0">ตรวจสอบแผนการสอน</h4>
-            <small class="text-muted">กรุณาครูที่ต้องการสั่งตรวจแผนการสอนในกลุ่มสาระของคุณ</small>
+            <h4 class="fw-bold mb-0">ตรวจสอบการบันทึกคะแนน</h4>
+            <small class="text-muted">เลือกครูที่ต้องการตรวจสอบความคืบหน้าการบันทึกคะแนนในกลุ่มสาระ</small>
         </div>
     </div>
 
@@ -94,13 +92,32 @@
                                 <h6 class="teacher-name mb-1">
                                     <?= esc($teacher->pers_prefix) ?>
                                 </h6>
-                                <div class="fw-bold text-dark fs-5">
+                                <div class="fw-bold text-dark fs-5 mb-2">
                                     <?= esc($teacher->pers_firstname . ' ' . $teacher->pers_lastname) ?>
                                 </div>
+                                <div class="text-muted small">
+                                    <i class="bi bi-mortarboard me-1"></i> ชั้นที่สอน: 
+                                    <?php if (!empty($teacher->classes)): ?>
+                                        <div class="mt-1 d-flex flex-wrap justify-content-center gap-1">
+                                            <?php 
+                                            $class_list = array_map(function($c) { return $c->RegisterClass; }, $teacher->classes);
+                                            // Show first 3 classes and count the rest if many
+                                            if (count($class_list) > 4) {
+                                                echo '<span class="badge bg-label-secondary p-1">' . implode('</span> <span class="badge bg-label-secondary p-1">', array_slice($class_list, 0, 3)) . '</span>';
+                                                echo ' <span class="badge bg-label-secondary p-1">+' . (count($class_list) - 3) . '</span>';
+                                            } else {
+                                                echo '<span class="badge bg-label-secondary p-1">' . implode('</span> <span class="badge bg-label-secondary p-1">', $class_list) . '</span>';
+                                            }
+                                            ?>
+                                        </div>
+                                    <?php else: ?>
+                                        <span class="text-light-50">-</span>
+                                    <?php endif; ?>
+                                </div>
                             </div>
-                            <a href="<?= site_url('assessment-head/check-plan-detail/' . $teacher->pers_id) ?>" 
-                               class="btn btn-outline-primary btn-sm btn-view-plans mt-auto w-100 rounded-pill">
-                               <i class="bi bi-search me-1"></i> ดูแผนการสอน
+                            <a href="<?= site_url('assessment-head/check-score-detail/' . $teacher->pers_id) ?>" 
+                               class="btn btn-outline-primary btn-sm btn-view-scores mt-auto w-100 rounded-pill">
+                               <i class="bi bi-bar-chart-fill me-1"></i> ดูคะแนน
                             </a>
                         </div>
                     </div>
