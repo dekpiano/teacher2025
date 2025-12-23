@@ -77,43 +77,55 @@ $routes->get('login/googleCallback', 'Login::googleCallback');
         $routes->get('', 'ControllerSaveScore::normal');
         $routes->get('save-score-main', 'ControllerSaveScore::normal');
         $routes->get('save-score-normal', 'ControllerSaveScore::normal');
-
         $routes->get('add-score-normal/(:any)/(:num)/(:any)', 'ControllerSaveScore::saveScoreAdd/$1/$2/$3');
         $routes->get('add/(:num)/(:num)/(:num)/(:any)', 'ControllerSaveScore::saveScoreAdd/$1/$2/$3/$4');
         
         $routes->post('process-save-score-normal', 'ControllerSaveScore::insertScore');
         $routes->post('insert', 'ControllerSaveScore::insertScore');
-        $routes->post('update', 'ControllerSaveScore::updateScore'); // Note: check if updateScore exists or if it should be settingScore/insertScore
+        $routes->post('update', 'ControllerSaveScore::updateScore'); 
         $routes->post('report', 'ControllerSaveScore::ReportLearnNormal');
         $routes->post('setting-score/(:any)', 'ControllerSaveScore::settingScore/$1');
         $routes->post('edit-score', 'ControllerSaveScore::editScore');
         $routes->post('autosave-score', 'ControllerSaveScore::autosaveScore');
         $routes->post('check-room-report', 'ControllerSaveScore::checkroomReport');
-    });
-        // Repeat Score Routes
-        $routes->get('save-score-repeat', 'Assessment\ControllerSaveScoreRepeat::normal');
-        $routes->get('save-score-repeat-add/(:any)/(:any)', 'Assessment\ControllerSaveScoreRepeat::saveScoreRepeatAdd/$1/$2');
-        $routes->post('report-learn-repeat', 'Assessment\ControllerSaveScoreRepeat::ReportLearnRepeat');
 
-        $routes->group('save-score-repeat', ['namespace' => 'App\Controllers\Assessment'], static function ($routes) {
+        // Repeat Score Routes
+        $routes->get('save-score-repeat', 'ControllerSaveScoreRepeat::normal');
+        $routes->get('save-score-repeat-add/(:any)/(:any)', 'ControllerSaveScoreRepeat::saveScoreRepeatAdd/$1/$2');
+        $routes->post('report-learn-repeat', 'ControllerSaveScoreRepeat::ReportLearnRepeat');
+
+        $routes->group('save-score-repeat', static function ($routes) {
             $routes->post('setting-score/(:any)', 'ControllerSaveScoreRepeat::settingScore/$1');
             $routes->post('edit-score', 'ControllerSaveScoreRepeat::editScore');
             $routes->post('insert-score', 'ControllerSaveScoreRepeat::insertScore');
             $routes->post('autosave-score', 'ControllerSaveScoreRepeat::autosaveScore');
             $routes->post('checkroom-report', 'ControllerSaveScoreRepeat::checkroomReport');
         });
+    });
 
-        $routes->get('save-score-add/(:any)/(:any)/(:any)/(:any)', 'Assessment\ControllerSaveScore::saveScoreAdd/$1/$2/$3/$4');
-        // Routes for SaveScore Controller
-        $routes->group('save-score', ['namespace' => 'App\Controllers\Assessment'], static function ($routes) {
-            $routes->get('add/(:any)/(:any)/(:any)/(:any)', 'ControllerSaveScore::saveScoreAdd/$1/$2/$3/$4');
-            $routes->post('setting-score/(:any)', 'ControllerSaveScore::settingScore/$1');
-            $routes->post('edit-score', 'ControllerSaveScore::editScore');
-            $routes->post('insert-score', 'ControllerSaveScore::insertScore');
-            $routes->post('autosave-score', 'ControllerSaveScore::autosaveScore');
-            $routes->post('checkroom-report', 'ControllerSaveScore::checkroomReport');
-        });
-        $routes->post('report-learn-normal', 'Assessment\ControllerSaveScore::ReportLearnNormal');
+    // Re-linking old or alternative assessment routes for compatibility
+    $routes->get('save-score-repeat', 'Assessment\ControllerSaveScoreRepeat::normal');
+    $routes->get('save-score-repeat-add/(:any)/(:any)', 'Assessment\ControllerSaveScoreRepeat::saveScoreRepeatAdd/$1/$2');
+    $routes->post('report-learn-repeat', 'Assessment\ControllerSaveScoreRepeat::ReportLearnRepeat');
+
+    $routes->group('save-score-repeat', ['namespace' => 'App\Controllers\Assessment'], static function ($routes) {
+        $routes->post('setting-score/(:any)', 'ControllerSaveScoreRepeat::settingScore/$1');
+        $routes->post('edit-score', 'ControllerSaveScoreRepeat::editScore');
+        $routes->post('insert-score', 'ControllerSaveScoreRepeat::insertScore');
+        $routes->post('autosave-score', 'ControllerSaveScoreRepeat::autosaveScore');
+        $routes->post('checkroom-report', 'ControllerSaveScoreRepeat::checkroomReport');
+    });
+
+    $routes->get('save-score-add/(:any)/(:any)/(:any)/(:any)', 'Assessment\ControllerSaveScore::saveScoreAdd/$1/$2/$3/$4');
+    $routes->group('save-score', ['namespace' => 'App\Controllers\Assessment'], static function ($routes) {
+        $routes->get('add/(:any)/(:any)/(:any)/(:any)', 'ControllerSaveScore::saveScoreAdd/$1/$2/$3/$4');
+        $routes->post('setting-score/(:any)', 'ControllerSaveScore::settingScore/$1');
+        $routes->post('edit-score', 'ControllerSaveScore::editScore');
+        $routes->post('insert-score', 'ControllerSaveScore::insertScore');
+        $routes->post('autosave-score', 'ControllerSaveScore::autosaveScore');
+        $routes->post('checkroom-report', 'ControllerSaveScore::checkroomReport');
+    });
+    $routes->post('report-learn-normal', 'Assessment\ControllerSaveScore::ReportLearnNormal');
 
 
     // Curriculum Routes

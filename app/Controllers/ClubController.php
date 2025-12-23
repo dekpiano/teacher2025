@@ -159,10 +159,20 @@ class ClubController extends BaseController
             return redirect()->to('club');
         }
 
+        // Check if max participants is not less than current members
+        $currentMembers = $this->clubModel->getClubMembers($clubId);
+        $memberCount = !empty($currentMembers) ? count($currentMembers) : 0;
+        $newMax = $this->request->getPost('club_max_participants');
+
+        if ($newMax < $memberCount) {
+            session()->setFlashdata('error', 'จำนวนรับสูงสุดต้องไม่น้อยกว่าจำนวนสมาชิกปัจจุบัน (' . $memberCount . ' คน)');
+            return redirect()->to('club/manage/' . $clubId);
+        }
+
         $data = [
             'club_name' => $this->request->getPost('club_name'),
             'club_description' => $this->request->getPost('club_description'),
-            'club_max_participants' => $this->request->getPost('club_max_participants'),
+            'club_max_participants' => $newMax,
             'club_status' => $this->request->getPost('club_status'),
             'club_level' => $this->request->getPost('club_level'),
         ];

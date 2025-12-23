@@ -31,7 +31,7 @@ class ClubModel extends Model
     public function getClubsByTeacher(string $teacherId, ?string $year = null, ?string $term = null): array
     {
         $builder = $this->select('tb_clubs.*, COUNT(tcm.member_student_id) AS member_count')
-                        ->join('tb_club_members tcm', 'tcm.member_club_id = tb_clubs.club_id', 'left')
+                        ->join('tb_club_members tcm', 'tcm.member_club_id = tb_clubs.club_id AND tcm.member_status = "active"', 'left')
                         ->groupStart()
                         ->where('club_faculty_advisor', $teacherId) // Exact match
                         ->orLike('club_faculty_advisor', $teacherId . '|', 'after') // Starts with teacherId|
@@ -63,6 +63,7 @@ class ClubModel extends Model
         $member_data = $this->db->table('tb_club_members')
                                      ->select('member_student_id, member_role')
                                      ->where('member_club_id', $clubId)
+                                     ->where('member_status', 'active')
                                      ->get()
                                      ->getResultArray();
 

@@ -172,9 +172,7 @@
             </div>
             <div class="col-lg-5 text-lg-end mt-4 mt-lg-0">
                 <div class="d-flex flex-column flex-lg-row justify-content-lg-end gap-3">
-                    <a href="<?= base_url('curriculum/send-plan') ?>" class="btn btn-white btn-lg rounded-pill shadow-lg px-4 py-3 text-primary fw-bold">
-                        <i class="bi bi-journal-plus me-2"></i> ลงทะเบียนวิชาสอน
-                    </a>
+                  
                     <button type="button" class="btn btn-white btn-lg rounded-pill shadow-lg px-4 py-3 text-primary fw-bold opacity-75" data-bs-toggle="modal" data-bs-target="#usageGuideModal">
                         <i class="bi bi-info-circle-fill me-2"></i> คู่มือการใช้งาน
                     </button>
