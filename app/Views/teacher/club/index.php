@@ -50,6 +50,7 @@
         height: 300px;
         background: rgba(255,255,255,0.1);
         border-radius: 50%;
+        pointer-events: none;
     }
     .smallest {
         font-size: 0.65rem;
@@ -57,6 +58,26 @@
 </style>
 
 <div class="container-fluid py-2">
+    <!-- Help Modal -->
+    <div class="modal fade" id="clubHelpModal" tabindex="-1" aria-labelledby="clubHelpModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-light py-3">
+                    <h5 class="modal-title fw-bold" id="clubHelpModalLabel">
+                        <i class="bi bi-question-circle-fill text-primary me-2"></i>คู่มือการใช้งานระบบชุมนุม
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <?php include('help_modal_content.php'); ?>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">ปิดคู่มือ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Header Section -->
     <div class="glass-header shadow-lg">
         <div class="row align-items-center text-start">
@@ -88,7 +109,7 @@
                         </div>
                     <?php endif; ?>
                     <button type="button" class="btn btn-outline-light btn-lg rounded-pill px-4 py-3 border-2" data-bs-toggle="modal" data-bs-target="#clubHelpModal">
-                        <i class="bi bi-question-circle me-2"></i> คู่มือ
+                        <i class="bi bi-question-circle me-2"></i> คู่มือการใช้งาน
                     </button>
                 </div>
             </div>
@@ -203,23 +224,23 @@
                 </div>
                 <div class="modal-body p-4 text-start">
                     <div class="form-floating mb-4">
-                        <input type="text" class="form-control bg-light border-0 shadow-none" id="club_name" name="club_name" placeholder="ชื่อชุมนุม" required>
+                        <input type="text" class="form-control" id="club_name" name="club_name" placeholder="ชื่อชุมนุม" required>
                         <label for="club_name">ระบุชื่อชุมนุม</label>
                     </div>
                     <div class="form-floating mb-4">
-                        <textarea class="form-control bg-light border-0 shadow-none" id="club_description" name="club_description" placeholder="รายละเอียด" style="height: 120px"></textarea>
+                        <textarea class="form-control" id="club_description" name="club_description" placeholder="รายละเอียด" style="height: 120px"></textarea>
                         <label for="club_description">รายละเอียด / คำอธิบายโดยย่อ</label>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-floating mb-4">
-                                <input type="number" class="form-control bg-light border-0 shadow-none" id="club_max_participants" name="club_max_participants" placeholder="จำนวนรับ" value="20" required>
-                                <label for="club_max_participants">จำนวนรับสูงสุด (คน)</label>
+                                <input type="number" class="form-control" id="club_max_participants" name="club_max_participants" placeholder="จำนวนรับ" value="20" required>
+                                <label for="club_max_participants">จำนวนรับสูงสุด (คน) สามารถเพิ่ม - ลด ได้</label>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-floating mb-4">
-                                <select class="form-select bg-light border-0 shadow-none" id="club_level" name="club_level" required>
+                                <select class="form-select" id="club_level" name="club_level" required>
                                     <option value="" selected disabled>-- เลือก --</option>
                                     <option value="ม.ต้น">ม.ต้น</option>
                                     <option value="ม.ปลาย">ม.ปลาย</option>
@@ -243,38 +264,21 @@
     </div>
 </div>
 
-<!-- Help Modal -->
-<div class="modal fade" id="clubHelpModal" tabindex="-1" aria-labelledby="clubHelpModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
-        <div class="modal-content border-0 shadow-lg rounded-4">
-            <div class="modal-header bg-light py-3">
-                <h5 class="modal-title fw-bold" id="clubHelpModalLabel">
-                    <i class="bi bi-question-circle-fill text-primary me-2"></i>คู่มือการใช้งานระบบชุมนุม
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-0">
-                <?php include('help_modal_content.php'); ?>
-            </div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">ปิดคู่มือ</button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
 <script>
-    $('#clubHelpModal').on('show.bs.modal', function () {
-        setTimeout(function() {
-            var tabId = document.querySelector('#pills-index-tab');
-            if(tabId) {
-                var tab = new bootstrap.Tab(tabId);
-                tab.show();
-            }
-        }, 300);
+    $(document).ready(function() {
+        $('#clubHelpModal').on('show.bs.modal', function () {
+            setTimeout(function() {
+                var tabEl = document.querySelector('#help-pills-index-tab');
+                if (tabEl && typeof bootstrap !== 'undefined') {
+                    var tab = new bootstrap.Tab(tabEl);
+                    tab.show();
+                }
+            }, 300);
+        });
     });
 </script>
 <?= $this->endSection() ?>

@@ -431,6 +431,26 @@
 
     <script>
         $(function() {
+            // Global Form Submission Loading State
+            $(document).on('submit', 'form', function(e) {
+                const $form = $(this);
+                // Don't apply to AJAX forms that handle their own loading (if they have a specific class)
+                if ($form.hasClass('no-loader')) return;
+
+                const $submitBtn = $form.find('button[type="submit"], input[type="submit"]');
+                if ($submitBtn.length > 0) {
+                    // Store original content to restore if needed (though usually we redirect)
+                    const originalWidth = $submitBtn.outerWidth();
+                    $submitBtn.css('min-width', originalWidth + 'px');
+                    
+                    const originalText = $submitBtn.html();
+                    $submitBtn.data('original-text', originalText);
+                    
+                    $submitBtn.prop('disabled', true);
+                    $submitBtn.html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> กำลังบันทึก...');
+                }
+            });
+
             <?php if (session()->getFlashdata('success')) : ?>
                 Swal.fire({
                     icon: 'success',

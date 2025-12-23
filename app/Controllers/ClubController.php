@@ -261,6 +261,7 @@ class ClubController extends BaseController
         $data['title'] = "จัดการชุมนุม: " . $club->club_name;
         $data['club'] = $club;
         $data['members'] = $this->clubModel->getClubMembers($clubId);
+        $data['advisors'] = $this->clubModel->getAdvisorsDetails($club->club_faculty_advisor);
 
         return view('teacher/club/manage', $data);
     }
@@ -934,24 +935,38 @@ class ClubController extends BaseController
             'created_by' => $teacherId, // Assuming created_by is the current teacher
         ];
 
-        if (empty($objectiveId)) {
-            // Add new objective
-            if ($this->clubModel->addObjective($data)) {
-                session()->setFlashdata('success', 'เพิ่มจุดประสงค์สำเร็จ');
-            } else {
-                session()->setFlashdata('error', 'ไม่สามารถเพิ่มจุดประสงค์ได้');
-            }
+    if (empty($objectiveId)) {
+        // Add new objective
+        if ($this->clubModel->addObjective($data)) {
+            $message = 'เพิ่มจุดประสงค์สำเร็จ';
+            $success = true;
         } else {
-            // Update existing objective
-            if ($this->clubModel->updateObjective($objectiveId, $data)) {
-                session()->setFlashdata('success', 'แก้ไขจุดประสงค์สำเร็จ');
-            } else {
-                session()->setFlashdata('error', 'ไม่สามารถแก้ไขจุดประสงค์ได้');
-            }
+            $message = 'ไม่สามารถเพิ่มจุดประสงค์ได้';
+            $success = false;
         }
-
-        return redirect()->to('club/objectives/' . $clubId);
+    } else {
+        // Update existing objective
+        if ($this->clubModel->updateObjective($objectiveId, $data)) {
+            $message = 'แก้ไขจุดประสงค์สำเร็จ';
+            $success = true;
+        } else {
+            $message = 'ไม่สามารถแก้ไขจุดประสงค์ได้';
+            $success = false;
+        }
     }
+
+    if ($this->request->isAJAX()) {
+        $objectives = $this->clubModel->getObjectivesByClub($clubId);
+        return $this->response->setJSON([
+            'success' => $success,
+            'message' => $message,
+            'objectives' => $objectives
+        ]);
+    }
+
+    $success ? session()->setFlashdata('success', $message) : session()->setFlashdata('error', $message);
+    return redirect()->to('club/objectives/' . $clubId);
+}
 
     public function deleteObjective($clubId, $objectiveId)
     {

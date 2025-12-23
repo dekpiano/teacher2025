@@ -431,11 +431,22 @@ class ClubModel extends Model
                         ->getRow();
     }
 
+    public function getAdvisorsDetails(string $advisorIds): array
+    {
+        $ids = explode('|', $advisorIds);
+        $db = db_connect('personnel');
+        return $db->table('tb_personnel')
+                    ->select('pers_id, pers_prefix, pers_firstname, pers_lastname, pers_img')
+                    ->whereIn('pers_id', $ids)
+                    ->get()
+                    ->getResult();
+    }
+
     public function getPersonnelFullName(string $pers_id)
     {
         $db = db_connect('personnel'); // Connect to the personnel database
         return $db->table('tb_personnel')
-                    ->select('pers_prefix, pers_firstname, pers_lastname')
+                    ->select('pers_prefix, pers_firstname, pers_lastname, pers_img')
                     ->where('pers_id', $pers_id)
                     ->get()
                     ->getRowArray();

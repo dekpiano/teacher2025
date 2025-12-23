@@ -8,11 +8,24 @@
 
 <style>
     .manage-header {
-        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
         border-radius: 1rem;
-        padding: 2rem;
+        padding: 2.5rem;
         color: white;
         margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    .manage-header::after {
+        content: "";
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+        pointer-events: none;
     }
     .stat-card {
         border: none;
@@ -46,6 +59,22 @@
         border-radius: 2rem;
         font-weight: 600;
     }
+    .advisor-avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        border: 2px solid rgba(255,255,255,0.5);
+        object-fit: cover;
+    }
+    .advisor-info {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2rem;
+        padding: 0.25rem 1rem 0.25rem 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        backdrop-filter: blur(5px);
+    }
 </style>
 
 <div class="container-fluid py-2">
@@ -61,7 +90,28 @@
                     </ol>
                 </nav>
                 <h2 class="fw-bold mb-1 text-white"><?= esc($club->club_name) ?></h2>
-                <p class="mb-0 opacity-75"><i class="bi bi-calendar3 me-2"></i>ปีการศึกษา <?= esc($club->club_year) ?> ภาคเรียนที่ <?= esc($club->club_trem) ?></p>
+                <div class="d-flex flex-wrap gap-3 align-items-center mt-3">
+                    <p class="mb-0 text-white text-opacity-75 small">
+                        <i class="bi bi-calendar3 me-1"></i> ปีการศึกษา <?= esc($club->club_year) ?>/<?= esc($club->club_trem) ?>
+                    </p>
+                    <div class="vr bg-white opacity-25 d-none d-md-block" style="height: 20px;"></div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <?php if(!empty($advisors)): ?>
+                            <?php foreach($advisors as $advisor): ?>
+                                <div class="advisor-info">
+                                    <?php if(!empty($advisor->pers_img)): ?>
+                                        <img src="https://personnel.skj.ac.th/uploads/admin/Personnal/<?= esc($advisor->pers_img) ?>" class="advisor-avatar" alt="Advisor">
+                                    <?php else: ?>
+                                        <div class="advisor-avatar bg-white text-primary d-flex align-items-center justify-content-center">
+                                            <i class="bi bi-person-fill"></i>
+                                        </div>
+                                    <?php endif; ?>
+                                    <span class="text-white smallest fw-bold"><?= esc($advisor->pers_prefix . $advisor->pers_firstname . ' ' . $advisor->pers_lastname) ?></span>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
             </div>
             <div class="col-md-5 text-md-end mt-3 mt-md-0 mx-auto">
                 <div class="d-flex flex-wrap gap-2 justify-content-md-end">
@@ -179,7 +229,7 @@
                                 <?php $i = 1; foreach ($members as $member): ?>
                                     <tr>
                                         <td class="ps-4 fw-bold text-muted"><?= $i++ ?></td>
-                                        <td><span class="badge bg-light text-dark font-monospace"><?= esc($member->StudentID) ?></span></td>
+                                        <td><span class="badge bg-light text-dark font-monospace"><?= esc($member->StudentCode ?? $member->StudentID) ?></span></td>
                                         <td>
                                             <div class="fw-bold text-dark"><?= esc($member->StudentPrefix . $member->StudentFirstName . ' ' . $member->StudentLastName) ?></div>
                                         </td>
@@ -241,24 +291,24 @@
                 </div>
                 <div class="modal-body p-4 text-start">
                     <div class="form-floating mb-3">
-                        <input type="text" class="form-control border-0 bg-light" id="club_name" name="club_name" value="<?= esc($club->club_name) ?>" required>
+                        <input type="text" class="form-control" id="club_name" name="club_name" value="<?= esc($club->club_name) ?>" required>
                         <label for="club_name">ชื่อชุมนุม</label>
                     </div>
                     <div class="form-floating mb-3">
-                        <textarea class="form-control border-0 bg-light" id="club_description" name="club_description" style="height: 100px"><?= esc($club->club_description) ?></textarea>
+                        <textarea class="form-control" id="club_description" name="club_description" style="height: 100px"><?= esc($club->club_description) ?></textarea>
                         <label for="club_description">คำอธิบาย</label>
                     </div>
                     <div class="row g-3 mb-3">
                         <div class="col-6">
                             <div class="form-floating text-start">
-                                <input type="number" class="form-control border-0 bg-light" id="club_max_participants" name="club_max_participants" 
+                                <input type="number" class="form-control" id="club_max_participants" name="club_max_participants" 
                                        value="<?= esc($club->club_max_participants) ?>" min="<?= !empty($members) ? count($members) : 0 ?>" required>
                                 <label for="club_max_participants">จำนวนรับ (คน)</label>
                             </div>
                         </div>
                         <div class="col-6">
                             <div class="form-floating text-start">
-                                <select class="form-select border-0 bg-light" id="club_status" name="club_status">
+                                <select class="form-select" id="club_status" name="club_status">
                                     <option value="open" <?= $club->club_status === 'open' ? 'selected' : '' ?>>เปิดรับสมัคร</option>
                                     <option value="closed" <?= $club->club_status === 'closed' ? 'selected' : '' ?>>ปิดรับสมัคร</option>
                                 </select>
@@ -267,7 +317,7 @@
                         </div>
                     </div>
                     <div class="form-floating">
-                        <select class="form-select border-0 bg-light" id="club_level" name="club_level" required>
+                        <select class="form-select" id="club_level" name="club_level" required>
                             <option value="ม.ต้น" <?= ($club->club_level === 'ม.ต้น') ? 'selected' : '' ?>>ม.ต้น</option>
                             <option value="ม.ปลาย" <?= ($club->club_level === 'ม.ปลาย') ? 'selected' : '' ?>>ม.ปลาย</option>
                             <option value="ม.ต้น และ ม.ปลาย" <?= ($club->club_level === 'ม.ต้น และ ม.ปลาย') ? 'selected' : '' ?>>ม.ต้น และ ม.ปลาย</option>
@@ -298,7 +348,7 @@
                 <div class="modal-body p-4 text-start">
                     <input type="hidden" name="student_id" id="modal_student_id">
                     <label class="form-label small fw-bold text-muted">เลือกบทบาทในทีม</label>
-                    <select class="form-select border-0 bg-light py-2" id="member_role" name="member_role">
+                    <select class="form-select py-2" id="member_role" name="member_role">
                         <option value="Member">สมาชิกทั่วไป</option>
                         <option value="Leader">หัวหน้าชุมนุม</option>
                     </select>
@@ -336,9 +386,9 @@
     $(document).ready(function() {
         $('#clubHelpModal').on('show.bs.modal', function () {
             setTimeout(function() {
-                var tabId = document.querySelector('#pills-manage-tab');
-                if(tabId) {
-                    var tab = new bootstrap.Tab(tabId);
+                var tabEl = document.querySelector('#help-pills-manage-tab');
+                if (tabEl && typeof bootstrap !== 'undefined') {
+                    var tab = new bootstrap.Tab(tabEl);
                     tab.show();
                 }
             }, 300);
