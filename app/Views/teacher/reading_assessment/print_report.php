@@ -68,7 +68,7 @@
         <div class="mb-3 text-center">
             <img src="https://skj.ac.th/uploads/logoSchool/LogoSKJ_4.png" alt="School Logo" style="width: 90px;">
             <h5 class="mb-1">แบบประเมินการอ่าน คิดวิเคราะห์และเขียน ชั้นมัธยมศึกษาปีที่ <?= esc($className) ?></h5>
-                <h6 class="mb-1">ภาคเรียนที่ 1 ปีการศึกษา <?= esc($academicYear) ?> โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์</h6>
+                <h6 class="mb-1">ภาคเรียนที่ <?= esc($term) ?> ปีการศึกษา <?= esc($academicYear) ?> โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์</h6>
             <strong>จำนวนนักเรียนที่ประเมิน:</strong> <?= esc($totalStudents) ?> คน
         </div>
 
@@ -188,7 +188,7 @@
             <div class="mb-3 text-center">
             <img src="https://skj.ac.th/uploads/logoSchool/LogoSKJ_4.png" alt="School Logo" style="width: 90px;">
             <h6 class="mb-1">แบบประเมินการอ่าน คิดวิเคราะห์และเขียน ชั้นมัธยมศึกษาปีที่ <?= esc($className) ?></h6>
-                <h6 class="mb-1">ภาคเรียนที่ 1 ปีการศึกษา <?= esc($academicYear) ?> โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์</h6>
+                <h6 class="mb-1">ภาคเรียนที่ <?= esc($term) ?> ปีการศึกษา <?= esc($academicYear) ?> โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์</h6>
         </div>
             <div class="row">
                 <div class="col-12">

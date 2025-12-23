@@ -724,18 +724,27 @@ class ClubController extends BaseController
         $activityDevHeadInfo = $activityDevHeadId ? $this->clubModel->getPersonnelFullName($activityDevHeadId) : null;
         $data['activityDevHeadName'] = $activityDevHeadInfo ? $activityDevHeadInfo['pers_prefix'] . $activityDevHeadInfo['pers_firstname'] . ' ' . $activityDevHeadInfo['pers_lastname'] : '...........................................';
 
-        // หัวหน้าฝ่ายวัดผล
-        $measurementHeadId = $this->clubModel->getAdminPersonnelIdByRoleName('หัวหน้าวิชาการ');
+        // หัวหน้าฝ่ายวัดผล (Search for consistent measurement names)
+        $measurementHeadId = $this->clubModel->getAdminPersonnelIdByRoleName('งานวัดและประเมินผล');
+        if (!$measurementHeadId) {
+            $measurementHeadId = $this->clubModel->getAdminPersonnelIdByRoleName('งานวัดผล');
+        }
         $measurementHeadInfo = $measurementHeadId ? $this->clubModel->getPersonnelFullName($measurementHeadId) : null;
         $data['measurementHeadName'] = $measurementHeadInfo ? $measurementHeadInfo['pers_prefix'] . $measurementHeadInfo['pers_firstname'] . ' ' . $measurementHeadInfo['pers_lastname'] : '...........................................';
 
-        // รองผู้อำนวยการฝ่ายวิชาการ
-        $deputyDirectorAcademicId = $this->clubModel->getAdminPersonnelIdByRoleName('รองวิชาการ');
+        // รองผู้อำนวยการฝ่ายวิชาการ (Match with Reading Assessment version)
+        $deputyDirectorAcademicId = $this->clubModel->getAdminPersonnelIdByRoleName('รองผู้อำนวยการฝ่ายวิชาการ');
+        if (!$deputyDirectorAcademicId) {
+            $deputyDirectorAcademicId = $this->clubModel->getAdminPersonnelIdByRoleName('รองวิชาการ');
+        }
         $deputyDirectorAcademicInfo = $deputyDirectorAcademicId ? $this->clubModel->getPersonnelFullName($deputyDirectorAcademicId) : null;
         $data['deputyDirectorAcademicName'] = $deputyDirectorAcademicInfo ? $deputyDirectorAcademicInfo['pers_prefix'] . $deputyDirectorAcademicInfo['pers_firstname'] . ' ' . $deputyDirectorAcademicInfo['pers_lastname'] : '...........................................';
 
         // ผู้อำนวยการสถานศึกษา
-        $directorId = $this->clubModel->getAdminPersonnelIdByRoleName('ผู้บริหาร');
+        $directorId = $this->clubModel->getAdminPersonnelIdByRoleName('ผู้อำนวยการสถานศึกษา');
+        if (!$directorId) {
+            $directorId = $this->clubModel->getAdminPersonnelIdByRoleName('ผู้บริหาร');
+        }
         $directorInfo = $directorId ? $this->clubModel->getPersonnelFullName($directorId) : null;
         $data['directorName'] = $directorInfo ? $directorInfo['pers_prefix'] . $directorInfo['pers_firstname'] . ' ' . $directorInfo['pers_lastname'] : '...........................................';
 

@@ -1,49 +1,13 @@
 <?= $this->extend('teacher/layout/main') ?>
 
 <?= $this->section('title') ?>
-<?= esc($title ?? 'ประเมินคุณลักษณะอันพึงประสงค์') ?>
+<?= esc($title ?? 'ประเมินคุณลักษณะฯ') ?>
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
+
 <style>
-    .assessment-table th,
-    .assessment-table td {
-        vertical-align: middle;
-        text-align: center;
-        padding: 0.25rem;
-        white-space: nowrap;
-    }
-    .assessment-table .student-name {
-        text-align: left;
-        white-space: normal;
-    }
-    .assessment-table .sub-item-col {
-        width: 60px;
-    }
-    .assessment-table input[type="number"] {
-        width: 50px;
-        padding: 0.1rem 0.25rem;
-        border: 1px solid #ced4da;
-        border-radius: 0.25rem;
-        text-align: center;
-    }
-    .rotated-text {
-        writing-mode: vertical-rl;
-        text-orientation: mixed;
-        transform: rotate(180deg);
-        white-space: nowrap;
-    }
-    .summary-col {
-        background-color: #f8f9fa;
-        font-weight: bold;
-    }
-    .final-summary-col {
-        background-color: #fff3cd;
-        font-weight: bold;
-    }
-    thead th {
-        background-color: #e9ecef;
-    }
+    /* Hide spinner arrows on number inputs */
     input::-webkit-outer-spin-button,
     input::-webkit-inner-spin-button {
         -webkit-appearance: none;
@@ -52,125 +16,290 @@
     input[type=number] {
         -moz-appearance: textfield;
     }
+
+    .manage-header {
+        background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+        border-radius: 1rem;
+        padding: 2.5rem;
+        color: white;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    .manage-header::after {
+        content: "";
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    .stat-card {
+        border: none;
+        border-radius: 1rem;
+        transition: transform 0.2s;
+    }
+    .stat-card:hover { transform: translateY(-5px); }
+    .icon-box {
+        width: 48px;
+        height: 48px;
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+    .table-card {
+        border-radius: 1rem;
+        border: none;
+        overflow: hidden;
+    }
+    .badge-status {
+        padding: 0.4rem 0.8rem;
+        border-radius: 2rem;
+        font-weight: 600;
+        font-size: 0.75rem;
+    }
+    .form-control-modern {
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+        padding: 0.25rem;
+        text-align: center;
+        font-weight: 700;
+        transition: all 0.2s;
+        width: 45px;
+    }
+    .form-control-modern:focus {
+        border-color: #0ea5e9;
+        box-shadow: 0 0 0 0.25rem rgba(14, 165, 233, 0.1);
+    }
+    .rotated-text {
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+        transform: rotate(180deg);
+        white-space: nowrap;
+        font-size: 0.75rem;
+        padding: 10px 5px !important;
+    }
+    .main-item-header {
+        background: rgba(14, 165, 233, 0.05);
+        font-size: 0.8rem;
+        font-weight: 700;
+    }
+    .sub-item-header {
+        font-size: 0.7rem;
+        color: #64748b;
+    }
+    .summary-col {
+        background-color: rgba(99, 102, 241, 0.05);
+        font-weight: bold;
+        color: #4f46e5;
+    }
+    .final-summary-col {
+        background-color: rgba(14, 165, 233, 0.1);
+        font-weight: bold;
+    }
+
+    /* Page Loader Styles */
+    #page-loader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(5px);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        transition: opacity 0.5s ease;
+    }
+    .loader-content {
+        text-align: center;
+        background: white;
+        padding: 2.5rem;
+        border-radius: 2rem;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+    }
 </style>
 
-<div class="container-fluid">
-    <!-- Summary Report Card -->
-    <div class="card mb-4" id="report-card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="card-title mb-0"><i class="bi bi-bar-chart-line-fill me-2"></i>รายงานสรุปผลการประเมิน (ภาพรวมทั้งห้อง)</h5>
-            <a href="<?= base_url('teacher/desirable_assessment/print_report/' . $className) ?>" target="_blank" class="btn btn-sm btn-primary">
-                <i class="bi bi-printer-fill me-1"></i> พิมพ์รายงานสรุป
-            </a>
+<!-- Page Loader -->
+<div id="page-loader">
+    <div class="loader-content">
+        <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
         </div>
-        <div class="card-body">
-            <?php if ($totalAssessedStudents > 0): ?>
-                <p>สรุปผลนักเรียนที่ได้รับการประเมินแล้วจำนวน <?= $totalAssessedStudents ?> คน จากทั้งหมด <?= $totalStudents ?> คน</p>
-                <div class="table-responsive">
-                    <table class="table table-bordered table-sm text-center">
-                        <thead class="table-light">
-                            <tr>
-                                <th class="">ผลการประเมิน</th>
-                                <th>ดีเยี่ยม</th>
-                                <th>ดี</th>
-                                <th>ผ่าน</th>
-                                <th>ไม่ผ่าน</th>
-                                <th>รวม</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($report as $key => $mainItemReport): ?>
-                                <tr>
-                                    <td class="text-start"><?=($key+1).'.'. esc($mainItemReport['name']) ?></td>
-                                    <td><?= esc($mainItemReport['summary']['ดีเยี่ยม'] ?? 0) ?></td>
-                                    <td><?= esc($mainItemReport['summary']['ดี'] ?? 0) ?></td>
-                                    <td><?= esc($mainItemReport['summary']['ผ่าน'] ?? 0) ?></td>
-                                    <td><?= esc($mainItemReport['summary']['ไม่ผ่าน'] ?? 0) ?></td>
-                                    <td><?= array_sum($mainItemReport['summary'] ?? []) ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                            <tr class="fw-bold table-secondary">
-                                <td class="text-end">รวมผลการประเมินนักเรียน</td>
-                                <td><?= esc($overallSummary['ดีเยี่ยม'] ?? 0) ?></td>
-                                <td><?= esc($overallSummary['ดี'] ?? 0) ?></td>
-                                <td><?= esc($overallSummary['ผ่าน'] ?? 0) ?></td>
-                                <td><?= esc($overallSummary['ไม่ผ่าน'] ?? 0) ?></td>
-                                <td><?= esc($totalAssessedStudents) ?></td>
-                            </tr>
-                            <tr class="fw-bold table-secondary">
-                                <td class="text-end">คิดเป็นร้อยละ</td>
-                                <td><?= number_format((($overallSummary['ดีเยี่ยม'] ?? 0) / $totalAssessedStudents) * 100, 2) ?>%</td>
-                                <td><?= number_format((($overallSummary['ดี'] ?? 0) / $totalAssessedStudents) * 100, 2) ?>%</td>
-                                <td><?= number_format((($overallSummary['ผ่าน'] ?? 0) / $totalAssessedStudents) * 100, 2) ?>%</td>
-                                <td><?= number_format((($overallSummary['ไม่ผ่าน'] ?? 0) / $totalAssessedStudents) * 100, 2) ?>%</td>
-                                <td>100.00%</td>
-                            </tr>
-                        </tbody>
-                    </table>
+        <h5 class="fw-bold mb-1">กำลังประมวลผลข้อมูล...</h5>
+        <p class="text-muted small mb-0">โปรดรอสักครู่ ระบบกำลังจัดเตรียมข้อมูลชุดใหญ่สำหรับคุณ</p>
+    </div>
+</div>
+
+<div class="container-fluid py-2 text-start">
+    <!-- Breadcrumb & Header -->
+    <div class="manage-header shadow-sm mt-3">
+        <div class="row align-items-center">
+            <div class="col-md-7">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb breadcrumb-light mb-2">
+                        <li class="breadcrumb-item"><a href="<?= site_url('home') ?>" class="text-white opacity-75">หน้าหลัก</a></li>
+                        <li class="breadcrumb-item"><a href="<?= site_url('teacher/desirable_assessment') ?>" class="text-white opacity-75">แบบประเมินคุณลักษณะฯ</a></li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">บันทึกผลการประเมิน</li>
+                    </ol>
+                </nav>
+                <h2 class="fw-bold mb-1 text-white">ห้องมัธยมศึกษาปีที่ <?= esc($className) ?></h2>
+                <p class="mb-0 text-white text-opacity-75 small mt-2">
+                    <i class="bi bi-star-fill me-1"></i> ประเมินคุณลักษณะอันพึงประสงค์ 8 ประการ ประจำปีการศึกษา <?= esc($term) ?>/<?= esc($academicYear) ?>
+                </p>
+            </div>
+            <div class="col-md-5 text-md-end mt-3 mt-md-0 mx-auto">
+                <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+                    <a href="<?= base_url('teacher/desirable_assessment/print_report/' . $className) ?>" target="_blank" class="btn btn-white rounded-pill px-4 shadow-sm text-primary fw-bold">
+                        <i class="bi bi-printer-fill me-1"></i> พิมพ์รายงานสรุป
+                    </a>
                 </div>
-            <?php else: ?>
-                <div class="alert alert-warning d-flex align-items-center" role="alert">
-                    <i class="bi bi-info-circle-fill me-2"></i>
-                    <div>ยังไม่มีนักเรียนที่ได้รับการประเมิน</div>
-                </div>
-            <?php endif; ?>
+            </div>
         </div>
     </div>
 
-    <!-- Assessment Table Card -->
-    <form action="<?= base_url('teacher/desirable_assessment/save_class') ?>" method="post">
-        <?= csrf_field() ?>
-        <input type="hidden" name="className" value="<?= esc($className) ?>">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
-                <h5 class="card-title mb-2 mb-md-0"><i class="bi bi-pencil-square me-2"></i>ประเมินคุณลักษณะอันพึงประสงค์ - ชั้นเรียน <?= esc($className) ?></h5>
-                <div>
-                    <a href="<?= base_url('teacher/desirable_assessment') ?>" class="btn btn-sm btn-secondary"><i class="bi bi-arrow-left-circle-fill me-1"></i> กลับ</a>
-                    <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-save-fill me-1"></i> บันทึกข้อมูล</button>
+    <!-- Quick Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-2">
+            <div class="card stat-card shadow-sm h-100">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box bg-success bg-opacity-10 text-success me-2">
+                            <i class="bi bi-stars"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted smallest fw-bold text-uppercase">ดีเยี่ยม</div>
+                            <h4 class="fw-bold mb-0"><?= esc($overallSummary['ดีเยี่ยม'] ?? 0) ?></h4>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="card-body">
-                <div id="overflow-alert" class="alert alert-info alert-dismissible fade show" role="alert" style="display: none;">
-                    <i class="bi bi-info-circle-fill me-2"></i>
-                    <strong>คำแนะนำ:</strong> เนื่องจากตารางมีขนาดกว้าง คุณสามารถ 1) ย่อหน้าจอ (Zoom Out) โดยกด <code>Ctrl</code> + <code>-</code> หรือ 2) ซ่อนแถบเมนูโดยกดปุ่ม <i class="bi bi-list"></i> ที่มุมบนซ้าย
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="card stat-card shadow-sm h-100">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box bg-info bg-opacity-10 text-info me-2">
+                            <i class="bi bi-hand-thumbs-up-fill"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted smallest fw-bold text-uppercase">ดี</div>
+                            <h4 class="fw-bold mb-0"><?= esc($overallSummary['ดี'] ?? 0) ?></h4>
+                        </div>
+                    </div>
                 </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="card stat-card shadow-sm h-100">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box bg-warning bg-opacity-10 text-warning me-2">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted smallest fw-bold text-uppercase">ผ่าน</div>
+                            <h4 class="fw-bold mb-0"><?= esc($overallSummary['ผ่าน'] ?? 0) ?></h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="card stat-card shadow-sm h-100">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box bg-danger bg-opacity-10 text-danger me-2">
+                            <i class="bi bi-x-circle-fill"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted smallest fw-bold text-uppercase">ไม่ผ่าน</div>
+                            <h4 class="fw-bold mb-0"><?= esc($overallSummary['ไม่ผ่าน'] ?? 0) ?></h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card stat-card shadow-sm h-100 bg-primary bg-opacity-10 border-primary border-opacity-25 border border-dashed">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-primary smallest fw-bold text-uppercase">ความคืบหน้าการประเมิน</div>
+                        <h4 class="fw-bold mb-0 text-primary"><?= $totalAssessedStudents ?> / <?= $totalStudents ?> <span class="small fw-normal">คน</span></h4>
+                    </div>
+                    <div class="text-primary opacity-50"><i class="bi bi-people-fill fs-1"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- Assessment Form -->
+    <form action="<?= base_url('teacher/desirable_assessment/save_class') ?>" method="post" id="assessment-form">
+        <?= csrf_field() ?>
+        <input type="hidden" name="className" value="<?= esc($className) ?>">
+        
+        <div class="card table-card shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <h5 class="fw-bold mb-0 text-primary"><i class="bi bi-pencil-square me-2"></i>รายชื่อนักเรียนและตัวชี้วัดย่อย</h5>
+                    <div class="d-flex gap-2">
+                        <a href="<?= base_url('teacher/desirable_assessment') ?>" class="btn btn-light rounded-pill px-4 fw-bold">ยกเลิก</a>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">
+                            <i class="bi bi-save-fill me-2"></i> บันทึกข้อมูลทั้งหมด
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
                 <?php if (!empty($students) && !empty($assessmentItems)): ?>
                     <div class="table-responsive">
-                        <table class="table table-bordered table-striped assessment-table">
-                            <thead class="text-center">
-                                <tr>
-                                    <th rowspan="4">เลขที่</th>
-                                    <th rowspan="4">ชื่อ - นามสกุล</th>
+                        <table class="table table-bordered align-middle mb-0 text-center">
+                            <thead>
+                                <tr class="bg-light">
+                                    <th rowspan="4" class="ps-3" style="min-width: 60px;">เลขที่</th>
+                                    <th rowspan="4" class="text-start" style="min-width: 200px;">ชื่อ-นามสกุล</th>
                                     <?php foreach ($assessmentItems as $mainItem): ?>
-                                        <th colspan="<?= count($mainItem['sub_items']) + 1 ?>">ข้อที่ <?= $mainItem['item_order'] ?></th>
+                                        <th colspan="<?= count($mainItem['sub_items']) + 1 ?>" class="main-item-header">
+                                            ข้อที่ <?= $mainItem['item_order'] ?>
+                                        </th>
                                     <?php endforeach; ?>
-                                    <th rowspan="4" class="rotated-text final-summary-col">สรุปผลการประเมิน</th>
+                                    <th rowspan="4" class="rotated-text final-summary-col">สรุปผลภาพรวม</th>
+                                </tr>
+                                <tr class="bg-light">
+                                    <?php foreach ($assessmentItems as $mainItem): ?>
+                                        <th colspan="<?= count($mainItem['sub_items']) + 1 ?>" class="small fw-bold">
+                                            <span data-bs-toggle="tooltip" title="<?= esc($mainItem['item_name']) ?>">
+                                                <?= mb_strimwidth($mainItem['item_name'], 0, 20, "...") ?>
+                                            </span>
+                                        </th>
+                                    <?php endforeach; ?>
                                 </tr>
                                 <tr>
                                     <?php foreach ($assessmentItems as $mainItem): ?>
-                                        <th colspan="<?= count($mainItem['sub_items']) + 1 ?>"><?= esc($mainItem['item_name']) ?></th>
-                                    <?php endforeach; ?>
-                                </tr>
-                                <tr>
-                                    <?php foreach ($assessmentItems as $mainItem): ?>
-                                        <th colspan="<?= count($mainItem['sub_items']) ?>">ตัวชี้วัด</th>
-                                        <th rowspan="2" class="rotated-text summary-col">ผลการประเมิน</th>
+                                        <th colspan="<?= count($mainItem['sub_items']) ?>" class="smallest text-muted text-uppercase">ตัวชี้วัด</th>
+                                        <th rowspan="2" class="rotated-text summary-col">ผลประเมิน</th>
                                     <?php endforeach; ?>
                                 </tr>
                                 <tr>
                                     <?php foreach ($assessmentItems as $mainItem): ?>
                                         <?php foreach ($mainItem['sub_items'] as $subItem): ?>
-                                            <th>
+                                            <th class="sub-item-header">
                                                 <div data-bs-toggle="tooltip" title="<?= esc($subItem['item_name']) ?>">
                                                     <?= $mainItem['item_order'] ?>.<?= $subItem['item_order'] ?>
                                                 </div>
-                                                <div class="btn-group">
-                                                    <button type="button" class="btn btn-xs btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="กรอกคะแนนทั้งหมด" style="padding: 0 5px;">
-                                                        <i class="bi bi-caret-down-fill"></i>
+                                                <div class="dropdown mt-1">
+                                                    <button class="btn btn-xs btn-link p-0 text-decoration-none" type="button" data-bs-toggle="dropdown">
+                                                        <i class="bi bi-magic smallest"></i>
                                                     </button>
-                                                    <ul class="dropdown-menu">
+                                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 small">
                                                         <li><a class="dropdown-item fill-col" href="#" data-subitem-id="<?= $subItem['item_id'] ?>" data-score="3">กรอก 3</a></li>
                                                         <li><a class="dropdown-item fill-col" href="#" data-subitem-id="<?= $subItem['item_id'] ?>" data-score="2">กรอก 2</a></li>
                                                         <li><a class="dropdown-item fill-col" href="#" data-subitem-id="<?= $subItem['item_id'] ?>" data-score="1">กรอก 1</a></li>
@@ -185,8 +314,10 @@
                             <tbody>
                                 <?php foreach ($students as $student): ?>
                                     <tr id="student-row-<?= $student['StudentID'] ?>">
-                                        <td><?= esc($student['StudentNumber']) ?></td>
-                                        <td class="student-name"><?= esc($student['StudentPrefix'] . $student['StudentFirstName'] . ' ' . $student['StudentLastName']) ?></td>
+                                        <td class="fw-bold text-muted"><?= esc($student['StudentNumber']) ?></td>
+                                        <td class="text-start">
+                                            <div class="fw-bold text-dark smallest-mobile"><?= esc($student['StudentPrefix'] . $student['StudentFirstName'] . ' ' . $student['StudentLastName']) ?></div>
+                                        </td>
                                         
                                         <?php foreach ($assessmentItems as $mainItem): ?>
                                             <?php foreach ($mainItem['sub_items'] as $subItem): ?>
@@ -194,17 +325,17 @@
                                                     <input type="number" 
                                                         name="scores[<?= $student['StudentID'] ?>][<?= $subItem['item_id'] ?>]" 
                                                         value="<?= esc($evaluations[$student['StudentID']][$subItem['item_id']] ?? '') ?>" 
-                                                        class="form-control form-control-sm score-input" 
+                                                        class="form-control-modern score-input mx-auto" 
                                                         data-main-item="<?= $mainItem['item_id'] ?>"
                                                         min="0" max="3">
                                                 </td>
                                             <?php endforeach; ?>
-                                            <td class="summary-col main-item-result" data-main-item-result="<?= $mainItem['item_id'] ?>">
+                                            <td class="summary-col main-item-result fw-bold" data-main-item-result="<?= $mainItem['item_id'] ?>">
                                                 <?= $studentResults[$student['StudentID']]['main_item_numeric_levels'][$mainItem['item_id']] ?? '-' ?>
                                             </td>
                                         <?php endforeach; ?>
 
-                                        <td class="final-summary-col overall-result">
+                                        <td class="final-summary-col overall-result fw-bold text-primary smallest">
                                             <?= $studentResults[$student['StudentID']]['overall_level'] ?? '-' ?>
                                         </td>
                                     </tr>
@@ -213,48 +344,50 @@
                         </table>
                     </div>
                 <?php else: ?>
-                    <div class="alert alert-warning text-center"> 
-                        <h4><i class="bi bi-exclamation-triangle-fill me-2"></i> ไม่พบข้อมูลตัวชี้วัด</h4>
-                        โปรดตรวจสอบว่าท่านได้เพิ่มข้อมูลคุณลักษณะอันพึงประสงค์และตัวชี้วัดย่อยในฐานข้อมูลแล้วหรือไม่
+                    <div class="text-center py-5">
+                        <div class="text-muted opacity-50 mb-3"><i class="bi bi-clipboard-x" style="font-size: 3rem;"></i></div>
+                        <p class="mb-0">ไม่พบข้อมูลตัวชี้วัดหรือรายชื่อนักเรียน</p>
                     </div>
                 <?php endif; ?>
             </div>
-            <div class="card-footer text-end">
-                <button type="submit" class="btn btn-primary"><i class="bi bi-save-fill me-1"></i> บันทึกข้อมูล</button>
+            <div class="card-footer bg-light py-3 border-0 text-end">
+                <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm fw-bold">
+                    <i class="bi bi-save-fill me-2"></i> บันทึกข้อมูล ทั้งหมด
+                </button>
             </div>
         </div>
     </form>
 </div>
+
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
 <script>
 $(document).ready(function() {
-    // Enable Bootstrap tooltips
+    // Tooltips
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl)
     })
 
+    // Flash Messages
     <?php if (session()->getFlashdata('message')) : ?>
-        Swal.fire({ icon: 'success', title: 'สำเร็จ', text: '<?= session()->getFlashdata('message') ?>', timer: 1500, showConfirmButton: false });
+        Swal.fire({ 
+            icon: 'success', title: 'สำเร็จ!', text: '<?= session()->getFlashdata('message') ?>', 
+            confirmButtonColor: '#0ea5e9'
+        });
     <?php endif; ?>
     <?php if (session()->getFlashdata('error')) : ?>
-        Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: '<?= session()->getFlashdata('error') ?>' });
+        Swal.fire({ 
+            icon: 'error', title: 'เกิดข้อผิดพลาด', text: '<?= session()->getFlashdata('error') ?>',
+            confirmButtonColor: '#ef4444'
+        });
     <?php endif; ?>
 
-    const assessmentItems = <?= json_encode($assessmentItems ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+    const assessmentItems = <?= json_encode($assessmentItems ?? []) ?>;
 
     const Toast = Swal.mixin({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true,
-        didOpen: (toast) => {
-            toast.addEventListener('mouseenter', Swal.stopTimer)
-            toast.addEventListener('mouseleave', Swal.resumeTimer)
-        }
+        toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true
     });
 
     function getQualityLevel(score) {
@@ -265,12 +398,8 @@ $(document).ready(function() {
     }
 
     function getLevelAsNumber(levelText) {
-        switch (levelText) {
-            case 'ดีเยี่ยม': return 3;
-            case 'ดี': return 2;
-            case 'ผ่าน': return 1;
-            default: return 0;
-        }
+        const levels = { 'ดีเยี่ยม': 3, 'ดี': 2, 'ผ่าน': 1 };
+        return levels[levelText] || 0;
     }
 
     function updateRowCalculations(row) {
@@ -278,89 +407,86 @@ $(document).ready(function() {
         let totalSubItems = 0;
 
         assessmentItems.forEach(mainItem => {
-            let mainItemId = mainItem.item_id;
-            let mainItemScore = 0;
-            let subItemCount = mainItem.sub_items.length;
+            let mId = mainItem.item_id;
+            let mScore = 0;
+            let subCount = mainItem.sub_items.length;
             
-            if (subItemCount > 0) {
-                totalSubItems += subItemCount;
-                row.find(`.score-input[data-main-item="${mainItemId}"]`).each(function() {
-                    let score = $(this).val();
-                    if ($.isNumeric(score)) {
-                        mainItemScore += parseFloat(score);
-                    }
+            if (subCount > 0) {
+                totalSubItems += subCount;
+                row.find(`.score-input[data-main-item="${mId}"]`).each(function() {
+                    let s = $(this).val();
+                    if ($.isNumeric(s)) mScore += parseFloat(s);
                 });
-                let mainItemAverage = mainItemScore / subItemCount;
-                let mainItemLevelText = getQualityLevel(mainItemAverage);
-                let mainItemLevelNumber = getLevelAsNumber(mainItemLevelText);
-                row.find(`.main-item-result[data-main-item-result="${mainItemId}"]`).text(mainItemLevelNumber);
-                studentTotalScore += mainItemScore;
+                let avg = mScore / subCount;
+                let lvlTxt = getQualityLevel(avg);
+                row.find(`.main-item-result[data-main-item-result="${mId}"]`).text(getLevelAsNumber(lvlTxt));
+                studentTotalScore += mScore;
             }
         });
 
         if (totalSubItems > 0) {
-            let studentOverallAverage = studentTotalScore / totalSubItems;
-            row.find('.overall-result').text(getQualityLevel(studentOverallAverage));
+            let overallAvg = studentTotalScore / totalSubItems;
+            row.find('.overall-result').text(getQualityLevel(overallAvg));
         }
     }
 
     $('tbody').on('input', '.score-input', function() {
-        if ($(this).val() !== '') {
-            $(this).removeClass('is-invalid');
+        let sVal = parseFloat($(this).val());
+        if (!isNaN(sVal) && (sVal > 3 || sVal < 0)) {
+            $(this).val('');
+            Toast.fire({ icon: 'warning', title: 'คะแนนต้องอยู่ระหว่าง 0 - 3' });
         }
-
-        let scoreVal = parseFloat($(this).val());
-        
-        if (!isNaN(scoreVal) && (scoreVal > 3 || scoreVal < 0)) {
-            $(this).val(''); 
-            Toast.fire({
-                icon: 'warning',
-                title: 'คะแนนต้องอยู่ระหว่าง 0 - 3'
-            });
-        }
-
         updateRowCalculations($(this).closest('tr'));
     });
 
-    setTimeout(function() {
-        const table = $('.assessment-table');
-        if (table.length > 0 && table[0].scrollWidth > table.innerWidth()) {
-            $('#overflow-alert').show();
-        }
-    }, 500);
-
-    $('.assessment-table').on('click', '.fill-col', function(e) {
+    $('.assessment-table, .modern-table, table').on('click', '.fill-col', function(e) {
         e.preventDefault();
-        const subItemId = $(this).data('subitem-id');
-        const score = $(this).data('score');
-        $('td.sub-item-col-' + subItemId).find('.score-input').val(score).trigger('input');
+        const id = $(this).data('subitem-id');
+        const sc = $(this).data('score');
+        $('td.sub-item-col-' + id).find('.score-input').val(sc).trigger('input');
     });
 
-    $('form').on('submit', function(e) {
-        let allFilled = true;
+    $('#assessment-form').on('submit', function(e) {
+        let ok = true;
+        let btn = $(this).find('button[type="submit"]');
+        let originalHtml = btn.html();
+
         $('.score-input').each(function() {
             if ($(this).val() === '' || $(this).val() === null) {
-                allFilled = false;
-                $(this).addClass('is-invalid');
+                ok = false;
+                $(this).addClass('border-danger');
             } else {
-                $(this).removeClass('is-invalid');
+                $(this).removeClass('border-danger');
             }
         });
 
-        if (!allFilled) {
+        if (!ok) {
             e.preventDefault();
-            Swal.fire({
-                icon: 'error',
-                title: 'ข้อมูลไม่ครบถ้วน',
-                text: 'กรุณากรอกคะแนนให้ครบทุกช่อง'
+            Swal.fire({ 
+                icon: 'error', 
+                title: 'กรอกข้อมูลไม่ครบ', 
+                text: 'กรุณากรอกคะแนนให้ครบทุกช่องก่อนบันทึก',
+                confirmButtonColor: '#0ea5e9' 
+            }).then(() => {
+                btn.prop('disabled', false).html(originalHtml);
             });
+            // Immediately restore just in case
+            btn.prop('disabled', false).html(originalHtml);
+        } else {
+            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span> กำลังบันทึก...');
         }
     });
 
-    // Initial calculation for all rows
-    $('tbody tr[id^="student-row-"]').each(function() {
-        updateRowCalculations($(this));
-    });
+    // Initial calculation for all rows with small delay to allow loader to show
+    setTimeout(function() {
+        $('tbody tr[id^="student-row-"]').each(function() { 
+            updateRowCalculations($(this)); 
+        });
+        
+        // Hide loader after all calculations are done (Increase delay to make it visible)
+        $('#page-loader').css('opacity', '0');
+        setTimeout(() => $('#page-loader').remove(), 600);
+    }, 500);
 });
 </script>
 <?= $this->endSection() ?>

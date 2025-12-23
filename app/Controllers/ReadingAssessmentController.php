@@ -125,6 +125,8 @@ class ReadingAssessmentController extends BaseController
 
         $data = [
             'className' => $className,
+            'academicYear' => $academicYear,
+            'term' => $term,
             'students' => $students,
             'assessmentItems' => $assessmentItems,
             'evaluations' => $evaluations,
@@ -270,6 +272,7 @@ class ReadingAssessmentController extends BaseController
         $data = [
             'className' => $className,
             'academicYear' => $academicYear,
+            'term' => $term,
             'students' => $students,
             'assessmentItems' => $assessmentItems,
             'evaluations' => $evaluations,
