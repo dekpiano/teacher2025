@@ -123,8 +123,9 @@ class ControllerSaveScore extends BaseController
         
         $data['onoff_savescore'] = $this->db->table('tb_register_onoff')->where('onoff_id >=', 2)->where('onoff_id <=', 5)->get()->getResult();
         $data['uri'] = service('uri');
+        $data['Room'] = $room;
 
-        return view('teacher/register/SaveScore/SaveScoreAdd', $data);
+        return view('teacher/register/SaveScore/SaveScoreAdd', @$data);
     }
 
     // AJAX Methods ported from ConTeacherRegister

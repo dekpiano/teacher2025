@@ -157,8 +157,9 @@ class ControllerSaveScoreRepeat extends BaseController
                                     $data['set_score'] = [];
                                 }
         $data['onoff_savescore'] = $this->db->table('tb_register_onoff')->where('onoff_id >=', 12)->where('onoff_id <=', 15)->get()->getResult();
+        $data['Room'] = $room;
 
-                               return view('teacher/register/LearnRepeat/LearnRepeatAdd', $data);
+        return view('teacher/register/LearnRepeat/LearnRepeatAdd', @$data);
     }
     
 

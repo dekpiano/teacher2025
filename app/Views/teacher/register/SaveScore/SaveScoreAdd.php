@@ -7,6 +7,20 @@
 <?= $this->section('content') ?>
 
 <div class="row g-4">
+    <!-- Page Loader Wrap -->
+    <div id="page-loader-wrapper">
+        <div class="loader-container">
+            <svg class="loader-circle" viewBox="0 0 150 150">
+                <circle class="loader-circle-bg" cx="75" cy="75" r="70"></circle>
+                <circle class="loader-circle-progress" cx="75" cy="75" r="70"></circle>
+            </svg>
+            <div class="loader-percentage">0%</div>
+        </div>
+        <div class="loader-time mt-2 mb-1">0.00s</div>
+        <div class="loader-text fw-bold text-uppercase">กำลังประมวลผลข้อมูล...</div>
+        <div class="mt-1 small text-muted">ระบบกำลังดึงข้อมูลนักเรียนและจัดเตรียมหน้าบันทึกคะแนน</div>
+    </div>
+
     <!-- Header Hero Section -->
     <div class="col-12">
         <div class="card border-0 shadow-sm bg-label-primary overflow-hidden">
@@ -65,14 +79,14 @@
                 <div class="d-flex align-items-center gap-3">
                     <div class="form-floating">
                         <select name="check_room" id="check_room" class="form-select border-info" style="min-width: 150px;">
-                            <option value="all">ทั้งหมด</option>
+                            <option value="all" <?= ($Room == 'all' ? 'selected' : '') ?>>ทั้งหมด</option>
                             <?php
                             foreach ($check_room as $v_check_room) :
                                 $sub_doc = explode('.', $v_check_room->StudentClass);
                                 $sub_room = explode('/', $sub_doc[1]);
                                 $all_room = $sub_room[0] . '-' . $sub_room[1];
                             ?>
-                                <option <?= $uri->getSegment(7) == $all_room ? "selected" : "" ?> value="<?= $all_room; ?>"><?= esc($v_check_room->StudentClass); ?></option>
+                                <option <?= $Room == $all_room ? "selected" : "" ?> value="<?= $all_room; ?>"><?= esc($v_check_room->StudentClass); ?></option>
                             <?php endforeach; ?>
                         </select>
                         <label for="check_room"><i class="bi bi-door-open me-1"></i> เลือกห้องเรียน</label>
@@ -95,14 +109,14 @@
                         <input type="hidden" name="RegisterYear" value="<?= esc($check_student[0]->RegisterYear) ?>">
                         <input type="hidden" name="TimeNum" value="<?= $timeNum ?>">
                         
-                        <div class="text-nowrap">
+                        <div class="table-container-fixed">
                             <table id="tb_score" class="table table-hover align-middle mb-0">
                                 <thead class="bg-light sticky-top" style="z-index: 10;">
                                     <tr>
                                         <th rowspan="2" class="text-center py-4">ห้อง</th>
                                         <th rowspan="2" class="text-center">เลขที่</th>
                                         <th rowspan="2" class="text-center">เลขประจำตัว</th>
-                                        <th rowspan="2" class="ps-4">ชื่อ - นามสกุล</th>
+                                        <th rowspan="2" class="ps-4" style="min-width: 250px; max-width: 300px;">ชื่อ - นามสกุล</th>
 
                                         <th rowspan="2" class="text-center text-info">เวลาเรียน<br><span class="badge bg-label-info opacity-75">/<?= $timeNum ?></span></th>
                                         <?php
@@ -281,11 +295,89 @@
 </div>
 
 <style>
+    /* Premium Page Loader */
+    #page-loader-wrapper {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(15px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 999999;
+        transition: all 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
+    }
+    #page-loader-wrapper.loaded {
+        opacity: 0;
+        visibility: hidden;
+        transform: scale(1.1);
+    }
+    .loader-container {
+        position: relative;
+        width: 160px;
+        height: 160px;
+    }
+    .loader-circle {
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+    }
+    .loader-circle-bg {
+        fill: none;
+        stroke: #f0f2f4;
+        stroke-width: 8;
+    }
+    .loader-circle-progress {
+        fill: none;
+        stroke: #696cff;
+        stroke-width: 8;
+        stroke-linecap: round;
+        stroke-dasharray: 440;
+        stroke-dashoffset: 440;
+        transition: stroke-dashoffset 0.3s ease-out;
+    }
+    .loader-percentage {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #696cff;
+        font-family: 'Public Sans', sans-serif;
+    }
+    .loader-text {
+        margin-top: 1rem;
+        font-size: 0.9rem;
+        color: #696cff;
+        letter-spacing: 2px;
+    }
+    .loader-time {
+        font-family: 'Monaco', 'Consolas', monospace;
+        font-size: 1.1rem;
+        color: #696cff;
+        font-weight: 600;
+        background: rgba(105, 108, 255, 0.1);
+        padding: 4px 12px;
+        border-radius: 20px;
+    }
+
     /* Theme Custom Styles */
     .sticky-top { 
-        top: 0px !important; 
+        top: 0 !important; 
         background-color: #fff !important;
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        z-index: 1020;
+    }
+    .table-container-fixed {
+        overflow-x: auto;
+        overflow-y: hidden;
+        width: 100%;
+        position: relative;
     }
     .fs-tiny { font-size: 0.65rem; }
     
@@ -330,7 +422,60 @@
 
 <?= $this->section('scripts') ?>
 <script>
-    $(function() {
+    $(document).ready(function() {
+        // --- Real-time Page Loader Logic ---
+        const startTime = performance.now();
+        let targetProgress = 0;
+        let currentProgress = 0;
+
+        const timerInterval = setInterval(() => {
+            const elapsed = (performance.now() - startTime) / 1000;
+            $('.loader-time').text(elapsed.toFixed(2) + 's');
+            
+            // Increment progress based on current state
+            if (document.readyState === 'loading') {
+                targetProgress = 30;
+            } else if (document.readyState === 'interactive') {
+                targetProgress = 70;
+            }
+
+            if (currentProgress < targetProgress) {
+                currentProgress += 0.5;
+                updateLoader(currentProgress);
+            }
+        }, 30);
+
+        function updateLoader(val) {
+            const circle = $('.loader-circle-progress');
+            const percentage = $('.loader-percentage');
+            // Clamp value between 0 and 100
+            val = Math.min(100, Math.max(0, val));
+            const offset = 440 - (440 * val) / 100;
+            circle.css('stroke-dashoffset', offset);
+            percentage.text(Math.round(val) + '%');
+        }
+
+        $(window).on('load', function() {
+            clearInterval(timerInterval);
+            const totalTime = ((performance.now() - startTime) / 1000).toFixed(2);
+            $('.loader-time').text(totalTime + 's');
+            
+            // Smoothly finish to 100%
+            let finishInterval = setInterval(() => {
+                if (currentProgress < 100) {
+                    currentProgress += 2;
+                    updateLoader(currentProgress);
+                } else {
+                    clearInterval(finishInterval);
+                    updateLoader(100);
+                    setTimeout(() => {
+                        $('#page-loader-wrapper').addClass('loaded');
+                        setTimeout(() => { $('#page-loader-wrapper').remove(); }, 600);
+                    }, 400);
+                }
+            }, 10);
+        });
+
         // Navigation using Arrow Keys
         $(document).on('keydown', '.KeyEnter', function(e) {
             var allInputs = $('input.KeyEnter');
