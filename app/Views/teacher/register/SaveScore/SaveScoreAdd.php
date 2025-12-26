@@ -152,7 +152,7 @@
                                         foreach ($set_score as $key => $v_set_score) :
                                             $onoff_status = 'on'; // default
                                             foreach ($onoff_savescore as $o) {
-                                                if ($o->onoff_name == $v_set_score->regscore_namework) {
+                                                if (stripos($o->onoff_name, $v_set_score->regscore_namework) !== false) {
                                                     $onoff_status = $o->onoff_status;
                                                     break;
                                                 }

@@ -37,9 +37,9 @@
                             <td><?= $v_check_subject->SubjectUnit ?></td>
                             <td><?= $v_check_subject->SubjectHour ?></td>
                             <td>
-                                <?php if ($onoff[0]->onoff_status == "off") : ?>
+                                <?php if (empty($onoff) || $onoff[0]->onoff_status == "off") : ?>
                                     <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#AlertNoReg">
-                                        <i class="bi bi-ban"></i> ยังไม่เปิดให้บันทึก
+                                        <i class="bi bi-ban"></i> ระบบปิด
                                     </button>
                                 <?php else : ?>
                                     <a href="<?= base_url('assessment/save-score-add/' . $v_check_subject->RegisterYear . '/' . $v_check_subject->SubjectID . '/all') ?>" class="btn btn-primary btn-sm">
@@ -69,7 +69,7 @@
                 <h5 class="modal-title" id="ModalprintLabel"><i class="bi bi-printer"></i> พิมพ์รายงาน</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="<?= base_url('assessment/report-learn-normal'); ?>" method="post" target="_blank">
+            <form action="<?= base_url('assessment/report-learn-normal'); ?>" method="post" target="_blank" class="no-loader" onsubmit="setTimeout(() => { this.reset(); $('#Modalprint').modal('hide'); }, 100);">
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="select_print" class="form-label">เลือกห้องเรียน</label>

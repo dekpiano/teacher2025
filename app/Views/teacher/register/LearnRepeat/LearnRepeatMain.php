@@ -51,7 +51,12 @@
                                 <tbody class="table-border-bottom-0">
                                     <?php foreach ($check_subject as $key => $v_check_subject) : ?>
                                         <tr>
-                                            <td><span class="badge bg-label-primary"><?= esc($v_check_subject->RegisterYear) ?></span></td>
+                                            <td>
+                                                <span class="badge bg-label-primary"><?= esc($v_check_subject->RepeatYear) ?></span>
+                                                <?php if($v_check_subject->RegisterYear != $v_check_subject->RepeatYear): ?>
+                                                    <br><small class="text-muted">เดิม: <?= esc($v_check_subject->RegisterYear) ?></small>
+                                                <?php endif; ?>
+                                            </td>
                                             <td><?= esc($v_check_subject->RegisterClasses) ?></td>
                                             <td>
                                                 <div class="d-flex flex-column">
@@ -97,7 +102,7 @@
                 <h5 class="modal-title"><i class="bi bi-printer me-2"></i>พิมพ์รายงาน</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="<?= base_url('assessment/report-learn-repeat'); ?>" method="post" target="_blank">
+            <form action="<?= base_url('assessment/report-learn-repeat'); ?>" method="post" target="_blank" class="no-loader" onsubmit="setTimeout(() => { this.reset(); $('#Modalprint').modal('hide'); }, 100);">
                 <div class="modal-body">
                     <div class="form-floating mb-3">
                         <select name="select_print" id="select_print" class="form-select" aria-label="เลือกห้องเรียน">
@@ -139,7 +144,7 @@
 
 <?= $this->section('scripts') ?>
 <script>
-    $(document).ready(function() {
+    $(function() {
         $(document).on('click', '#chcek_report', function(e) {
             e.preventDefault();
 

@@ -26,7 +26,7 @@ class ControllerSaveScore extends BaseController
         $currentSchoolYear = $schoolyear ? $schoolyear->schyear_year : null;
 
         // Get onoff status
-        $data['onoff'] = $this->db->table('tb_register_onoff')->where('onoff_id', 6)->get()->getResult();
+        $data['onoff'] = $this->db->table('tb_register_onoff')->where('onoff_id', 10)->get()->getResult();
 
         // Get check_subject
         $loginId = $this->session->get('person_id'); 

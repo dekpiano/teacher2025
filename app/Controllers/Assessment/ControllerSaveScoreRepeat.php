@@ -28,37 +28,38 @@ class ControllerSaveScoreRepeat extends BaseController
         $data['title']  = "หน้าหลักบันทึกผลการเรียน (ซ้ำ)";
         $data['teacher'] = $this->personnelDb->table('tb_personnel')->select('pers_id,pers_img')->where('pers_id',$this->session->get('person_id'))->get()->getResult();
         $data['OnOff'] = $this->db->table('tb_send_plan_setup')->select('*')->get()->getResult();
-        $register_onoff = $this->db->table('tb_register_onoff')->select('*')->where('onoff_id',7)->get()->getResult();
+        $onoff_status = $this->db->table('tb_register_onoff')->where('onoff_id', 11)->get()->getRow();
+        $register_onoff = $this->db->table('tb_register_onoff')->where('onoff_id', 7)->get()->getResult();
+        
+        // Safety check for main toggle
+        if (!$onoff_status || $onoff_status->onoff_status == 'off') {
+            $data['onoff'] = $onoff_status ? [$onoff_status] : [];
+            $data['check_subject'] = [];
+            return view('teacher/register/LearnRepeat/LearnRepeatMain', $data);
+        }
         
         // ดึงข้อมูลรายวิชาเรียนซ้ำทั้งหมดที่ครูคนนี้รับผิดชอบ
         // กรองเฉพาะปีที่เปิดลงทะเบียนเรียนซ้ำ (RepeatYear = onoff_year)
         $data['check_subject'] = $this->db->table('tb_register')
-                                ->select('
-                                    tb_register.SubjectID,
-                                    tb_register.RegisterYear,
-                                    GROUP_CONCAT(DISTINCT tb_register.RegisterClass ORDER BY tb_register.RegisterClass SEPARATOR ", ") as RegisterClasses,
-                                    tb_register.RepeatTeacher,
-                                    tb_register.Grade_Type,
-                                    tb_subjects.SubjectName,
-                                    tb_subjects.SubjectCode,
-                                    tb_subjects.SubjectID,
-                                    tb_subjects.SubjectUnit,
-                                    tb_subjects.SubjectHour,
-                                    tb_register.RepeatYear
-                                ')
-                                ->join('tb_subjects','tb_subjects.SubjectID = tb_register.SubjectID')
-                                ->where('tb_register.RepeatTeacher',$this->session->get('person_id'))
-                                ->where('tb_register.RepeatTeacher !=', '')
-                                ->where('tb_register.RepeatYear', $register_onoff[0]->onoff_year)
-                                ->where('tb_register.Grade_Type', $register_onoff[0]->onoff_detail)
-                                ->groupBy('tb_register.SubjectID')
-                                ->groupBy('tb_register.RegisterYear')
-                                ->groupBy('tb_register.RepeatTeacher')
-                                ->groupBy('tb_register.Grade_Type')
-                                ->groupBy('tb_register.RepeatYear')
-                                ->orderBy('tb_subjects.SubjectCode','ASC')
-                                ->get()->getResult();
-        $data['onoff'] = $this->db->table('tb_register_onoff')->where('onoff_id',7)->get()->getResult(); 
+                            ->select('
+                                tb_register.SubjectID,
+                                tb_subjects.SubjectCode,
+                                tb_subjects.SubjectName,
+                                tb_subjects.SubjectUnit,
+                                tb_subjects.SubjectHour,
+                                tb_register.RegisterYear,
+                                tb_register.RepeatYear,
+                                GROUP_CONCAT(DISTINCT tb_register.RegisterClass SEPARATOR ", ") as RegisterClasses
+                            ')
+                            ->join('tb_subjects','tb_subjects.SubjectID = tb_register.SubjectID')
+                            ->where('tb_register.RepeatTeacher',$this->session->get('person_id'))
+                            ->where('tb_register.RepeatYear', $register_onoff[0]->onoff_year)
+                            ->groupBy('tb_register.SubjectID')
+                            ->groupBy('tb_register.RepeatYear')
+                            ->orderBy('tb_subjects.SubjectCode','ASC')
+                            ->get()->getResult();
+        $data['onoff'] = $register_onoff;
+        $data['person_id'] = $this->session->get('person_id');
         
         // Debug: Check session data
         if (empty($this->session->get('person_id'))) {
@@ -75,14 +76,15 @@ class ControllerSaveScoreRepeat extends BaseController
         $data['title']  = "หน้าบันทึกผลการเรียน (ซ้ำ)";
         $data['teacher'] = $this->personnelDb->table('tb_personnel')->select('pers_id,pers_prefix,pers_firstname,pers_lastname,pers_img')->where('pers_id',$this->session->get('person_id'))->get()->getResult();
         $data['OnOff'] = $this->db->table('tb_send_plan_setup')->select('*')->get()->getResult();
-        $data['onoff'] = $this->db->table('tb_register_onoff')->where('onoff_id',7)->get()->getResult();
+        $data['onoff'] = $this->db->table('tb_register_onoff')->where('onoff_id', 11)->get()->getResult();
+        $register_onoff = $this->db->table('tb_register_onoff')->where('onoff_id', 7)->get()->getResult();
        
         // Add a check here
         $onoff_detail = '';
         $onoff_year = '';
-        if (!empty($data['onoff']) && isset($data['onoff'][0])) {
-            $onoff_detail = $data['onoff'][0]->onoff_detail;
-            $onoff_year = $data['onoff'][0]->onoff_year;
+        if (!empty($register_onoff) && isset($register_onoff[0])) {
+            $onoff_detail = $register_onoff[0]->onoff_detail;
+            $onoff_year = $register_onoff[0]->onoff_year;
         }
         
         $data['check_room'] = $this->db->table('tb_register')
@@ -136,7 +138,6 @@ class ControllerSaveScoreRepeat extends BaseController
                                 ->where('tb_register.RepeatYear',$onoff_year)
                                 ->where('tb_register.SubjectID',($subject))
                                 ->where('tb_students.StudentBehavior !=','จำหน่าย')                                
-                                ->where('tb_register.Grade_Type',$onoff_detail)
                                 ->orderBy('tb_students.StudentClass','ASC')
                                 ->orderBy('tb_students.StudentNumber','ASC');
 
@@ -154,7 +155,7 @@ class ControllerSaveScoreRepeat extends BaseController
                                 } else {
                                     $data['set_score'] = [];
                                 }
-        $data['onoff_savescore'] = $this->db->table('tb_register_onoff')->where('onoff_id >=', 2)->where('onoff_id <=', 5)->get()->getResult();
+        $data['onoff_savescore'] = $this->db->table('tb_register_onoff')->where('onoff_id >=', 12)->where('onoff_id <=', 15)->get()->getResult();
 
                                return view('teacher/register/LearnRepeat/LearnRepeatAdd', $data);
     }

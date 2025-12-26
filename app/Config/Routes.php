@@ -84,10 +84,21 @@ $routes->get('login/googleCallback', 'Login::googleCallback');
         $routes->post('insert', 'ControllerSaveScore::insertScore');
         $routes->post('update', 'ControllerSaveScore::updateScore'); 
         $routes->post('report', 'ControllerSaveScore::ReportLearnNormal');
+        $routes->post('report-learn-normal', 'ControllerSaveScore::ReportLearnNormal');
         $routes->post('setting-score/(:any)', 'ControllerSaveScore::settingScore/$1');
         $routes->post('edit-score', 'ControllerSaveScore::editScore');
         $routes->post('autosave-score', 'ControllerSaveScore::autosaveScore');
         $routes->post('check-room-report', 'ControllerSaveScore::checkroomReport');
+        $routes->get('save-score-add/(:any)/(:any)/(:any)/(:any)', 'ControllerSaveScore::saveScoreAdd/$1/$2/$3/$4');
+
+        $routes->group('save-score', static function ($routes) {
+            $routes->get('edit-score', 'ControllerSaveScore::editScore');
+            $routes->post('edit-score', 'ControllerSaveScore::editScore');
+            $routes->post('setting-score/(:any)', 'ControllerSaveScore::settingScore/$1');
+            $routes->post('insert-score', 'ControllerSaveScore::insertScore');
+            $routes->post('autosave-score', 'ControllerSaveScore::autosaveScore');
+            $routes->post('checkroom-report', 'ControllerSaveScore::checkroomReport');
+        });
 
         // Repeat Score Routes
         $routes->get('save-score-repeat', 'ControllerSaveScoreRepeat::normal');
