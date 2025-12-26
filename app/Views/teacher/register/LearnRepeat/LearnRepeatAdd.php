@@ -146,9 +146,7 @@
                                                 <br><small>(<?= esc($v_check_student->Grade_Type) ?>)</small>
                                             </td>
                                             <input type="hidden" name="StudentID[]" value="<?= esc($v_check_student->StudentID) ?>">
-                                            <input type="hidden" name="SubjectID" value="<?= esc($check_student[0]->SubjectID) ?>">
-                                            <input type="hidden" name="RegisterYear" value="<?= esc($check_student[0]->RegisterYear) ?>">
-                                            <input type="hidden" name="TimeNum" value="<?= $timeNum ?>">
+                                            <input type="hidden" name="RegisterYear[]" value="<?= esc($v_check_student->RegisterYear) ?>">
                                             <td>
                                                 <input type="text" class="form-control study_time KeyEnter text-center" check-time="<?= $timeNum ?>" name="study_time[]" value="<?= esc($v_check_student->StudyTime) ?>" autocomplete="off">
                                             </td>
@@ -182,6 +180,8 @@
                             <?php endif; ?>
                         </tbody>
                     </table>
+                        <input type="hidden" name="SubjectID" value="<?= esc($check_student[0]->SubjectID) ?>">
+                        <input type="hidden" name="TimeNum" value="<?= $timeNum ?>">
                     <?php if (!empty($check_student)) : ?>
                         <div class="text-center mt-3">
                             <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> บันทึกคะแนน</button>
@@ -251,22 +251,23 @@
 <script>
     $(function() {
         $(document).on('keydown', '.KeyEnter', function(e) {
-            var KeyEn = $(this).index('input.KeyEnter');
-            if (e.keyCode == 37) {
-                KeyEn = KeyEn - 1;
-                $('input.KeyEnter:eq(' + KeyEn + ')').focus();
+            var inputs = $('input.KeyEnter');
+            var KeyEn = inputs.index(this);
+            var numCols = $(this).closest('tr').find('.KeyEnter').length;
+
+            if (e.keyCode == 37) { // Left
+                if (KeyEn > 0) inputs.eq(KeyEn - 1).focus();
             }
-            if (e.keyCode == 39) {
-                KeyEn = KeyEn + 1;
-                $('input.KeyEnter:eq(' + KeyEn + ')').focus();
+            if (e.keyCode == 39) { // Right
+                if (KeyEn < inputs.length - 1) inputs.eq(KeyEn + 1).focus();
             }
-            if (e.keyCode == 38) {
-                KeyEn = KeyEn - 5;
-                $('input.KeyEnter:eq(' + KeyEn + ')').focus();
+            if (e.keyCode == 38) { // Up
+                if (KeyEn >= numCols) inputs.eq(KeyEn - numCols).focus();
+                e.preventDefault();
             }
-            if (e.keyCode == 40) {
-                KeyEn = KeyEn + 5;
-                $('input.KeyEnter:eq(' + KeyEn + ')').focus();
+            if (e.keyCode == 40) { // Down
+                if (KeyEn + numCols < inputs.length) inputs.eq(KeyEn + numCols).focus();
+                e.preventDefault();
             }
         });
 
@@ -579,11 +580,12 @@
             var studentRow = inputField.closest('tr');
             var newTimeout = setTimeout(function() {
                 var studentID = studentRow.find('input[name="StudentID[]"]').val();
-                var scores = studentRow.find('input[name^="' + studentID + '"]').map(function() { return $(this).val(); }).get();
+                // Use exact attribute selector to prevent matching prefixes
+                var scores = studentRow.find('input[name="' + studentID + '[]"]').map(function() { return $(this).val(); }).get();
                 var studentData = {
                     StudentID: studentID,
                     SubjectID: $('input[name="SubjectID"]').val(),
-                    RegisterYear: $('input[name="RegisterYear"]').val(),
+                    RegisterYear: studentRow.find('input[name="RegisterYear[]"]').val(),
                     TimeNum: $('input[name="TimeNum"]').val(),
                     study_time: studentRow.find('input[name="study_time[]"]').val(),
                     scores: scores

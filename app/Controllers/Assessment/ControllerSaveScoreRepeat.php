@@ -243,15 +243,17 @@ class ControllerSaveScoreRepeat extends BaseController
          $CheckRepeat = $this->db->table('tb_register_onoff')->select('onoff_detail,onoff_year')->where('onoff_id',7)->get()->getResult();
         $studentIDs = $this->request->getPost('StudentID');
         $timeNum = $this->request->getPost('TimeNum');
-        $study_times = $this->request->getPost('study_time');
+        $registerYears = $this->request->getPost('RegisterYear');
+        $subjectID = $this->request->getPost('SubjectID');
 
         foreach ($studentIDs as $num => $studentID) {
             $scores = $this->request->getPost($studentID); // Array of scores for this student
             $study_time = $study_times[$num];
+            $registerYear = $registerYears[$num];
             $grade = '';
-            $RepeatStatus = ''; // Initialize
-            $Grade_Type = ''; // Initialize
-            $RepeatYear = ''; // Initialize
+            $RepeatStatus = ''; 
+            $Grade_Type = ''; 
+            $RepeatYear = ''; 
 
             if ((($timeNum * 80) / 100) > $study_time) {
                 $grade = "มส";
@@ -266,21 +268,20 @@ class ControllerSaveScoreRepeat extends BaseController
                     $RepeatYear = $CheckRepeat[0]->onoff_year;
                 } else {
                     $grade = $this->check_grade(array_sum($scores));
-                    if($grade > 0){
-                            $RepeatStatus = "ผ่าน";
-                            $Grade_Type = $CheckRepeat[0]->onoff_detail;
-                            $RepeatYear = $CheckRepeat[0]->onoff_year;
-                        }else{
-                            $Grade_Type = $CheckRepeat[0]->onoff_detail;
-                            $RepeatStatus = "ไม่ผ่าน";
-                            $RepeatYear = $CheckRepeat[0]->onoff_year;
-                        }
+                    if ($grade > 0) {
+                        $RepeatStatus = "ผ่าน";
+                    } else {
+                        $RepeatStatus = "ไม่ผ่าน";
+                    }
+                    $Grade_Type = $CheckRepeat[0]->onoff_detail;
+                    $RepeatYear = $CheckRepeat[0]->onoff_year;
+                }
             }
 
             $key = [
                 'StudentID' => $studentID,
-                'SubjectID' => $this->request->getPost('SubjectID'),
-                'RegisterYear' => $this->request->getPost('RegisterYear')
+                'SubjectID' => $subjectID,
+                'RegisterYear' => $registerYear
             ];
 
             $data = [
@@ -288,9 +289,9 @@ class ControllerSaveScoreRepeat extends BaseController
                 'Grade' => $grade,
                 'StudyTime' => $study_time,
                 'Grade_UpdateTime' => date('Y-m-d H:i:s'),
-                'Grade_Type' => $Grade_Type, // Add this
-                'RepeatStatus' => $RepeatStatus, // Add this
-                'RepeatYear' => $RepeatYear // Add this
+                'Grade_Type' => $Grade_Type,
+                'RepeatStatus' => $RepeatStatus,
+                'RepeatYear' => $RepeatYear
             ];
 
             $builder = $this->db->table('skjacth_academic.tb_register');
@@ -305,7 +306,6 @@ class ControllerSaveScoreRepeat extends BaseController
         }
         return $this->response->setJSON(['status' => 'success']);
     }
-}
 
     public function autosaveScore() {
         if (!$this->request->isAJAX()) {
