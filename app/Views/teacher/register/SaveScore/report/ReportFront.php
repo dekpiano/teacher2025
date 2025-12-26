@@ -276,7 +276,7 @@ $avgSubject = round(((($grade4*4)+($grade35*3.5)+($grade3*3)+($grade25*2.5)+($gr
                 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ลงชื่อ.......................................... รองผู้อำนวยการสถานศึกษา
                 </p>
                 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                (นางสาวศรินทร์ทิพย์  กริมเขียว)
+                (นางสาวอรอุมา  ฉวีทอง)
                 </p>
             </td>
             <td style="text-align: center;">

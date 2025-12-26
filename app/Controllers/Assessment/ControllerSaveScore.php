@@ -42,7 +42,8 @@ class ControllerSaveScore extends BaseController
                     tb_subjects.SubjectCode,
                     tb_subjects.SubjectID,
                     tb_subjects.SubjectUnit,
-                    tb_subjects.SubjectHour
+                    tb_subjects.SubjectHour,
+                    (SELECT COUNT(*) FROM tb_register_score WHERE regscore_subjectID = tb_register.SubjectID) as score_settings_count
                 ')
                 ->join('tb_subjects', 'tb_subjects.SubjectID = tb_register.SubjectID')
                 ->where('tb_register.TeacherID', $loginId)

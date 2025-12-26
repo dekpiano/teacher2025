@@ -49,6 +49,7 @@ class ControllerSaveScoreRepeat extends BaseController
                                 tb_subjects.SubjectHour,
                                 tb_register.RegisterYear,
                                 tb_register.RepeatYear,
+                                (SELECT COUNT(*) FROM tb_register_score WHERE regscore_subjectID = tb_register.SubjectID) as score_settings_count,
                                 GROUP_CONCAT(DISTINCT tb_register.RegisterClass SEPARATOR ", ") as RegisterClasses
                             ')
                             ->join('tb_subjects','tb_subjects.SubjectID = tb_register.SubjectID')

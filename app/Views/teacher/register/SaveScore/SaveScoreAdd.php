@@ -6,272 +6,354 @@
 
 <?= $this->section('content') ?>
 
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="card-title mb-0">
-            <i class="bi bi-book"></i> <?= 'รายวิชา ' . esc($check_student[0]->SubjectCode) . ' ' . esc($check_student[0]->SubjectName) ?>
-        </h5>
-        <div>
-            <?php if (!empty($set_score)) : ?>
-                <button type="button" id="chcek_score" subject-id="<?= esc($check_student[0]->SubjectID) ?>" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#myModal">
-                    <i class="bi bi-gear"></i> ตั้งค่าคะแนน
-                </button>
-            <?php endif; ?>
+<div class="row g-4">
+    <!-- Header Hero Section -->
+    <div class="col-12">
+        <div class="card border-0 shadow-sm bg-label-primary overflow-hidden">
+            <div class="card-body p-0">
+                <div class="row g-0">
+                    <div class="col-md-8 p-4 d-flex flex-column justify-content-center">
+                        <div class="d-flex align-items-center mb-2">
+                             <div class="badge bg-primary me-2 rounded-pill px-3 py-2">
+                                <i class="bi bi-book-half me-1"></i> <?= esc($check_student[0]->SubjectCode) ?>
+                            </div>
+                            <span class="text-muted">ปีการศึกษา <?= esc($check_student[0]->RegisterYear) ?></span>
+                        </div>
+                        <h3 class="mb-2 text-primary fw-bold"><?= esc($check_student[0]->SubjectName) ?></h3>
+                        <div class="d-flex flex-wrap gap-3 mt-2">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-award me-1 text-info"></i>
+                                <span>หน่วยกิต: <strong><?= $check_student[0]->SubjectUnit ?></strong></span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-clock me-1 text-warning"></i>
+                                <span>ชั่วโมง/สัปดาห์: <strong><?= $check_student[0]->SubjectHour ?></strong></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 bg-primary d-flex align-items-center justify-content-center p-4 text-white">
+                        <div class="text-center">
+                            <?php if (!empty($set_score)) : ?>
+                                <button type="button" subject-id="<?= esc($check_student[0]->SubjectID) ?>" 
+                                        class="btn btn-white text-primary shadow-sm hover-elevate mb-2 btn-lg w-100 btn-check-score" 
+                                        data-bs-toggle="modal" data-bs-target="#myModal">
+                                    <i class="bi bi-gear-fill me-2"></i> ตั้งค่าคะแนนเก็บ
+                                </button>
+                            <?php endif; ?>
+                            <p class="mb-0 opacity-75 small text-nowrap">คลิกเพื่อจัดการสัดส่วนคะแนน</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    <div class="card-body">
-        <style>
-            .check_score, .study_time {
-                width: 60px; /* Adjust as needed for 2-digit numbers */
-                display: inline-block;
-            }
-            /* Ensure table cells don't force extra width */
-            #tb_score td, #tb_score th {
-                /* white-space: nowrap; */ /* Prevent text wrapping in table headers/cells */
-            }
-            .col-name {
-                white-space: nowrap;
-            }
-            .col-status {
-                width: 80px;
-            }
-            /* Score input wrapper for max label */
-            .score-input-wrapper {
-                position: relative;
-                display: inline-block;
-            }
-            .max-score-label {
-                position: absolute;
-                bottom: -18px;
-                left: 50%;
-                transform: translateX(-50%);
-                font-size: 11px;
-                color: #6c757d;
-                background: rgba(255, 255, 255, 0.9);
-                padding: 1px 4px;
-                border-radius: 3px;
-                opacity: 0;
-                transition: opacity 0.2s ease;
-                pointer-events: none;
-                white-space: nowrap;
-                z-index: 10;
-            }
-            .score-input-wrapper:hover .max-score-label,
-            .score-input-wrapper .check_score:focus ~ .max-score-label,
-            .score-input-wrapper .study_time:focus ~ .max-score-label {
-                opacity: 1;
-            }
-            /* Adjust table cell to accommodate label */
-            #tb_score td {
-                padding-bottom: 20px;
-                vertical-align: top;
-            }
-        </style>
-        <?php if (!empty($set_score)) : ?>
-            <div class="row justify-content-center mb-3">
-                <div class="col-md-6 d-flex align-items-center justify-content-end">
-                    <label for="check_room" class="form-label me-2 mb-0"><i class="bi bi-door-open"></i> เลือกห้อง</label>
+
+    <!-- Main Content Area -->
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-center border-bottom pb-4">
+                <div class="d-flex align-items-center mb-3 mb-md-0">
+                    <div class="avatar bg-label-info p-2 me-3 rounded">
+                        <i class="bi bi-people-fill fs-4"></i>
+                    </div>
+                    <div>
+                        <h5 class="card-title mb-0">รายชื่อนักเรียนและบันทึกคะแนน</h5>
+                        <small class="text-muted">ผลการเรียนจะถูกบันทึกอัตโนมัติเมื่อมีการแก้ไข</small>
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <select name="check_room" id="check_room" class="form-select w-auto">
-                        <option value="all">ทั้งหมด</option>
-                        <?php
-                        foreach ($check_room as $v_check_room) :
-                            $sub_doc = explode('.', $v_check_room->StudentClass);
-                            $sub_room = explode('/', $sub_doc[1]);
-                            $all_room = $sub_room[0] . '-' . $sub_room[1];
-                        ?>
-                            <option <?= $uri->getSegment(7) == $all_room ? "selected" : "" ?> value="<?= $all_room; ?>"><?= esc($v_check_room->StudentClass); ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                
+                <div class="d-flex align-items-center gap-3">
+                    <div class="form-floating">
+                        <select name="check_room" id="check_room" class="form-select border-info" style="min-width: 150px;">
+                            <option value="all">ทั้งหมด</option>
+                            <?php
+                            foreach ($check_room as $v_check_room) :
+                                $sub_doc = explode('.', $v_check_room->StudentClass);
+                                $sub_room = explode('/', $sub_doc[1]);
+                                $all_room = $sub_room[0] . '-' . $sub_room[1];
+                            ?>
+                                <option <?= $uri->getSegment(7) == $all_room ? "selected" : "" ?> value="<?= $all_room; ?>"><?= esc($v_check_room->StudentClass); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <label for="check_room"><i class="bi bi-door-open me-1"></i> เลือกห้องเรียน</label>
+                    </div>
                 </div>
             </div>
 
-            <div style="width: 100%;">
-                <form class="form_score">
-                    <table id="tb_score" class="table table-hover table-bordered">
-                        <thead class="text-center table-light" style="position: -webkit-sticky; position: sticky; top: 0; z-index: 2;">
-                            <tr>
-                                <th rowspan="2">ชั้น</th>
-                                <th rowspan="2">เลขที่</th>
-                                <th rowspan="2">เลขประจำตัว</th>
-                                <th rowspan="2" width="200" class="col-name">ชื่อ - นามสกุล</th>
-                                <?php
-                                $timeNum = match (floatval($check_student[0]->SubjectUnit)) {
-                                    0.5 => 20, 1.0 => 40, 1.5 => 60, 2.0 => 80,
-                                    2.5 => 100, 3.0 => 120, 3.5 => 140, 4.0 => 160,
-                                    4.5 => 180, 5.0 => 200, default => 0,
-                                };
-                                ?>
-                                <th rowspan="2">เวลาเรียน<br><small>(<?= $timeNum ?> ชั่วโมง)</small></th>
-                                <?php
-                                $sum_scoer = 0;
-                                foreach ($set_score as $v_set_score) {
-                                    $sum_scoer += $v_set_score->regscore_score;
-                                }
-                                ?>
-                                <th colspan="<?= count($set_score) ?>">การประเมินผลการเรียน</th>
-                                <th rowspan="2">คะแนนรวม<br>(<?= $sum_scoer ?>)</th>
-                                <th rowspan="2">เกรด</th>
-                                <th rowspan="2" class="col-status">สถานะ</th>
-                            </tr>
-                            <tr>
-                                <?php foreach ($set_score as $v_set_score) : ?>
-                                    <th><?= esc($v_set_score->regscore_namework) ?><br>(<?= esc($v_set_score->regscore_score) ?>)</th>
-                                <?php endforeach; ?>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($check_student as $v_check_student) : ?>
-                                <?php if ($v_check_student->Grade_Type != "") : ?>
-                                    <tr class="table-warning">
-                                        <td class="align-middle text-center"><?= esc($v_check_student->StudentClass) ?></td>
-                                        <td class="align-middle text-center"><?= esc($v_check_student->StudentNumber) ?></td>
-                                        <td class="align-middle text-center"><?= esc($v_check_student->StudentCode) ?></td>
-                                        <td class="align-middle col-name"><?= esc($v_check_student->StudentPrefix . $v_check_student->StudentFirstName . ' ' . $v_check_student->StudentLastName) ?></td>
-                                        <td colspan="<?= count($set_score) + 3 ?>" class="text-danger text-center align-middle">** นักเรียน เรียนซ้ำ **</td>
-                                        <td class="align-middle text-center col-status">
-                                            <span class="badge <?= $v_check_student->StudentBehavior == 'ปกติ' ? 'bg-label-success' : 'bg-label-danger' ?>"><?= esc($v_check_student->StudentBehavior) ?></span>
-                                        </td>
-                                    </tr>
-                                <?php else : ?>
+            <div class="card-body p-0">
+                <?php if (!empty($set_score)) : ?>
+                    <?php
+                    $timeNum = match (floatval($check_student[0]->SubjectUnit)) {
+                        0.5 => 20, 1.0 => 40, 1.5 => 60, 2.0 => 80,
+                        2.5 => 100, 3.0 => 120, 3.5 => 140, 4.0 => 160,
+                        4.5 => 180, 5.0 => 200, default => 0,
+                    };
+                    ?>
+                    <form class="form_score">
+                        <!-- Redundant data moved to top level of form -->
+                        <input type="hidden" name="SubjectID" value="<?= esc($check_student[0]->SubjectID) ?>">
+                        <input type="hidden" name="RegisterYear" value="<?= esc($check_student[0]->RegisterYear) ?>">
+                        <input type="hidden" name="TimeNum" value="<?= $timeNum ?>">
+                        
+                        <div class="text-nowrap">
+                            <table id="tb_score" class="table table-hover align-middle mb-0">
+                                <thead class="bg-light sticky-top" style="z-index: 10;">
                                     <tr>
-                                        <td class="align-middle text-center"><?= esc($v_check_student->StudentClass) ?></td>
-                                        <td class="align-middle text-center"><?= esc($v_check_student->StudentNumber) ?></td>
-                                        <td class="align-middle text-center"><?= esc($v_check_student->StudentCode) ?></td>
-                                        <td class="align-middle col-name"><?= esc($v_check_student->StudentPrefix . $v_check_student->StudentFirstName . ' ' . $v_check_student->StudentLastName) ?></td>
-                                        <input type="hidden" name="StudentID[]" value="<?= esc($v_check_student->StudentID) ?>">
-                                        <input type="hidden" name="SubjectID" value="<?= esc($check_student[0]->SubjectID) ?>">
-                                        <input type="hidden" name="RegisterYear" value="<?= esc($check_student[0]->RegisterYear) ?>">
-                                        <input type="hidden" name="TimeNum" value="<?= $timeNum ?>">
-                                        <td>
-                                            <input type="text" class="form-control study_time KeyEnter text-center" check-time="<?= $timeNum ?>" name="study_time[]" value="<?= esc($v_check_student->StudyTime) ?>" autocomplete="off">
-                                        </td>
+                                        <th rowspan="2" class="text-center py-4">ห้อง</th>
+                                        <th rowspan="2" class="text-center">เลขที่</th>
+                                        <th rowspan="2" class="text-center">เลขประจำตัว</th>
+                                        <th rowspan="2" class="ps-4">ชื่อ - นามสกุล</th>
+
+                                        <th rowspan="2" class="text-center text-info">เวลาเรียน<br><span class="badge bg-label-info opacity-75">/<?= $timeNum ?></span></th>
                                         <?php
-                                        $scores = explode("|", $v_check_student->Score100);
-                                        foreach ($set_score as $key => $v_set_score) :
-                                            $onoff_status = 'on'; // default
-                                            foreach ($onoff_savescore as $o) {
-                                                if (stripos($o->onoff_name, $v_set_score->regscore_namework) !== false) {
-                                                    $onoff_status = $o->onoff_status;
-                                                    break;
-                                                }
-                                            }
+                                        $sum_scoer = 0;
+                                        foreach ($set_score as $v_set_score) {
+                                            $sum_scoer += $v_set_score->regscore_score;
+                                        }
                                         ?>
-                                            <td>
-                                                <input type="text" class="form-control check_score KeyEnter text-center" check-score-key="<?= esc($v_set_score->regscore_score) ?>" name="<?= esc($v_check_student->StudentID) ?>[]" value="<?= esc($scores[$key] ?? '') ?>" <?= $onoff_status == "off" ? "readonly" : "" ?> autocomplete="off">
-                                            </td>
-                                        <?php endforeach; ?>
-                                        <td class="align-middle text-center fw-bold subtot"></td>
-                                        <td class="align-middle text-center fw-bold grade"></td>
-                                        <td class="align-middle text-center col-status">
-                                            <span class="badge <?= $v_check_student->StudentBehavior == 'ปกติ' ? 'bg-label-success' : 'bg-label-danger' ?>"><?= esc($v_check_student->StudentBehavior) ?></span>
-                                        </td>
+                                        <th colspan="<?= count($set_score) ?>" class="text-center border-start border-end">การประเมินผลการเรียน</th>
+                                        <th rowspan="2" class="text-center fw-bold text-primary">รวม<br><span class="badge bg-label-primary">/<?= $sum_scoer ?></span></th>
+                                        <th rowspan="2" class="text-center fw-bold">เกรด</th>
+                                        <th rowspan="2" class="text-center">สถานะ</th>
                                     </tr>
-                                <?php endif; ?>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                    <div class="text-center mt-3">
-                        <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> บันทึกคะแนน</button>
+                                    <tr class="bg-light shadow-sm">
+                                        <?php foreach ($set_score as $v_set_score) : ?>
+                                            <th class="text-center border-start py-3 fs-tiny">
+                                                <small class="d-block text-muted text-uppercase"><?= esc($v_set_score->regscore_namework) ?></small>
+                                                <span class="text-primary fw-bold">/<?= esc($v_set_score->regscore_score) ?></span>
+                                            </th>
+                                        <?php endforeach; ?>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($check_student as $v_check_student) : ?>
+                                        <?php if ($v_check_student->Grade_Type != "") : ?>
+                                            <tr class="bg-label-warning opacity-75 border-bottom">
+                                                <td class="text-center"><?= esc($v_check_student->StudentClass) ?></td>
+                                                <td class="text-center"><?= esc($v_check_student->StudentNumber) ?></td>
+                                                <td class="text-center font-monospace small"><?= esc($v_check_student->StudentCode) ?></td>
+                                                <td class="ps-4 fw-medium text-dark"><?= esc($v_check_student->StudentPrefix . $v_check_student->StudentFirstName . ' ' . $v_check_student->StudentLastName) ?></td>
+                                                <td colspan="<?= count($set_score) + 3 ?>" class="text-center py-3">
+                                                    <span class="badge bg-warning p-2">
+                                                        <i class="bi bi-clock-history me-1"></i> นักเรียน เรียนซ้ำ (ผ่านระบบอื่น)
+                                                    </span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge <?= $v_check_student->StudentBehavior == 'ปกติ' ? 'bg-label-success' : 'bg-label-danger text-danger' ?>"><?= esc($v_check_student->StudentBehavior) ?></span>
+                                                </td>
+                                            </tr>
+                                        <?php else : ?>
+                                            <tr class="border-bottom">
+                                                <td class="text-center text-muted small"><?= esc($v_check_student->StudentClass) ?></td>
+                                                <td class="text-center fw-bold"><?= esc($v_check_student->StudentNumber) ?></td>
+                                                <td class="text-center text-muted font-monospace small"><?= esc($v_check_student->StudentCode) ?></td>
+                                                <td class="ps-4">
+                                                    <div class="fw-bold text-dark mb-0"><?= esc($v_check_student->StudentPrefix . $v_check_student->StudentFirstName . ' ' . $v_check_student->StudentLastName) ?></div>
+                                                    <input type="hidden" name="StudentID[]" value="<?= esc($v_check_student->StudentID) ?>">
+                                                </td>
+                                                <td class="text-center">
+                                                    <div class="score-input-wrapper">
+                                                        <input type="text" class="form-control study_time KeyEnter text-center fw-bold bg-label-info border-transparent" 
+                                                               check-time="<?= $timeNum ?>" name="study_time[]" 
+                                                               value="<?= esc($v_check_student->StudyTime) ?>" autocomplete="off">
+                                                    </div>
+                                                </td>
+                                                <?php
+                                                $scores = explode("|", $v_check_student->Score100);
+                                                foreach ($set_score as $key => $v_set_score) :
+                                                    $onoff_status = 'on'; // default
+                                                    foreach ($onoff_savescore as $o) {
+                                                        if (stripos($o->onoff_name, $v_set_score->regscore_namework) !== false) {
+                                                            $onoff_status = $o->onoff_status;
+                                                            break;
+                                                        }
+                                                    }
+                                                ?>
+                                                    <td class="text-center border-start">
+                                                        <div class="score-input-wrapper">
+                                                            <input type="text" class="form-control check_score KeyEnter text-center fw-bold <?= $onoff_status == "off" ? "bg-light opacity-50 cursor-not-allowed" : "border-transparent focus-ring shadow-none" ?>" 
+                                                                   check-score-key="<?= esc($v_set_score->regscore_score) ?>" 
+                                                                   name="<?= esc($v_check_student->StudentID) ?>[]" 
+                                                                   value="<?= esc($scores[$key] ?? '') ?>" <?= $onoff_status == "off" ? "readonly" : "" ?> autocomplete="off">
+                                                        </div>
+                                                    </td>
+                                                <?php endforeach; ?>
+                                                <td class="text-center fw-bold text-primary subtot fs-5"></td>
+                                                <td class="text-center grade">
+                                                    <span class="grade-badge badge bg-label-primary fs-6 fw-bold">-</span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="status-badge badge <?= $v_check_student->StudentBehavior == 'ปกติ' ? 'bg-label-success' : 'bg-label-danger' ?>"><?= esc($v_check_student->StudentBehavior) ?></span>
+                                                </td>
+                                            </tr>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Floating Action Bar -->
+                        <div class="sticky-bottom bg-white border-top p-3 shadow-lg d-flex justify-content-center">
+                            <button type="submit" class="btn btn-primary btn-lg px-5 shadow hover-elevate">
+                                <i class="bi bi-save-fill me-2"></i> บันทึกข้อมูลและยืนยันคะแนน
+                            </button>
+                        </div>
+                    </form>
+                <?php else : ?>
+                    <div class="text-center py-5">
+                        <div class="avatar avatar-xl bg-label-danger rounded-circle mb-3 mx-auto">
+                            <i class="bi bi-shield-exclamation fs-1"></i>
+                        </div>
+                        <h4 class="text-danger">ยังไม่ได้ตั้งค่าสัดส่วนคะแนน!</h4>
+                        <p class="text-muted mb-4">กรุณาตั้งค่าคะแนนเก็บสำหรับรายวิชานี้ก่อนเริ่มการบันทึกคะแนน</p>
+                        <button type="button" subject-id="<?= esc($check_student[0]->SubjectID) ?>" 
+                                class="btn btn-primary shadow px-5 btn-check-score" data-bs-toggle="modal" data-bs-target="#myModal">
+                            <i class="bi bi-gear-fill me-2"></i> ไปหน้าตั้งค่าคะแนน
+                        </button>
                     </div>
-                </form>
+                <?php endif; ?>
             </div>
-        <?php else : ?>
-            <div class="text-center">
-                <h4 class="text-danger"><i class="bi bi-exclamation-triangle"></i> กรุณาตั้งค่าคะแนนเก็บก่อน</h4>
-                <button type="button" id="chcek_score" subject-id="<?= esc($check_student[0]->SubjectID) ?>" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#myModal">
-                    <i class="bi bi-gear"></i> ตั้งค่าคะแนน
-                </button>
-            </div>
-        <?php endif; ?>
+        </div>
     </div>
 </div>
 
 <!-- Modal Set Score -->
-<div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
+<div class="modal fade" id="myModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
             <form class="form_set_score">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="myModalLabel"><i class="bi bi-gear"></i> ตั้งค่าคะแนน</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-header bg-primary text-white py-3">
+                    <h5 class="modal-title text-white"><i class="bi bi-gear-wide-connected me-2"></i> ตั้งสัดส่วนคะแนน (100 คะแนน)</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="row mb-3">
-                        <label for="before_middle_score" class="col-sm-4 col-form-label">ก่อนกลางภาค</label>
-                        <div class="col-sm-8">
-                            <input id="before_middle_score" name="before_middle_score" type="text" placeholder="คะแนนที่เก็บ" class="form-control score">
-                            <input name="before_middle" type="hidden" value="ก่อนกลางภาค">
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="form-floating mb-3">
+                                <input id="before_middle_score" name="before_middle_score" type="text" class="form-control score fw-bold border-2" placeholder=" " required>
+                                <label for="before_middle_score">คะแนนก่อนกลางภาค</label>
+                                <input name="before_middle" type="hidden" value="ก่อนกลางภาค">
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-floating mb-3">
+                                <input id="test_midterm_score" type="text" name="test_midterm_score" class="form-control score fw-bold border-2" placeholder=" " required>
+                                <label for="test_midterm_score">คะแนนสอบกลางภาค</label>
+                                <input name="test_midterm" type="hidden" value="สอบกลางภาค">
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-floating mb-3">
+                                <input id="after_midterm_score" name="after_midterm_score" type="text" class="form-control score fw-bold border-2" placeholder=" " required>
+                                <label for="after_midterm_score">คะแนนหลังกลางภาค</label>
+                                <input name="after_midterm" type="hidden" value="หลังกลางภาค">
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-floating mb-3">
+                                <input id="final_exam_score" name="final_exam_score" type="text" class="form-control score fw-bold border-2" placeholder=" " required>
+                                <label for="final_exam_score">คะแนนสอบปลายภาค</label>
+                                <input name="final_exam" type="hidden" value="สอบปลายภาค">
+                            </div>
+                        </div>
+                        <div class="col-12 border-top pt-3 mt-4">
+                            <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded">
+                                <span class="fw-bold fs-5">รวมคะแนนทั้งหมด:</span>
+                                <div class="d-flex align-items-center">
+                                    <input id="sum" type="text" name="sum" class="form-control form-control-lg border-0 bg-transparent text-end fw-bold fs-4" style="width: 100px;" readonly>
+                                    <span class="fs-4 fw-bold">/ 100</span>
+                                </div>
+                            </div>
+                            <div id="sum-error" class="text-danger small mt-2 d-none">* คะแนนรวมต้องมียอดรวมเท่ากับ 100 คะแนนเท่านั้น</div>
                         </div>
                     </div>
-                    <div class="row mb-3">
-                        <label for="test_midterm_score" class="col-sm-4 col-form-label">สอบกลางภาค</label>
-                        <div class="col-sm-8">
-                            <input id="test_midterm_score" type="text" name="test_midterm_score" placeholder="คะแนนที่เก็บ" class="form-control score">
-                            <input name="test_midterm" type="hidden" value="สอบกลางภาค">
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <label for="after_midterm_score" class="col-sm-4 col-form-label">หลังกลางภาค</label>
-                        <div class="col-sm-8">
-                            <input id="after_midterm_score" name="after_midterm_score" type="text" placeholder="คะแนนที่เก็บ" class="form-control score">
-                            <input name="after_midterm" type="hidden" value="หลังกลางภาค">
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <label for="final_exam_score" class="col-sm-4 col-form-label">สอบปลายภาค</label>
-                        <div class="col-sm-8">
-                            <input id="final_exam_score" name="final_exam_score" type="text" placeholder="คะแนนที่เก็บ" class="form-control score">
-                            <input name="final_exam" type="hidden" value="สอบปลายภาค">
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <label for="sum" class="col-sm-4 col-form-label">รวมคะแนน</label>
-                        <div class="col-sm-8">
-                            <input id="sum" type="text" name="sum" placeholder="คะแนนรวม" class="form-control" readonly>
-                        </div>
-                    </div>
-                    <div class="form-text">**หมายเหตุ คะแนนรวมต้องเท่ากับ 100 คะแนน</div>
                     <input id="regscore_subjectID" type="hidden" name="regscore_subjectID" value="<?= esc($check_student[0]->SubjectID); ?>">
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
-                    <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> บันทึกคะแนนเก็บ</button>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary px-5 shadow">
+                        <i class="bi bi-save me-2"></i> บันทึกสัดส่วนคะแนน
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<style>
+    /* Theme Custom Styles */
+    .sticky-top { 
+        top: 0px !important; 
+        background-color: #fff !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .fs-tiny { font-size: 0.65rem; }
+    
+    .score-input-wrapper {
+        position: relative;
+        width: 100%;
+        max-width: 80px;
+        margin: 0 auto;
+    }
+    
+    .check_score, .study_time {
+        height: 45px;
+        font-size: 1.1rem;
+        transition: all 0.2s;
+        border: 2px solid transparent;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        text-align: center !important;
+        font-weight: bold;
+    }
+    
+    .check_score:focus, .study_time:focus {
+        background-color: #fff !important;
+        border-color: #696cff !important;
+        box-shadow: 0 0.125rem 0.25rem rgba(105, 108, 255, 0.4) !important;
+    }
+    
+    #tb_score thead th {
+        background-color: #f8f9fa;
+        border-bottom: 2px solid #e1e4e8;
+    }
+    
+    .hover-elevate:hover { transform: translateY(-2px); transition: transform 0.2s ease; }
+    
+    .bg-transparent { background-color: transparent !important; }
+    .border-transparent { border-color: transparent !important; }
+    
+    .cursor-not-allowed { cursor: not-allowed; }
+</style>
+
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
 <script>
     $(function() {
+        // Navigation using Arrow Keys
         $(document).on('keydown', '.KeyEnter', function(e) {
-            var KeyEn = $(this).index('input.KeyEnter');
-            if (e.keyCode == 37) {
-                KeyEn = KeyEn - 1;
-                $('input.KeyEnter:eq(' + KeyEn + ')').focus();
-            }
-            if (e.keyCode == 39) {
-                KeyEn = KeyEn + 1;
-                $('input.KeyEnter:eq(' + KeyEn + ')').focus();
-            }
-            if (e.keyCode == 38) {
-                KeyEn = KeyEn - 5;
-                $('input.KeyEnter:eq(' + KeyEn + ')').focus();
-            }
-            if (e.keyCode == 40) {
-                KeyEn = KeyEn + 5;
-                $('input.KeyEnter:eq(' + KeyEn + ')').focus();
+            var allInputs = $('input.KeyEnter');
+            var currentIndex = allInputs.index(this);
+            var numCols = 1 + <?= count($set_score) ?>; // study_time + each set_score column
+            
+            if (e.keyCode == 37) { // Left
+                allInputs.eq(currentIndex - 1).focus().select();
+                e.preventDefault();
+            } else if (e.keyCode == 39) { // Right
+                allInputs.eq(currentIndex + 1).focus().select();
+                e.preventDefault();
+            } else if (e.keyCode == 38) { // Up
+                allInputs.eq(currentIndex - numCols).focus().select();
+                e.preventDefault();
+            } else if (e.keyCode == 40) { // Down
+                allInputs.eq(currentIndex + numCols).focus().select();
+                e.preventDefault();
             }
         });
 
-        $(".score").each(function() {
-            $(this).keyup(function() {
-                calculateSum();
-            });
+        $(".score").on('keyup input', function() {
+            calculateSum();
         });
 
         function calculateSum() {
@@ -281,11 +363,13 @@
                     sum += parseFloat(this.value);
                 }
             });
-            $("#sum").val(sum.toFixed(2));
+            $("#sum").val(sum);
             if (sum == 100) {
-                $("#sum").last().addClass("is-valid").removeClass("is-invalid");
+                $("#sum").parent().addClass("text-success").removeClass("text-danger");
+                $("#sum-error").addClass("d-none");
             } else {
-                $("#sum").addClass("is-invalid").removeClass("is-valid");
+                $("#sum").parent().addClass("text-danger").removeClass("text-success");
+                $("#sum-error").removeClass("d-none");
             }
         }
 
@@ -299,15 +383,20 @@
             var form = $(this);
             var submitButton = form.find('button[type="submit"]');
             var originalButtonText = submitButton.html();
+            
             if (parseFloat($('#sum').val()) !== 100) {
                 Swal.fire({
-                    icon: 'error',
-                    title: 'คะแนนรวมไม่เท่ากับ 100',
-                    text: 'กรุณาตรวจสอบคะแนนที่ตั้งค่าไว้ให้รวมกันได้ 100 คะแนนพอดี',
+                    icon: 'warning',
+                    title: 'คะแนนรวมไม่ครบ 100',
+                    text: 'กรุณาตั้งค่าคะแนนให้รวมกันได้ 100 คะแนนพอดี',
+                    confirmButtonText: 'รับทราบ',
+                    customClass: { confirmButton: 'btn btn-primary' },
+                    buttonsStyling: false
                 });
                 return;
             }
-            submitButton.prop('disabled', true).html('<i class="bi bi-arrow-clockwise"></i> กำลังบันทึก...');
+            
+            submitButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span> กำลังบันทึก...');
             $.ajax({
                 url: '<?= site_url("assessment/save-score/setting-score/") ?>' + form.attr('id'),
                 type: "post",
@@ -317,18 +406,18 @@
                     if (data.status == 'success') {
                         $('#myModal').modal('hide');
                         Swal.fire({
-                            position: 'top-end',
                             icon: 'success',
-                            title: 'ตั้งค่าคะแนนสำเร็จ',
-                            showConfirmButton: false,
-                            timer: 2000
+                            title: 'ตั้งค่าสำเร็จ',
+                            text: 'ระบบได้ปรับเปลี่ยนสัดส่วนคะแนนเรียบร้อยแล้ว',
+                            timer: 2000,
+                            showConfirmButton: false
                         }).then(() => { window.location.reload(); });
                     } else {
-                        Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: data.message || 'ไม่สามารถบันทึกได้' });
+                        Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: data.message });
                     }
                 },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาดในการเชื่อมต่อ', text: textStatus });
+                error: function() {
+                    Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้' });
                 },
                 complete: function() {
                     submitButton.prop('disabled', false).html(originalButtonText);
@@ -336,7 +425,7 @@
             });
         });
 
-        $(".check_score, .study_time").on('keyup', function() {
+        $(".check_score, .study_time").on('keyup input', function() {
             calculateRowSum($(this).closest('tr'));
         });
 
@@ -347,29 +436,44 @@
             var Check_ro = 0;
 
             row.find('.check_score').each(function() {
-                if ($(this).val().toLowerCase() == "ร") {
+                var val = $(this).val().toLowerCase();
+                if (val == "ร") {
                     Check_ro += 1;
-                } else if ($.isNumeric($(this).val())) {
-                    sum += parseFloat($(this).val());
+                } else if ($.isNumeric(val)) {
+                    sum += parseFloat(val);
                 }
             });
 
             row.find('.subtot').html(sum);
+            
+            var gradeBadge = row.find('.grade-badge');
+            var gradeResult = '';
 
             if (study_time !== undefined && study_time !== '') {
                 if ((80 * TimeNum / 100) > parseFloat(study_time)) {
-                    row.find('.grade').html('มส');
+                    gradeResult = 'มส';
                 } else if (Check_ro > 0) {
-                    row.find('.grade').html('ร');
+                    gradeResult = 'ร';
                 } else {
-                    row.find('.grade').html(check_grade(sum));
+                    gradeResult = check_grade(sum);
                 }
             } else {
                 if (Check_ro > 0) {
-                    row.find('.grade').html('ร');
+                    gradeResult = 'ร';
                 } else {
-                    row.find('.grade').html(check_grade(sum));
+                    gradeResult = check_grade(sum);
                 }
+            }
+            
+            gradeBadge.html(gradeResult);
+            // Apply different colors based on grade
+            gradeBadge.removeClass('bg-label-primary bg-label-success bg-label-danger bg-label-warning');
+            if (gradeResult == 'มส' || gradeResult == 'ร' || gradeResult == 0) {
+                gradeBadge.addClass('bg-label-danger');
+            } else if (gradeResult >= 3) {
+                gradeBadge.addClass('bg-label-success');
+            } else {
+                gradeBadge.addClass('bg-label-primary');
             }
         }
 
@@ -385,15 +489,20 @@
             return 0;
         }
 
-        // Initial calculation for all rows
+        // Initial Row Calculation
         $('#tb_score tbody tr').each(function() {
-            calculateRowSum($(this));
+            if (!$(this).hasClass('bg-label-warning')) {
+                calculateRowSum($(this));
+            }
         });
 
-        $(document).on('click', '#chcek_score', function(e) {
-            e.preventDefault(); // Prevent default anchor behavior
-
+        $(document).on('click', '.btn-check-score', function(e) {
+            e.preventDefault();
             var subjectId = $(this).attr('subject-id');
+            var $btn = $(this);
+            var originalText = $btn.html();
+            
+            $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> รอสักครู่...');
 
             $.ajax({
                 url: "<?= site_url('assessment/save-score/edit-score') ?>",
@@ -401,11 +510,7 @@
                 data: { subid: subjectId },
                 dataType: 'json',
                 success: function(data) {
-                    // Clear previous values
                     $('.form_set_score')[0].reset();
-                    $("#sum").val('');
-                    $("#sum").removeClass("is-valid is-invalid");
-
                     if (data.status === 'not_found') {
                         $(".form_set_score").attr('id', "form_insert_score");
                     } else {
@@ -414,17 +519,15 @@
                         $('#test_midterm_score').val(data[1].regscore_score);
                         $('#after_midterm_score').val(data[2].regscore_score);
                         $('#final_exam_score').val(data[3].regscore_score);
-                        calculateSum(); // Recalculate sum after populating
+                        calculateSum();
                     }
-                    // Show the modal AFTER data is loaded
                     $('#myModal').modal('show');
                 },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'เกิดข้อผิดพลาด',
-                        text: 'ไม่สามารถดึงข้อมูลการตั้งค่าคะแนนได้: ' + textStatus
-                    });
+                error: function() {
+                    Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: 'ไม่สามารถโหลดข้อมูลการตั้งค่าได้' });
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).html(originalText);
                 }
             });
         });
@@ -438,10 +541,7 @@
 
             form.find('tbody tr').each(function() {
                 var studentRow = $(this);
-                // Skip rows for "เรียนซ้ำ" students as they are not part of this form
-                if (studentRow.find('td').attr('colspan') === '7') {
-                    return true; // continue to next iteration
-                }
+                if (studentRow.hasClass('bg-label-warning')) return true;
 
                 var studyTimeInput = studentRow.find('input[name="study_time[]"]');
                 var checkScoreInputs = studentRow.find('input.check_score');
@@ -450,48 +550,26 @@
                     var enteredStudyTime = parseInt(studyTimeInput.val(), 10);
                     var maxStudyTime = parseInt(studyTimeInput.attr('check-time'), 10);
                     if (!isNaN(enteredStudyTime) && enteredStudyTime > maxStudyTime) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'เวลาเรียนเกิน',
-                            text: 'นักเรียน ' + studentRow.find('td:eq(3)').text().trim() + ' มีเวลาเรียน (' + enteredStudyTime + ') เกินกว่าที่กำหนด (' + maxStudyTime + ')',
-                        });
-                        validationFailed = true;
-                        return false;
+                        Swal.fire({ icon: 'error', title: 'เวลาเรียนเกิน', text: 'ตรวจสอบเวลาเรียนของ ' + studentRow.find('.fw-bold').first().text() });
+                        validationFailed = true; return false;
                     }
                 }
 
                 checkScoreInputs.each(function() {
-                    var checkScoreInput = $(this);
-                    var enteredScore = checkScoreInput.val();
-                    var maxScore = parseInt(checkScoreInput.attr('check-score-key'), 10);
-
-                    if (enteredScore.toLowerCase() === 'ร') {
-                        return true;
-                    }
-                    
+                    var enteredScore = $(this).val();
+                    var maxScore = parseInt($(this).attr('check-score-key'), 10);
+                    if (enteredScore.toLowerCase() === 'ร') return true;
                     var parsedEnteredScore = parseFloat(enteredScore);
-
                     if (!isNaN(parsedEnteredScore) && parsedEnteredScore > maxScore) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'คะแนนเกิน',
-                            text: 'นักเรียน ' + studentRow.find('td:eq(3)').text().trim() + ' มีคะแนน (' + parsedEnteredScore + ') เกินกว่าคะแนนเก็บ (' + maxScore + ')',
-                        });
-                        validationFailed = true;
-                        return false;
+                        Swal.fire({ icon: 'error', title: 'คะแนนเกิน', text: 'ตรวจสอบคะแนนของ ' + studentRow.find('.fw-bold').first().text() });
+                        validationFailed = true; return false;
                     }
                 });
-
-                if (validationFailed) {
-                    return false;
-                }
             });
 
-            if (validationFailed) {
-                return; // Stop form submission
-            }
+            if (validationFailed) return;
 
-            submitButton.prop('disabled', true).html('<i class="bi bi-arrow-clockwise"></i> กำลังบันทึก...');
+            submitButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span> กำลังบันทึกข้อมูลทั้งหมด...');
             $.ajax({
                 url: '<?= site_url("assessment/save-score/insert-score") ?>',
                 type: "post",
@@ -499,13 +577,13 @@
                 dataType: 'json',
                 success: function(data) {
                     if (data.status == 'success') {
-                        Swal.fire({ position: 'top-end', icon: 'success', title: 'บันทึกคะแนนสำเร็จ', showConfirmButton: false, timer: 1500 });
+                        Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ', text: 'ข้อมูลคะแนนทั้งหมดถูกบันทึกลงระบบแล้ว', timer: 1500, showConfirmButton: false });
                     } else {
-                        Swal.fire({ position: 'top-end', icon: 'error', title: 'เกิดข้อผิดพลาด', showConfirmButton: false, timer: 2000 });
+                        Swal.fire({ icon: 'error', title: 'ขออภัย', text: 'ไม่สามารถบันทึกข้อมูลได้' });
                     }
                 },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    Swal.fire({ position: 'top-end', icon: 'error', title: 'เกิดข้อผิดพลาดในการเชื่อมต่อ', text: textStatus, showConfirmButton: false, timer: 2000 });
+                error: function() {
+                    Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้' });
                 },
                 complete: function() {
                     submitButton.prop('disabled', false).html(originalButtonText);
@@ -513,67 +591,24 @@
             });
         });
 
-        const Toast = Swal.mixin({ toast: true, position: 'bottom-end', showConfirmButton: false, timer: 2500, timerProgressBar: true, didOpen: (toast) => { toast.addEventListener('mouseenter', Swal.stopTimer); toast.addEventListener('mouseleave', Swal.resumeTimer); } });
-
-        // --- Score Max Label Setup ---
-        // Wrap each score/time input with wrapper and add max label
-        function setupMaxScoreLabels() {
-            $('.check_score, .study_time').each(function() {
-                var $input = $(this);
-                
-                // Skip if already wrapped
-                if ($input.parent().hasClass('score-input-wrapper')) {
-                    return;
-                }
-                
-                var maxValue = $input.attr('check-score-key') || $input.attr('check-time');
-                if (maxValue) {
-                    $input.wrap('<div class="score-input-wrapper"></div>');
-                    $input.after('<span class="max-score-label">/' + maxValue + '</span>');
-                }
-            });
-        }
-        
-        // Initialize labels on page load
-        setupMaxScoreLabels();
-        // --- End Score Max Label Setup ---
+        const Toast = Swal.mixin({ toast: true, position: 'bottom-end', showConfirmButton: false, timer: 1500, timerProgressBar: true });
 
         $(document).on('input', '.check_score, .study_time', function() {
             var inputField = $(this);
             var currentTimeout = inputField.data('autosaveTimeout');
             clearTimeout(currentTimeout);
             
-             // --- VALIDATION ---
-    var enteredValue = parseInt(inputField.val(), 10);
-    var maxValue;
-    var errorMessage;
+            var enteredValue = parseInt(inputField.val(), 10);
+            var maxValue = inputField.hasClass('check_score') ? parseInt(inputField.attr('check-score-key'), 10) : parseInt(inputField.attr('check-time'), 10);
 
-    if (inputField.hasClass('check_score')) {
-        maxValue = parseInt(inputField.attr('check-score-key'), 10);
-        errorMessage = 'คะแนนที่กรอก (' + enteredValue + ') เกินกว่าคะแนนเก็บ (' + maxValue + ')';
-    } else if (inputField.hasClass('study_time')) {
-        maxValue = parseInt(inputField.attr('check-time'), 10);
-        errorMessage = 'เวลาเรียนที่กรอก (' + enteredValue + ') เกินกว่าที่กำหนด (' + maxValue + ')';
-    }
+            if (maxValue && !isNaN(enteredValue) && enteredValue > maxValue) {
+                Toast.fire({ icon: 'error', title: 'ค่าที่กรอกเกินกำหนด!' });
+                inputField.val('0').addClass('is-invalid');
+                setTimeout(() => { inputField.removeClass('is-invalid').focus().select(); }, 500);
+                return;
+            }
 
-    if (maxValue && !isNaN(enteredValue) && enteredValue > maxValue) {
-        Toast.fire({
-            icon: 'error',
-            title: errorMessage,
-            timer: 3000 // Longer for error
-        });
-        
-        // Revert to 0 as per new request
-        inputField.val('0'); 
-
-        setTimeout(function () {
-            inputField.focus().select();
-        }, 100); 
-        return; // Stop the autosave
-    }
-    // --- END VALIDATION ---
-
-            Toast.fire({ icon: 'info', title: 'กำลังแก้ไข...', timer: 1000 });
+            Toast.fire({ icon: 'info', title: 'รอการบันทึกอัตโนมัติ...', timer: 1000 });
             var studentRow = inputField.closest('tr');
             var newTimeout = setTimeout(function() {
                 var studentID = studentRow.find('input[name="StudentID[]"]').val();
@@ -593,16 +628,11 @@
                     dataType: 'json',
                     success: function(response) {
                         if (response.status === 'success') {
-                            Toast.fire({ icon: 'success', title: response.message || 'บันทึกข้อมูลเรียบร้อย' });
-                        } else {
-                            Toast.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด: ' + response.message });
+                            Toast.fire({ icon: 'success', title: 'บันทึกอัตโนมัติสำเร็จ' });
                         }
-                    },
-                    error: function() {
-                        Toast.fire({ icon: 'error', title: 'เกิดข้อผิดพลาดในการเชื่อมต่อ' });
                     }
                 });
-            }, 1500);
+            }, 1000);
             inputField.data('autosaveTimeout', newTimeout);
         });
     });
