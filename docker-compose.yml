@@ -5,7 +5,6 @@ services:
     container_name: teacher2025_app
     build: .
     ports:
-      - "8088:80"
       - "8084:443"
     volumes:
       - .:/var/www/html

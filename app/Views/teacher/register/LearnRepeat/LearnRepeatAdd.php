@@ -455,7 +455,9 @@
             percentage.text(Math.round(val) + '%');
         }
 
-        $(window).on('load', function() {
+        function finishLoader() {
+            if ($('#page-loader-wrapper').hasClass('loaded')) return;
+            
             clearInterval(timerInterval);
             const totalTime = ((performance.now() - startTime) / 1000).toFixed(2);
             $('.loader-time').text(totalTime + 's');
@@ -463,7 +465,7 @@
             // Smoothly finish to 100%
             let finishInterval = setInterval(() => {
                 if (currentProgress < 100) {
-                    currentProgress += 2;
+                    currentProgress += 5; // Faster finish
                     updateLoader(currentProgress);
                 } else {
                     clearInterval(finishInterval);
@@ -471,10 +473,21 @@
                     setTimeout(() => {
                         $('#page-loader-wrapper').addClass('loaded');
                         setTimeout(() => { $('#page-loader-wrapper').remove(); }, 600);
-                    }, 400);
+                    }, 200);
                 }
             }, 10);
-        });
+        }
+
+        // 1. If window is already loaded, finish immediately
+        if (document.readyState === 'complete') {
+            finishLoader();
+        } else {
+            // 2. Wait for window load event
+            $(window).on('load', finishLoader);
+            
+            // 3. Safety Timeout: If it takes more than 5 seconds, force hide
+            setTimeout(finishLoader, 5000);
+        }
 
         // Arrow Key Navigation
         $(document).on('keydown', '.KeyEnter', function(e) {
