@@ -34,8 +34,15 @@ td {
 
 <div class="text-center b" style="padding-top: -50px;">
     <div>รายวิชา <?=$re_subjuct[0]->SubjectCode?> <?=$re_subjuct[0]->SubjectName?> ครูประจำวิชา
-        <?=session()->get('fullname');?></div>
-    <div>ชั้นมัธยมศึกษาปีที่ <?php $sub_room = explode(".",$re_room); echo isset($sub_room[1]) ? $sub_room[1] : $sub_room[0]; ?>
+        <?= $teacher_data->pers_prefix . $teacher_data->pers_firstname . ' ' . $teacher_data->pers_lastname; ?></div>
+    <div>ชั้นมัธยมศึกษาปีที่ <?php 
+        if ($re_room == "ทุกห้อง") {
+            echo str_replace("ม.", "", $re_subjuct[0]->SubjectClass) . " (ทุกห้องเรียน)";
+        } else {
+            $sub_room = explode(".", $re_room);
+            echo isset($sub_room[1]) ? $sub_room[1] : $sub_room[0];
+        }
+    ?>
         <?php $sub_year = explode("/",$CheckRepeat[0]->onoff_year);?>
         ภาคเรียนที่ <?=$sub_year[0];?> ปีการศึกษา <?=$sub_year[1];?></div>
     <div>อำเภอเมืองนครสวรรค์ จังหวัดนครสวรรค์ สังกัดองค์การบริหารส่วนจังหวัดนครสวรรค์</div>
@@ -51,7 +58,7 @@ td {
             <th rowspan="2" style="width: 5%">ห้อง</th>
             <th rowspan="2" style="width: 5%">เลขที่</th>
             <th rowspan="2" style="width: 4%">เลขประจำตัวนักเรียน</th>
-            <th rowspan="2" style="width: 30%">ชื่อ - นามสกุล</th>
+            <th rowspan="2" style="width: 25%">ชื่อ - นามสกุล</th>
             <th rowspan="2" style="width: 8%">เวลาเรียน (<?=$re_subjuct[0]->SubjectHour?>)</th>
             <?php 
                 $sum_scoer = 0;
@@ -64,7 +71,7 @@ td {
             <?php endforeach; ?>
             <th class="h6" style="width: 9%">คะแนนรวม</th>
             <th rowspan="2" style="width: 6%">เกรด</th>
-            <th rowspan="2" style="width: 3%">สถานะ<br>นักเรียน</th>
+            <th rowspan="2" style="width: 8%">สถานะ<br>นักเรียน</th>
         </tr>
         <tr>
             <?php 
@@ -103,13 +110,9 @@ td {
             <?php endforeach; ?>
             <td class="center"><?=@array_sum($s)?></td>
             <td class="center">
-                <?php if((80*intVal($v_check_student->StudyTime))/100 >= $re_subjuct[0]->SubjectHour || $v_check_student->StudyTime == ""): ?>
-                    มส
-                <?php else: ?>
                 <?=$v_check_student->Grade?>
-                <?php endif; ?>
             </td>
-            <td class="center"><?=$v_check_student->StudentBehavior?></td>
+            <td class="center" style="white-space: nowrap; overflow: hidden; font-size: 14px;"><?=$v_check_student->StudentBehavior?></td>
         </tr>
         <?php 
             endif ;

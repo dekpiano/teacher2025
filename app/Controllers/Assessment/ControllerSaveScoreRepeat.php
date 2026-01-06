@@ -455,8 +455,25 @@ class ControllerSaveScoreRepeat extends BaseController
         // Fetch CheckRepeat data
         $data['CheckRepeat'] = $this->db->table('tb_register_onoff')->select('onoff_detail,onoff_year')->where('onoff_id',7)->get()->getResult();
 
+        // ดึงข้อมูลครูหลัก (TeacherID) จาก tb_register เพื่อแสดงเป็นครูประจำวิชา
+        $mainTeacher = $this->db->table('skjacth_academic.tb_register')
+            ->select('TeacherID')
+            ->where('SubjectID', $reportSubjectID)
+            ->where('RegisterYear', $reportRegisterYear)
+            ->where('TeacherID !=', '')
+            ->limit(1)
+            ->get()->getRow();
+
+        $displayTeacherId = ($mainTeacher && !empty($mainTeacher->TeacherID)) ? $mainTeacher->TeacherID : $loginId;
+
         // Fetch teacher data for report
         $data['teacher_data'] = $this->personnelDb->table('tb_personnel')
+            ->select('pers_prefix, pers_firstname, pers_lastname')
+            ->where('pers_id', $displayTeacherId)
+            ->get()->getRow();
+
+        // Fetch repeat teacher data (current user who is handling the repeat registration)
+        $data['teacher_repeat'] = $this->personnelDb->table('tb_personnel')
             ->select('pers_prefix, pers_firstname, pers_lastname')
             ->where('pers_id', $loginId)
             ->get()->getRow();
@@ -505,52 +522,21 @@ class ControllerSaveScoreRepeat extends BaseController
             $data['re_room'] = "ทุกห้อง";
             $data['re_teacher'] = "";
 
-            // ดึงรายชื่อห้องทั้งหมด
-            $levels = $this->db->table('skjacth_academic.tb_register')
-                ->select('skjacth_academic.tb_students.StudentClass')
-                ->join('skjacth_academic.tb_subjects', 'skjacth_academic.tb_subjects.SubjectID = skjacth_academic.tb_register.SubjectID')
-                ->join('skjacth_academic.tb_students', 'skjacth_academic.tb_students.StudentID = skjacth_academic.tb_register.StudentID')
-                ->where('skjacth_academic.tb_register.RepeatTeacher', $loginId)
-                ->where('skjacth_academic.tb_register.RegisterYear', $reportRegisterYear)
-                ->where('skjacth_academic.tb_subjects.SubjectYear', $reportRegisterYear)
-                ->where('skjacth_academic.tb_register.SubjectID', $reportSubjectID)
-                ->groupBy('skjacth_academic.tb_students.StudentClass')
-                ->orderBy('skjacth_academic.tb_students.StudentClass', 'ASC')
-                ->get()->getResult();
-
-            // ดึงข้อมูลนักเรียนทุกห้องรวมกันสำหรับหน้าปก
-            $allStudents = $baseStudentQuery(null); // ไม่กรองห้อง = ดึงทุกห้อง
+            // ดึงข้อมูลนักเรียนทุกห้องรวมกันสำหรับหน้าปกและรายงานสรุป
+            $allStudents = $baseStudentQuery(null); // ไม่กรองห้อง = ดึงทุกห้อง ซึ่งเรียงห้องมาให้แล้วจาก baseStudentQuery
             $data['check_student'] = $allStudents;
+            $data['check_student1'] = $allStudents; // ใช้สำหรับตารางสรุป
             $data['test'] = $reportRegisterYear;
 
             // พิมพ์หน้าปก (คำนวณจากทุกห้อง)
             $reportFront = view('teacher/register/LearnRepeat/Report/ReportLearnRepeatFront', $data);
             $mpdf->WriteHTML($reportFront);
 
-            // พิมพ์รายงานสรุปแต่ละห้อง
-            foreach ($levels as $key => $level) {
-                $check_student_class = $baseStudentQuery($level->StudentClass);
-                
-                // Filter: Check if there are any students with Grade_Type (Repeat Students)
-                $hasRepeat = false;
-                foreach ($check_student_class as $std) {
-                    if ($std->Grade_Type != '') {
-                        $hasRepeat = true;
-                        break;
-                    }
-                }
-                
-                if (!$hasRepeat) {
-                    continue;
-                }
-                
-                $data['check_student1'] = $check_student_class;
-                $data['re_room'] = $level->StudentClass;
-
-                $mpdf->AddPage();
-                $reportSummary = view('teacher/register/LearnRepeat/Report/ReportLearnRepeatSummary', $data);
-                $mpdf->WriteHTML($reportSummary);
-            }
+            // พิมพ์รายงานสรุปทุกห้องรวมกันในแผ่นเดียว (ต่อเนื่อง)
+            $mpdf->AddPage();
+            $reportSummary = view('teacher/register/LearnRepeat/Report/ReportLearnRepeatSummary', $data);
+            $mpdf->WriteHTML($reportSummary);
+            
         } else {
             $data['CheckPrint'] = "";
             $data['re_room'] = $selectPrint;

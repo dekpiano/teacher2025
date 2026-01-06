@@ -7,7 +7,7 @@ services:
     ports:
       - "8084:443"
     volumes:
-      - .:/var/www/html
+      - .:/var/www/html:delegated
       - d:/librarie_skj:/home/skjacth/domains/skj.ac.th/public_html/librarie_skj:cached
     environment:
       # Database connection settings for CodeIgniter

@@ -19,7 +19,7 @@
 
 .text-center {
     text-align: center;
-    font-size: 28px;
+    font-size: 26px; /* Increased +2 */
 }
 
 .b {
@@ -28,17 +28,17 @@
 </style>
 <table>
     <tr>
-        <th style="padding-left: 900px;padding-top: -20px;font-size: 24px;">ปถ.05:เรียนซ้ำ</th>
+        <th style="padding-left: 900px;padding-top: -30px;font-size: 22px;">ปถ.05:เรียนซ้ำ</th>
     </tr>
 </table>
-<div class="text-center b">
-    <img src="public/uploads/banner/LogoSKJ_2.png" style="width: 15%;" alt="" srcset="">
-    <div>แบบบันทึกผลการพัฒนาคุณภาพผู้เรียนรายวิชา</div>
-    <div>โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์</div>
-    <div>อำเภอเมืองนครสวรรค์ จังหวัดนครสวรรค์ สังกัดองค์การบริหารส่วนจังหวัดนครสวรรค์</div>
+<div class="text-center b" style="margin-top: -20px;">
+    <img src="public/uploads/banner/LogoSKJ_2.png" style="width: 14%;" alt="" srcset="">
+    <div style="font-size: 26px;">แบบบันทึกผลการพัฒนาคุณภาพผู้เรียนรายวิชา</div>
+    <div style="font-size: 24px;">โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์</div>
+    <div style="font-size: 20px;">อำเภอเมืองนครสวรรค์ จังหวัดนครสวรรค์ สังกัดองค์การบริหารส่วนจังหวัดนครสวรรค์</div>
 </div>
 
-<table class="b" style="width: 100%;margin-top: 10px;">
+<table class="b" style="width: 100%;margin-top: 5px; font-size: 20px;">
     <tbody>
         <tr>
             <?php $sub_year = explode("/",$CheckRepeat[0]->onoff_year);?>
@@ -66,7 +66,7 @@
     </tbody>
 </table>
 
-<table class="b" style="width: 100%;margin-top: 30px;">
+<table class="b" style="width: 100%;margin-top: 10px; font-size: 20px;">
     <tbody>
         <tr>
             <td>กลุ่มสาระการเรียนรู้ <?php $FirstGroup = explode("/",$re_subjuct[0]->FirstGroup); echo isset($FirstGroup[1]) ? $FirstGroup[1] : $FirstGroup[0];?>
@@ -85,12 +85,17 @@
     </tbody>
 </table>
 
-<table style="width: 100%;margin-top: 10px;">
+<table style="width: 100%;margin-top: 5px; font-size: 20px;">
     <tbody>
         <tr>
             <td style="width: 50px"> </td>
-            <td style="width: 100px">ครูผู้สอน </td>
+            <td style="width: 150px">ครูประจำวิชา </td>
             <td><?= $teacher_data->pers_prefix . $teacher_data->pers_firstname . ' ' . $teacher_data->pers_lastname; ?></td>
+        </tr>
+        <tr>
+            <td> </td>
+            <td>ครูผู้สอนเรียนซ้ำ </td>
+            <td><?= $teacher_repeat->pers_prefix . $teacher_repeat->pers_firstname . ' ' . $teacher_repeat->pers_lastname; ?></td>
         </tr>
         <tr>
             <td> </td>
