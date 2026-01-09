@@ -22,16 +22,32 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 # Install PHP extensions
 RUN docker-php-ext-install pdo_mysql mysqli mbstring exif pcntl bcmath gd intl zip opcache
 
-# Configure Opcache
+# Configure Opcache for development (auto-detect file changes)
 RUN { \
+    echo 'opcache.enable=1'; \
     echo 'opcache.memory_consumption=256'; \
-    echo 'opcache.interned_strings_buffer=16'; \
-    echo 'opcache.max_accelerated_files=20000'; \
-    echo 'opcache.revalidate_freq=0'; \
+    echo 'opcache.interned_strings_buffer=32'; \
+    echo 'opcache.max_accelerated_files=30000'; \
+    echo 'opcache.revalidate_freq=2'; \
     echo 'opcache.validate_timestamps=1'; \
     echo 'opcache.fast_shutdown=1'; \
     echo 'opcache.enable_cli=1'; \
+    echo 'opcache.save_comments=1'; \
+    echo 'opcache.enable_file_override=1'; \
     } > /usr/local/etc/php/conf.d/opcache-recommended.ini
+
+# Configure PHP for better file I/O performance
+RUN { \
+    echo 'realpath_cache_size=4096K'; \
+    echo 'realpath_cache_ttl=600'; \
+    echo 'max_execution_time=300'; \
+    echo 'memory_limit=512M'; \
+    echo 'post_max_size=100M'; \
+    echo 'upload_max_filesize=100M'; \
+    } > /usr/local/etc/php/conf.d/performance.ini
+
+# Create opcache file cache directory
+RUN mkdir -p /tmp/opcache && chmod 777 /tmp/opcache
 
 # Enable Apache mod_rewrite and mod_ssl
 RUN a2enmod rewrite ssl

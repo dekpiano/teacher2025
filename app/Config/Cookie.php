@@ -24,10 +24,12 @@ class Cookie extends BaseConfig
      * Default expires timestamp for cookies. Setting this to `0` will mean the
      * cookie will not have the `Expires` attribute and will behave as a session
      * cookie.
+     * 
+     * 86400 = 1 day (เก็บ cookie ไว้ 1 วัน จะได้ไม่ต้อง login บ่อย)
      *
      * @var DateTimeInterface|int|string
      */
-    public $expires = 0;
+    public $expires = 86400;
 
     /**
      * --------------------------------------------------------------------------

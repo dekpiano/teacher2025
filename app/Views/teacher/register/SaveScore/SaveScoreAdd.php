@@ -193,8 +193,21 @@
                                                     </td>
                                                 <?php endforeach; ?>
                                                 <td class="text-center fw-bold text-primary subtot fs-5"></td>
+                                                <?php
+                                                // Calculate initial grade based on study time
+                                                $studyTimeVal = $v_check_student->StudyTime ?? '';
+                                                $minTimeRequired = $timeNum * 0.8; // 80% of total time
+                                                $initialGrade = 'มส'; // Default to มส
+                                                $gradeClass = 'bg-label-danger';
+                                                
+                                                // Only show grade if study time is filled AND >= 80%
+                                                if ($studyTimeVal !== '' && floatval($studyTimeVal) >= $minTimeRequired) {
+                                                    $initialGrade = '-';
+                                                    $gradeClass = 'bg-label-primary';
+                                                }
+                                                ?>
                                                 <td class="text-center grade">
-                                                    <span class="grade-badge badge bg-label-primary fs-6 fw-bold">-</span>
+                                                    <span class="grade-badge badge <?= $gradeClass ?> fs-6 fw-bold"><?= $initialGrade ?></span>
                                                 </td>
                                                 <td class="text-center">
                                                     <span class="status-badge badge <?= $v_check_student->StudentBehavior == 'ปกติ' ? 'bg-label-success' : 'bg-label-danger' ?>"><?= esc($v_check_student->StudentBehavior) ?></span>
@@ -295,6 +308,11 @@
 </div>
 
 <style>
+    /* Auto zoom for better visibility on large screens */
+    body {
+        zoom: 90%;
+    }
+    
     /* Premium Page Loader */
     #page-loader-wrapper {
         position: fixed;
@@ -606,21 +624,16 @@
             
             var gradeBadge = row.find('.grade-badge');
             var gradeResult = '';
+            var minTimeRequired = parseFloat(TimeNum) * 0.8; // 80% of total time
+            var studyTimeNum = parseFloat(study_time);
 
-            if (study_time !== undefined && study_time !== '') {
-                if ((80 * TimeNum / 100) > parseFloat(study_time)) {
-                    gradeResult = 'มส';
-                } else if (Check_ro > 0) {
-                    gradeResult = 'ร';
-                } else {
-                    gradeResult = check_grade(sum);
-                }
+            // If study_time is empty, undefined, NaN, or less than 80%, show 'มส'
+            if (study_time === undefined || study_time === '' || isNaN(studyTimeNum) || studyTimeNum < minTimeRequired) {
+                gradeResult = 'มส';
+            } else if (Check_ro > 0) {
+                gradeResult = 'ร';
             } else {
-                if (Check_ro > 0) {
-                    gradeResult = 'ร';
-                } else {
-                    gradeResult = check_grade(sum);
-                }
+                gradeResult = check_grade(sum);
             }
             
             gradeBadge.html(gradeResult);

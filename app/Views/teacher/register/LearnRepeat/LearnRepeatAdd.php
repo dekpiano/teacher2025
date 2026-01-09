@@ -174,7 +174,20 @@
                                                         </td>
                                                     <?php endforeach; ?>
                                                     <td class="text-center bg-label-secondary fw-bold subtot h5 mb-0"></td>
-                                                    <td class="text-center grade h5 mb-0 fw-black"></td>
+                                                    <?php
+                                                    // Calculate initial grade based on study time
+                                                    $studyTimeVal = $v_check_student->StudyTime ?? '';
+                                                    $minTimeRequired = $timeNum * 0.8; // 80% of total time
+                                                    $initialGrade = 'มส'; // Default to มส
+                                                    $gradeClass = 'text-danger';
+                                                    
+                                                    // Only show normal grade if study time is filled AND >= 80%
+                                                    if ($studyTimeVal !== '' && floatval($studyTimeVal) >= $minTimeRequired) {
+                                                        $initialGrade = '-';
+                                                        $gradeClass = '';
+                                                    }
+                                                    ?>
+                                                    <td class="text-center grade h5 mb-0 fw-black <?= $gradeClass ?>"><?= $initialGrade ?></td>
                                                     <td class="text-center">
                                                         <span class="badge rounded-pill <?= $v_check_student->StudentBehavior == 'ปกติ' ? 'bg-label-success' : 'bg-label-danger' ?>">
                                                             <?= esc($v_check_student->StudentBehavior) ?>
@@ -299,6 +312,11 @@
 </div>
 
 <style>
+    /* Auto zoom for better visibility on large screens */
+    body {
+        zoom: 90%;
+    }
+    
     /* Premium Page Loader */
     #page-loader-wrapper {
         position: fixed;
@@ -604,7 +622,11 @@
             row.find('.subtot').text(sum);
 
             var gradeText = "";
-            if (study_time !== '' && (80 * TimeNum / 100) > parseFloat(study_time)) {
+            var minTimeRequired = parseFloat(TimeNum) * 0.8; // 80% of total time
+            var studyTimeNum = parseFloat(study_time);
+            
+            // If study_time is empty, undefined, NaN, or less than 80%, show 'มส'
+            if (study_time === undefined || study_time === '' || isNaN(studyTimeNum) || studyTimeNum < minTimeRequired) {
                 gradeText = "มส";
             } else if (hasRo) {
                 gradeText = "ร";
