@@ -93,6 +93,10 @@ class CurriculumController extends BaseController
 
     public function sendPlan()
     {
+        // Track page visit
+        helper('recent_pages');
+        track_recent_page('curriculum/SendPlan', 'ส่งแผนการสอน', 'bi-file-earmark-arrow-up');
+
         $data['OnOff'] = [$this->setup];
 
         $tiemstart = $this->setup->seplanset_startdate;

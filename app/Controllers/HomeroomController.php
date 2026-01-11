@@ -32,6 +32,10 @@ class HomeroomController extends BaseController
             return redirect()->to('login');
         }
 
+        // Track page visit
+        helper('recent_pages');
+        track_recent_page('homeroom', 'โฮมรูม', 'bi-house-door');
+
         $homeroomModel = new HomeroomModel();
         $db = db_connect(); // Default DB
 

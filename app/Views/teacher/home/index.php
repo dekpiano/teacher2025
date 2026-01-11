@@ -221,19 +221,33 @@
                         <i class="bi bi-clock-history"></i>
                     </div>
                     <div>
-                        <h3 class="fw-bold mb-0"><?= date('H:i') ?> น.</h3>
-                        <div class="text-muted small">เวลาปัจจุบัน</div>
+                        <?php if (!empty($recentPages) && isset($recentPages[0])): ?>
+                            <a href="<?= base_url($recentPages[0]['page_url']) ?>" class="text-decoration-none">
+                                <h6 class="fw-bold mb-0 text-dark"><?= esc($recentPages[0]['page_name']) ?></h6>
+                                <div class="text-muted small">เข้าล่าสุด</div>
+                            </a>
+                        <?php else: ?>
+                            <h6 class="fw-bold mb-0 text-muted">-</h6>
+                            <div class="text-muted small">เข้าล่าสุด</div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
             <div class="col-lg-3 col-6">
                 <div class="stat-badge-card">
                     <div class="icon-box bg-label-warning text-warning">
-                        <i class="bi bi-calendar3"></i>
+                        <i class="bi bi-arrow-repeat"></i>
                     </div>
                     <div>
-                        <h3 class="fw-bold mb-0"><?= date('d/m') ?></h3>
-                        <div class="text-muted small"><?= date('Y') + 543 ?></div>
+                        <?php if (!empty($recentPages) && isset($recentPages[1])): ?>
+                            <a href="<?= base_url($recentPages[1]['page_url']) ?>" class="text-decoration-none">
+                                <h6 class="fw-bold mb-0 text-dark"><?= esc($recentPages[1]['page_name']) ?></h6>
+                                <div class="text-muted small">เข้าล่าสุดอันดับ 2</div>
+                            </a>
+                        <?php else: ?>
+                            <h6 class="fw-bold mb-0 text-muted">-</h6>
+                            <div class="text-muted small">เข้าล่าสุดอันดับ 2</div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -326,7 +340,7 @@
                     <h5>กิจกรรมและพัฒนาผู้เรียน</h5>
                     <div class="menu-line"></div>
                 </div>
-                <div class="row g-4 mb-5">
+                <div class="row g-4 mb-4">
                     <div class="col-lg-4 col-md-6">
                         <a href="<?= base_url('club') ?>" class="luxe-card">
                             <i class="bi bi-people card-icon"></i>
@@ -336,24 +350,23 @@
                             </div>
                         </a>
                     </div>
-                    <!-- <div class="col-lg-4 col-md-6">
-                        <div class="luxe-card opacity-50 pe-none">
-                            <i class="bi bi-house-door card-icon"></i>
-                            <div class="card-text">
-                                <h6>เยี่ยมบ้านนักเรียน</h6>
-                                <p>(ระบบกำลังปรับปรุง)</p>
-                            </div>
-                        </div>
-                    </div>
+                </div>
+
+                <!-- งานบุคลากร -->
+                <div class="menu-title-row">
+                    <h5>งานบุคลากร</h5>
+                    <div class="menu-line"></div>
+                </div>
+                <div class="row g-4 mb-5">
                     <div class="col-lg-4 col-md-6">
-                        <div class="luxe-card opacity-50 pe-none">
-                            <i class="bi bi-megaphone card-icon"></i>
+                        <a href="<?= base_url('leave') ?>" class="luxe-card">
+                            <i class="bi bi-calendar-check card-icon"></i>
                             <div class="card-text">
-                                <h6>ประกาศข่าว</h6>
-                                <p>ติดตามข่าวสารจากทางโรงเรียน</p>
+                                <h6>ระบบการลา</h6>
+                                <p>เขียนใบลาและติดตามสถานะการลา</p>
                             </div>
-                        </div>
-                    </div> -->
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

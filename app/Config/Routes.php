@@ -16,6 +16,14 @@ $routes->get('login/googleCallback', 'Login::googleCallback');
 // Placeholder for the page after login. We will create this controller next.
     $routes->get('home', 'Home::index');
 
+    // Leave Routes
+    $routes->group('leave', static function ($routes) {
+        $routes->get('', 'LeaveController::index');
+        $routes->post('create', 'LeaveController::create');
+        $routes->get('delete/(:num)', 'LeaveController::delete/$1');
+        $routes->post('check-quota', 'LeaveController::check_quota');
+    });
+
     // Homeroom Routes
     $routes->group('homeroom', static function ($routes) {
         $routes->get('', 'HomeroomController::index');

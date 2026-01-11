@@ -20,6 +20,10 @@ class ReadingAssessmentController extends BaseController
 
     public function index()
     {
+        // Track page visit
+        helper('recent_pages');
+        track_recent_page('teacher/reading_assessment', 'อ่านคิดวิเคราะห์', 'bi-book');
+
         $model = new \App\Models\ReadingAssessmentModel();
         $activeYearTerm = $model->getAssessmentAcademicYearAndTerm();
         $academicYear = $activeYearTerm['year'];

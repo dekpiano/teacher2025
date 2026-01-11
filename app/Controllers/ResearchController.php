@@ -27,6 +27,10 @@ class ResearchController extends BaseController
 
     public function index($year = null, $term = null)
     {
+        // Track page visit
+        helper('recent_pages');
+        track_recent_page('research', 'งานวิจัยในชั้นเรียน', 'bi-layers');
+
         $data['title'] = "ส่งงานวิจัยในชั้นเรียน";
         $data['setup'] = $this->setup; // Pass setup data to the view
 

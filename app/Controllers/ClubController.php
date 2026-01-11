@@ -78,6 +78,10 @@ class ClubController extends BaseController
             return redirect()->to('login');
         }
 
+        // Track page visit
+        helper('recent_pages');
+        track_recent_page('club', 'กิจกรรมชุมนุม', 'bi-people');
+
         $teacherId = $this->getTeacherId();
         if (!$teacherId) {
             // Handle case where teacher ID is not found in session

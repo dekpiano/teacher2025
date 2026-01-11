@@ -25,6 +25,10 @@ class ControllerSaveScoreRepeat extends BaseController
 
     public function normal()
     {
+        // Track page visit
+        helper('recent_pages');
+        track_recent_page('assessment/save-score-repeat', 'บันทึกเรียนซ้ำ', 'bi-arrow-repeat');
+
         $data['title']  = "หน้าหลักบันทึกผลการเรียน (ซ้ำ)";
         $data['teacher'] = $this->personnelDb->table('tb_personnel')->select('pers_id,pers_img')->where('pers_id',$this->session->get('person_id'))->get()->getResult();
         $data['OnOff'] = $this->db->table('tb_send_plan_setup')->select('*')->get()->getResult();

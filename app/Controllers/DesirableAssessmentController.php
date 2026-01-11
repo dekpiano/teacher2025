@@ -20,6 +20,10 @@ class DesirableAssessmentController extends BaseController
 
     public function index()
     {
+        // Track page visit
+        helper('recent_pages');
+        track_recent_page('teacher/desirable_assessment', 'คุณลักษณะอันพึงประสงค์', 'bi-award');
+
         $model = new DesirableAssessmentModel();
         $activeYearTerm = $model->getAssessmentAcademicYearAndTerm();
         $academicYear = $activeYearTerm['year'];

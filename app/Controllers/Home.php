@@ -101,6 +101,10 @@ class Home extends BaseController
                                ->countAllResults();
         }
 
+        // Get recent pages for quick access
+        helper('recent_pages');
+        $recentPages = get_recent_pages(2);
+
         // Prepare data for the view
         $data = [
             'title'                 => 'หน้าแรก',
@@ -112,7 +116,8 @@ class Home extends BaseController
             'studentCount'          => $studentCount,
             'latestYear'            => $latestYear,
             'latestEntry'           => $latestEntry ?? ($latestYear),
-            'learningGroupName'     => $learningGroupName
+            'learningGroupName'     => $learningGroupName,
+            'recentPages'           => $recentPages,
         ];
 
         // Load the view, which will in turn use the main layout

@@ -18,6 +18,10 @@ class ControllerSaveScore extends BaseController
 
     public function normal()
     {
+        // Track page visit
+        helper('recent_pages');
+        track_recent_page('assessment/save-score-normal', 'บันทึกผลการเรียน', 'bi-clipboard-data');
+
         $data = [];
         $data['title'] = "หน้าบันทึกผลการเรียนหลัก";
 
