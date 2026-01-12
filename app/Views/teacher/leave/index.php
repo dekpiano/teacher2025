@@ -64,6 +64,75 @@
         </div>
     </div>
     <?php endforeach; ?>
+    
+    <!-- Late Arrival Card -->
+    <div class="col-6 col-md-4 col-lg-2 mb-3">
+        <div class="card h-100 border-danger shadow-sm" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#modalLateDetails">
+            <div class="card-body text-center p-3">
+                <div class="mb-2">
+                    <i class="bi bi-clock-history fs-3 text-danger"></i>
+                </div>
+                <h6 class="card-title mb-1">มาสาย</h6>
+                <div class="d-flex justify-content-center align-items-baseline mb-2">
+                    <span class="fs-4 fw-bold text-danger"><?= number_format($lateCount) ?></span>
+                    <span class="text-muted ms-1">ครั้ง</span>
+                </div>
+                <div class="progress" style="height: 6px;">
+                    <div class="progress-bar bg-danger" role="progressbar" style="width: 100%"></div>
+                </div>
+                <small class="text-muted">ปีการศึกษาปัจจุบัน</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal รายละเอียดการมาสาย -->
+<div class="modal fade" id="modalLateDetails" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-clock-history me-2 text-danger"></i>รายละเอียดการมาสาย</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <?php if (empty($lateDetails)): ?>
+                    <div class="text-center py-4">
+                        <i class="bi bi-check-circle text-success fs-1"></i>
+                        <p class="mt-2">ยอดเยี่ยมมาก! ไม่พบประวัติการมาสายในปีการศึกษานี้</p>
+                    </div>
+                <?php else: ?>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr class="table-light">
+                                    <th class="text-center" width="60">ลำดับ</th>
+                                    <th>วันที่มาสาย</th>
+                                    <th class="text-center">สถานะ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($lateDetails as $index => $late): ?>
+                                    <tr>
+                                        <td class="text-center"><?= $index + 1 ?></td>
+                                        <td>
+                                            <div class="fw-bold"><?= date('d/m/Y', strtotime($late['work_date'])) ?></div>
+                                            <small class="text-muted"><?= date('l', strtotime($late['work_date'])) ?></small>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-label-danger">มาสาย</span>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php endif; ?>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">ปิด</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="row">

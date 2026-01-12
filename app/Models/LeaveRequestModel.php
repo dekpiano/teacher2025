@@ -187,4 +187,52 @@ class LeaveRequestModel extends Model
 
         return $usedFromNewSystem + $usedFromLegacy;
     }
+
+    /**
+     * Get count of late arrivals for the active leave year
+     */
+    public function getLateCount($pers_id)
+    {
+        $db_personnel = \Config\Database::connect('personnel');
+        
+        // Get active leave year
+        $activeYear = $db_personnel->table('tb_leave_years')
+            ->where('ly_status', 'active')
+            ->get()
+            ->getRow();
+
+        if (!$activeYear) return 0;
+
+        return $db_personnel->table('tb_personnel_attendance')
+            ->where('att_person_id', $pers_id)
+            ->where('att_status', 'สาย')
+            ->where('att_date >=', $activeYear->ly_start_date)
+            ->where('att_date <=', $activeYear->ly_end_date)
+            ->countAllResults();
+    }
+
+    /**
+     * Get specific dates of late arrivals for the active leave year
+     */
+    public function getLateDetails($pers_id)
+    {
+        $db_personnel = \Config\Database::connect('personnel');
+        
+        // Get active leave year
+        $activeYear = $db_personnel->table('tb_leave_years')
+            ->where('ly_status', 'active')
+            ->get()
+            ->getRow();
+
+        if (!$activeYear) return [];
+
+        return $db_personnel->table('tb_personnel_attendance')
+            ->where('att_person_id', $pers_id)
+            ->where('att_status', 'สาย')
+            ->where('att_date >=', $activeYear->ly_start_date)
+            ->where('att_date <=', $activeYear->ly_end_date)
+            ->orderBy('att_date', 'DESC')
+            ->get()
+            ->getResultArray();
+    }
 }

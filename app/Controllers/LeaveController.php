@@ -56,6 +56,8 @@ class LeaveController extends BaseController
             'leaves' => $this->leaveRequestModel->getCombinedLeaveHistory($pers_id),
             'leaveTypes' => $leaveTypes,
             'leaveSummary' => $leaveSummary,
+            'lateCount' => $this->leaveRequestModel->getLateCount($pers_id),
+            'lateDetails' => $this->leaveRequestModel->getLateDetails($pers_id),
             'activeYear' => $activeYear,
         ];
 
