@@ -115,8 +115,8 @@
                                     <tr>
                                         <td class="text-center"><?= $index + 1 ?></td>
                                         <td>
-                                            <div class="fw-bold"><?= date('d/m/Y', strtotime($late['work_date'])) ?></div>
-                                            <small class="text-muted"><?= date('l', strtotime($late['work_date'])) ?></small>
+                                            <div class="fw-bold"><?= date('d/m/Y', strtotime($late['att_date'])) ?></div>
+                                            <small class="text-muted"><?= date('l', strtotime($late['att_date'])) ?></small>
                                         </td>
                                         <td class="text-center">
                                             <span class="badge bg-label-danger">มาสาย</span>

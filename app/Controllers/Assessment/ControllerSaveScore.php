@@ -166,7 +166,16 @@ class ControllerSaveScore extends BaseController
         $score_fields = ['before_middle_score', 'test_midterm_score', 'after_midterm_score', 'final_exam_score'];
         $subjectID = $this->request->getPost("regscore_subjectID");
         
-        if ($key == "form_insert_score") {
+        if (!$subjectID) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'ไม่พบข้อมูลรหัสวิชา']);
+        }
+
+        try {
+            $this->db->transStart();
+            
+            // ลบข้อมูลการตั้งค่าเดิมออกก่อน เพื่อป้องกันกรณีบันทึกซ้ำซ้อน
+            $this->db->table('tb_register_score')->where('regscore_subjectID', $subjectID)->delete();
+
             for ($i = 0; $i <= 3; $i++) {
                 $data = [
                     'regscore_subjectID' => $subjectID,
@@ -175,21 +184,18 @@ class ControllerSaveScore extends BaseController
                 ];
                 $this->db->table('tb_register_score')->insert($data);
             }
-            return $this->response->setJSON(['status' => 'success', 'message' => 'Insert successful']);
-        } elseif ($key == "form_update_score") {
-            for ($i = 0; $i <= 3; $i++) {
-                $data = [
-                    'regscore_score' => $this->request->getPost($score_fields[$i])
-                ];
-                $where = [
-                    'regscore_namework' => $this->request->getPost($list[$i]),
-                    'regscore_subjectID' => $subjectID
-                ];
-                $this->db->table('tb_register_score')->update($data, $where);
+            
+            $this->db->transComplete();
+
+            if ($this->db->transStatus() === false) {
+                 return $this->response->setJSON(['status' => 'error', 'message' => 'เกิดข้อผิดพลาดในการบันทึกข้อมูล (DB Transaction Failed)']);
             }
-            return $this->response->setJSON(['status' => 'success', 'message' => 'Update successful']);
+
+            return $this->response->setJSON(['status' => 'success', 'message' => 'บันทึกสัดส่วนคะแนนเรียบร้อยแล้ว']);
+            
+        } catch (\Exception $e) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'เกิดข้อผิดพลาด: ' . $e->getMessage()]);
         }
-        return $this->response->setJSON(['status' => 'error', 'message' => 'Invalid key']);
     }
 
     public function editScore(){
