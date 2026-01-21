@@ -98,9 +98,12 @@
                 </p>
             </div>
             <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
-                <button type="button" class="btn btn-outline-light btn-lg rounded-pill px-4 py-3 border-2" data-bs-toggle="modal" data-bs-target="#clubHelpModal">
-                    <i class="bi bi-question-circle me-2"></i> คู่มือการใช้งาน
-                </button>
+                    <a href="<?= site_url('club/manual') ?>" class="btn btn-white btn-lg rounded-pill px-4 py-3 shadow-lg text-primary fw-bold">
+                        <i class="bi bi-book-half me-2"></i> คู่มือการใช้งาน
+                    </a>
+                    <button type="button" class="btn btn-outline-light btn-lg rounded-pill px-2 py-3 border-2" data-bs-toggle="modal" data-bs-target="#clubHelpModal" title="คู่มือฉบับย่อ">
+                        <i class="bi bi-question-lg"></i>
+                    </button>
             </div>
         </div>
     </div>

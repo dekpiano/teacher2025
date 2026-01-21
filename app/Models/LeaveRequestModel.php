@@ -22,6 +22,8 @@ class LeaveRequestModel extends Model
         'leave_end_date',
         'leave_total_days',
         'leave_period',
+        'leave_contact_address',  // ที่อยู่ที่ติดต่อได้ระหว่างลา
+        'leave_contact_phone',    // เบอร์โทรศัพท์ติดต่อ
         'leave_file',
         'leave_status',
         'leave_comment',

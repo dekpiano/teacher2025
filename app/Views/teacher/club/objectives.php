@@ -174,7 +174,10 @@
                     <button type="button" class="btn btn-white rounded-pill px-4 shadow-sm text-primary fw-bold" data-bs-toggle="modal" data-bs-target="#manageObjectivesModal">
                         <i class="bi bi-gear-fill me-1"></i> ตั้งค่าจุดประสงค์
                     </button>
-                    <button type="button" class="btn btn-outline-light rounded-circle p-2 border-2" data-bs-toggle="modal" data-bs-target="#clubHelpModal">
+                    <a href="<?= site_url('club/manual') ?>" class="btn btn-white rounded-pill px-4 shadow-sm text-primary fw-bold">
+                        <i class="bi bi-book-half me-1"></i> คู่มือการใช้งาน
+                    </a>
+                    <button type="button" class="btn btn-outline-light rounded-circle p-2 border-2" data-bs-toggle="modal" data-bs-target="#clubHelpModal" title="คู่มือฉบับย่อ">
                         <i class="bi bi-question-lg"></i>
                     </button>
                 </div>

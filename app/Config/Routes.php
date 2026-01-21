@@ -22,7 +22,12 @@ $routes->get('login/googleCallback', 'Login::googleCallback');
         $routes->post('create', 'LeaveController::create');
         $routes->get('delete/(:num)', 'LeaveController::delete/$1');
         $routes->post('check-quota', 'LeaveController::check_quota');
+        $routes->get('print/(:num)', 'LeaveController::printPdf/$1');
     });
+
+    // Generate Leave Form PDF Routes
+    $routes->get('generate-leave-form', 'GenerateLeaveFormController::index');
+    $routes->get('generate-leave-form/preview', 'GenerateLeaveFormController::preview');
 
     // Homeroom Routes
     $routes->group('homeroom', static function ($routes) {
@@ -61,6 +66,7 @@ $routes->get('login/googleCallback', 'Login::googleCallback');
         $routes->post('saveObjectives/(:num)', 'ClubController::saveObjectives/$1');
         $routes->post('saveObjectiveDefinition/(:num)', 'ClubController::saveObjectiveDefinition/$1');
         $routes->get('deleteObjective/(:num)/(:num)', 'ClubController::deleteObjective/$1/$2');
+        $routes->get('manual', 'ClubController::manual');
     });
 
     // Assessment Routes for Head of Department

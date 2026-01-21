@@ -194,20 +194,21 @@
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <?php if ($leave['can_cancel']) : ?>
-                                        <div class="dropdown">
-                                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                                                <i class="bx bx-dots-vertical-rounded"></i>
-                                            </button>
-                                            <div class="dropdown-menu">
-                                                <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteLeave(<?= $leave['id'] ?>)">
-                                                    <i class="bx bx-trash me-1"></i> ยกเลิกใบลา
+                                        <div class="d-flex gap-1">
+                                            <?php if ($leave['source'] == 'self') : ?>
+                                                <a href="<?= base_url('leave/print/' . $leave['id']) ?>" class="btn btn-sm btn-outline-info" target="_blank" title="พิมพ์ใบลา">
+                                                    <i class="bi bi-printer"></i>
                                                 </a>
-                                            </div>
+                                            <?php endif; ?>
+                                            <?php if ($leave['can_cancel']) : ?>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteLeave(<?= $leave['id'] ?>)" title="ยกเลิกใบลา">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            <?php endif; ?>
+                                            <?php if ($leave['source'] != 'self' && !$leave['can_cancel']) : ?>
+                                                <span class="text-muted">-</span>
+                                            <?php endif; ?>
                                         </div>
-                                        <?php else : ?>
-                                        <span class="text-muted">-</span>
-                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -271,10 +272,32 @@
                         </div>
                         <div class="col-12 mb-3">
                             <div class="form-floating form-floating-outline">
-                                <textarea class="form-control" id="leave_detail" name="leave_detail" style="height: 100px" placeholder="รายละเอียดการลา (ถ้ามี)"></textarea>
-                                <label for="leave_detail">รายละเอียดการลา</label>
+                                <textarea class="form-control" id="leave_detail" name="leave_detail" style="height: 80px" placeholder="รายละเอียดการลา (ถ้ามี)"></textarea>
+                                <label for="leave_detail">เหตุผล/รายละเอียดการลา</label>
                             </div>
                         </div>
+                        
+                        <!-- ช่องเพิ่มเติมตามแบบฟอร์มราชการ -->
+                        <div class="col-12">
+                            <div class="alert alert-light border mb-3 p-3">
+                                <h6 class="alert-heading mb-3"><i class="bi bi-geo-alt me-2"></i>ข้อมูลติดต่อระหว่างลา</h6>
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-8">
+                                        <div class="form-floating form-floating-outline">
+                                            <input type="text" class="form-control" id="leave_contact_address" name="leave_contact_address" placeholder="ที่อยู่ที่ติดต่อได้" />
+                                            <label for="leave_contact_address">ที่อยู่ที่ติดต่อได้ระหว่างลา</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <div class="form-floating form-floating-outline">
+                                            <input type="tel" class="form-control" id="leave_contact_phone" name="leave_contact_phone" placeholder="เบอร์โทรศัพท์" />
+                                            <label for="leave_contact_phone">เบอร์โทรศัพท์</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="col-12">
                             <label for="leave_file" class="form-label">แนบหลักฐาน (ถ้ามี, ไฟล์ .pdf, .jpg, .png)</label>
                             <input class="form-control" type="file" id="leave_file" name="leave_file">

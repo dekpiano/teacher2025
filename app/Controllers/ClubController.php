@@ -1004,4 +1004,16 @@ class ClubController extends BaseController
 
         return redirect()->to('club/objectives/' . $clubId);
     }
+
+    public function manual()
+    {
+        $session = session();
+        if (!$session->get('isLoggedIn')) {
+            return redirect()->to('login');
+        }
+
+        $data['title'] = "คู่มือการใช้งานระบบชุมนุม";
+        
+        return view('teacher/club/manual', $data);
+    }
 }
