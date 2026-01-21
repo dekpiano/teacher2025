@@ -153,7 +153,7 @@
     <!-- Header Section -->
     <div class="objectives-header shadow-lg">
         <div class="row align-items-center text-start">
-            <div class="col-lg-8">
+            <div class="col-lg-7">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb breadcrumb-light mb-2">
                         <li class="breadcrumb-item"><a href="<?= site_url('home') ?>" class="text-white opacity-75">หน้าหลัก</a></li>
@@ -169,17 +169,20 @@
                     <i class="bi bi-tag-fill me-1"></i> <?= esc($club->club_name) ?>
                 </p>
             </div>
-            <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
+            <div class="col-lg-5 mt-4 mt-lg-0">
                 <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
-                    <button type="button" class="btn btn-white rounded-pill px-4 shadow-sm text-primary fw-bold" data-bs-toggle="modal" data-bs-target="#manageObjectivesModal">
-                        <i class="bi bi-gear-fill me-1"></i> ตั้งค่าจุดประสงค์
+                    <button type="button" class="btn btn-white rounded-pill px-4 py-2 shadow-sm text-primary fw-bold" data-bs-toggle="modal" data-bs-target="#manageObjectivesModal">
+                        <i class="bi bi-gear-fill me-2"></i> ตั้งค่าจุดประสงค์
                     </button>
-                    <a href="<?= site_url('club/manual') ?>" class="btn btn-white rounded-pill px-4 shadow-sm text-primary fw-bold">
-                        <i class="bi bi-book-half me-1"></i> คู่มือการใช้งาน
-                    </a>
-                    <button type="button" class="btn btn-outline-light rounded-circle p-2 border-2" data-bs-toggle="modal" data-bs-target="#clubHelpModal" title="คู่มือฉบับย่อ">
-                        <i class="bi bi-question-lg"></i>
-                    </button>
+                    
+                    <div class="btn-group shadow-sm rounded-pill overflow-hidden bg-white p-1">
+                        <a href="<?= site_url('club/manual') ?>" class="btn btn-white border-0 rounded-pill px-3 py-2 text-primary fw-bold small">
+                            <i class="bi bi-book-half me-2"></i> คู่มือ
+                        </a>
+                        <button type="button" class="btn btn-white border-0 rounded-pill px-3 py-2 text-muted" data-bs-toggle="modal" data-bs-target="#clubHelpModal">
+                            <i class="bi bi-question-circle"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

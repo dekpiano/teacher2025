@@ -81,7 +81,7 @@
     <!-- Breadcrumb & Header -->
     <div class="manage-header shadow-sm">
         <div class="row align-items-center text-start">
-            <div class="col-md-7">
+            <div class="col-lg-7">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb breadcrumb-light mb-2">
                         <li class="breadcrumb-item"><a href="<?= site_url('home') ?>" class="text-white opacity-75">หน้าหลัก</a></li>
@@ -113,17 +113,20 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-5 text-md-end mt-3 mt-md-0 mx-auto">
-                <div class="d-flex flex-wrap gap-2 justify-content-md-end">
-                    <button type="button" class="btn btn-white rounded-pill px-3 shadow-sm text-primary fw-bold" data-bs-toggle="modal" data-bs-target="#editClubModal">
-                        <i class="bi bi-pencil-square me-1"></i> แก้ไขข้อมูล
+            <div class="col-lg-5 mt-3 mt-lg-0">
+                <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
+                    <button type="button" class="btn btn-white rounded-pill px-4 py-2 shadow-sm text-primary fw-bold" data-bs-toggle="modal" data-bs-target="#editClubModal">
+                        <i class="bi bi-pencil-square me-2"></i> แก้ไขข้อมูล
                     </button>
-                    <a href="<?= site_url('club/manual') ?>" class="btn btn-white rounded-pill px-3 shadow-sm text-primary fw-bold">
-                        <i class="bi bi-book-half me-1"></i> คู่มือการใช้งาน
-                    </a>
-                    <button type="button" class="btn btn-outline-light rounded-circle p-2 border-2" data-bs-toggle="modal" data-bs-target="#clubHelpModal" title="คู่มือฉบับย่อ">
-                        <i class="bi bi-question-lg"></i>
-                    </button>
+                    
+                    <div class="btn-group shadow-sm rounded-pill overflow-hidden bg-white p-1">
+                        <a href="<?= site_url('club/manual') ?>" class="btn btn-white border-0 rounded-pill px-3 py-2 text-primary fw-bold small">
+                            <i class="bi bi-book-half me-2"></i> คู่มือ
+                        </a>
+                        <button type="button" class="btn btn-white border-0 rounded-pill px-3 py-2 text-muted" data-bs-toggle="modal" data-bs-target="#clubHelpModal">
+                            <i class="bi bi-question-circle"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -201,14 +204,15 @@
             <div class="card-header bg-white py-3">
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 text-start">
                     <h5 class="fw-bold mb-0 text-primary">เมนูจัดการกิจกรรม</h5>
-                    <div class="d-flex gap-2">
-                        <a href="<?= site_url('club/schedule/' . $club->club_id) ?>" class="btn btn-primary rounded-pill px-4 shadow-sm">
-                            <i class="bi bi-calendar-event me-2"></i> เช็คชื่อนักเรียน
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="<?= site_url('club/schedule/' . $club->club_id) ?>" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm d-flex align-items-center">
+                            <span class="bg-white bg-opacity-20 rounded-circle p-1 me-2"><i class="bi bi-calendar-event fs-6"></i></span> 
+                            <span>เช็คชื่อนักเรียน</span>
                         </a>
-                        <a href="<?= site_url('club/objectives/' . $club->club_id) ?>" class="btn btn-outline-secondary rounded-pill px-4">
+                        <a href="<?= site_url('club/objectives/' . $club->club_id) ?>" class="btn btn-outline-secondary rounded-pill px-4 py-2 d-flex align-items-center">
                             <i class="bi bi-list-check me-2"></i> ประเมินผล
                         </a>
-                        <a href="<?= site_url('club/activities/' . $club->club_id) ?>" class="btn btn-outline-info rounded-pill px-4">
+                        <a href="<?= site_url('club/activities/' . $club->club_id) ?>" class="btn btn-outline-info rounded-pill px-4 py-2 d-flex align-items-center">
                             <i class="bi bi-bar-chart-line me-2"></i> รายงานผล
                         </a>
                     </div>

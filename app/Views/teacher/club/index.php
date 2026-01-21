@@ -8,52 +8,93 @@
 
 <style>
     .club-card {
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
         border: none;
-        border-radius: 1.25rem;
+        border-radius: 1.5rem;
         overflow: hidden;
+        background: #ffffff;
+        position: relative;
+    }
+    .club-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 6px;
+        background: linear-gradient(90deg, #6366f1 0%, #a855f7 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
     }
     .club-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        transform: translateY(-8px);
+        box-shadow: 0 30px 60px -12px rgba(50, 50, 93, 0.15), 0 18px 36px -18px rgba(0, 0, 0, 0.2);
+    }
+    .club-card:hover::before {
+        opacity: 1;
     }
     .club-icon-wrapper {
-        width: 60px;
-        height: 60px;
-        border-radius: 1rem;
+        width: 56px;
+        height: 56px;
+        border-radius: 1.25rem;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.75rem;
-        margin-bottom: 1rem;
+        font-size: 1.5rem;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+        color: #6366f1;
     }
     .progress-minimal {
-        height: 8px;
-        border-radius: 10px;
-        background-color: rgba(0,0,0,0.05);
+        height: 10px;
+        border-radius: 20px;
+        background-color: #f1f5f9;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
     }
-    .glass-header {
+    .btn-manage-club {
         background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
         color: white;
+        border: none;
+        padding: 0.85rem;
         border-radius: 1.25rem;
-        padding: 2.5rem;
-        margin-bottom: 2rem;
+        font-weight: 700;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    }
+    .btn-manage-club:hover {
+        transform: scale(1.02);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        color: white;
+    }
+    .glass-header {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        color: white;
+        border-radius: 1.75rem;
+        padding: 3rem 2.5rem;
+        margin-bottom: 2.5rem;
         position: relative;
         overflow: hidden;
+        box-shadow: 0 20px 40px -15px rgba(79, 70, 229, 0.3);
     }
     .glass-header::after {
         content: "";
         position: absolute;
-        top: -50%;
-        right: -10%;
-        width: 300px;
-        height: 300px;
-        background: rgba(255,255,255,0.1);
+        top: -30%;
+        right: -5%;
+        width: 350px;
+        height: 350px;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
         border-radius: 50%;
         pointer-events: none;
     }
     .smallest {
-        font-size: 0.65rem;
+        font-size: 0.7rem;
+        letter-spacing: 0.025em;
+    }
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
     }
 </style>
 
@@ -81,7 +122,7 @@
     <!-- Header Section -->
     <div class="glass-header shadow-lg">
         <div class="row align-items-center text-start">
-            <div class="col-lg-8">
+            <div class="col-lg-7">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb breadcrumb-light mb-2">
                         <li class="breadcrumb-item"><a href="<?= site_url('home') ?>" class="text-white opacity-75">หน้าหลัก</a></li>
@@ -97,23 +138,26 @@
                     </p>
                 <?php endif; ?>
             </div>
-            <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
-                <div class="d-flex flex-column flex-lg-row justify-content-lg-end gap-3">
+            <div class="col-lg-5 mt-4 mt-lg-0">
+                <div class="d-flex flex-wrap justify-content-lg-end gap-2">
                     <?php if (!(isset($hasClubForCurrentYear) && $hasClubForCurrentYear)): ?>
-                        <button type="button" class="btn btn-white btn-lg rounded-pill shadow-lg px-4 py-3 text-primary fw-bold" data-bs-toggle="modal" data-bs-target="#createClubModal">
+                        <button type="button" class="btn btn-primary rounded-pill shadow-sm px-4 py-2 fw-bold border-2 border-white" data-bs-toggle="modal" data-bs-target="#createClubModal">
                             <i class="bi bi-plus-circle-fill me-2"></i> สร้างชุมนุมใหม่
                         </button>
                     <?php else: ?>
-                        <div class="badge bg-white text-primary rounded-pill px-4 py-3 shadow-sm border">
-                            <i class="bi bi-check-circle-fill me-2"></i> คุณมีชุมนุมในเทอมนี้แล้ว
+                        <div class="btn btn-light rounded-pill px-4 py-2 shadow-sm border-0 disabled text-primary fw-bold">
+                            <i class="bi bi-check-circle-fill me-2"></i> มีชุมนุมแล้ว
                         </div>
                     <?php endif; ?>
-                    <a href="<?= site_url('club/manual') ?>" class="btn btn-white btn-lg rounded-pill px-4 py-3 shadow-lg text-primary fw-bold">
-                        <i class="bi bi-book-half me-2"></i> คู่มือการใช้งาน
-                    </a>
-                    <button type="button" class="btn btn-outline-light btn-lg rounded-pill px-2 py-3 border-2" data-bs-toggle="modal" data-bs-target="#clubHelpModal" title="คู่มือฉบับย่อ">
-                        <i class="bi bi-question-lg"></i>
-                    </button>
+                    
+                    <div class="btn-group shadow-sm rounded-pill overflow-hidden bg-white p-1">
+                        <a href="<?= site_url('club/manual') ?>" class="btn btn-white border-0 rounded-pill px-3 py-2 text-primary fw-bold small">
+                            <i class="bi bi-book-half me-2"></i> คู่มือ
+                        </a>
+                        <button type="button" class="btn btn-white border-0 rounded-pill px-3 py-2 text-muted" data-bs-toggle="modal" data-bs-target="#clubHelpModal">
+                            <i class="bi bi-question-circle"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -187,8 +231,8 @@
                             </div>
 
                             <div class="mt-auto pt-3 border-top">
-                                <a href="<?= site_url('club/manage/' . $club->club_id) ?>" class="btn btn-outline-primary btn-lg rounded-pill w-100 fw-bold shadow-sm">
-                                    <i class="bi bi-gear-fill me-2"></i> จัดการชุมนุม
+                                <a href="<?= site_url('club/manage/' . $club->club_id) ?>" class="btn btn-manage-club w-100">
+                                    <i class="bi bi-gear-fill me-2"></i> เข้าสู่หน้าจัดการชุมนุม
                                 </a>
                             </div>
                         </div>

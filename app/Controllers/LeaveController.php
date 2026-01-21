@@ -286,6 +286,25 @@ class LeaveController extends BaseController
             ->get()
             ->getRowArray();
 
+        // ดึงข้อมูลผู้ตรวจสอบ (จากคอลัมน์ approved_by)
+        $approver = null;
+        if (!empty($leave['approved_by'])) {
+            // ลองดึงข้อมูลด้วย Query Builder แบบปกติจาก db_personnel
+            $approver = $db_personnel->table('tb_personnel')
+                ->where('pers_id', $leave['approved_by'])
+                ->get()
+                ->getRowArray();
+            
+            if ($approver) {
+                // ดึงชื่อตำแหน่งแยกต่างหากเพื่อความชัวร์ (ลดความซับซ้อนของ JOIN ข้าม DB)
+                $pos = $db_skj->table('tb_position')
+                    ->where('posi_id', $approver['pers_position'])
+                    ->get()
+                    ->getRowArray();
+                $approver['posi_name'] = $pos['posi_name'] ?? 'เจ้าหน้าที่';
+            }
+        }
+
         // ดึงข้อมูลการลาครั้งสุดท้าย (ลาอะไรก็ได้ก่อนหน้านี้)
         $lastLeave = $this->db->table('tb_leave_requests')
             ->select('tb_leave_requests.*, tb_leave_types.leave_type_name')
@@ -458,10 +477,22 @@ class LeaveController extends BaseController
         $pdf->SetXY(63, 203); $pdf->Cell(20, 6, ($leave['leave_type_name']=='ลาคลอดบุตร' ? number_format($leave['leave_total_days'], 1) : '-'), 0, 0, 'C');
         $pdf->SetXY(85, 203); $pdf->Cell(20, 6, number_format($leaveStats['ลาคลอดบุตร']['used_before'] + ($leave['leave_type_name']=='ลาคลอดบุตร' ? $leave['leave_total_days'] : 0), 1), 0, 0, 'C');
 
-        // Output
-        $this->response->setHeader('Content-Type', 'application/pdf');
-        $pdf->Output('ใบลา_' . $leave['leave_id'] . '.pdf', 'I');
-        exit;
+        // แสดงชื่อผู้ตรวจสอบ (ถ้ามี)
+        if ($approver) {
+            $pdf->SetFont($thaiFont, '', 16);
+            $approverName = ($approver['pers_prefix'] ?? '') . ($approver['pers_firstname'] ?? '') . ' ' . ($approver['pers_lastname'] ?? '');
+            $approverPosition = $approver['posi_name'] ?? '';
+            
+            // พิกัดจูนเบื้องต้น (ฝั่งซ้าย)
+            $pdf->SetXY(21, 220); $pdf->Cell(65, 6, $approverName, 0, 0, 'C');
+            $pdf->SetXY(22, 227); $pdf->Cell(65, 6, $approverPosition, 0, 0, 'C');
+            
+            if (!empty($leave['approved_at'])) {
+                $appTime = strtotime($leave['approved_at']);
+                $appDateStr = date('j', $appTime) . ' ' . $thaiMonths[date('n', $appTime)] . ' ' . (date('Y', $appTime) + 543);
+                $pdf->SetXY(21, 233); $pdf->Cell(65, 6, $appDateStr, 0, 0, 'C');
+            }
+        }
 
         // Output
         $this->response->setHeader('Content-Type', 'application/pdf');
