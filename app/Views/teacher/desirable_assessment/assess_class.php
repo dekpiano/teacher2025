@@ -76,13 +76,15 @@
         border-color: #0ea5e9;
         box-shadow: 0 0 0 0.25rem rgba(14, 165, 233, 0.1);
     }
-    .rotated-text {
-        writing-mode: vertical-rl;
-        text-orientation: mixed;
-        transform: rotate(180deg);
+    .compact-status-header {
+        font-size: 0.65rem !important;
         white-space: nowrap;
-        font-size: 0.75rem;
-        padding: 10px 5px !important;
+        padding: 5px 2px !important;
+        text-align: center;
+        writing-mode: vertical-rl !important;
+        transform: rotate(180deg) !important;
+        display: inline-block; /* Changed to inline-block for centering */
+        margin: 0 auto;
     }
     .main-item-header {
         background: rgba(14, 165, 233, 0.05);
@@ -97,10 +99,42 @@
         background-color: rgba(99, 102, 241, 0.05);
         font-weight: bold;
         color: #4f46e5;
+        width: 32px !important;
+        min-width: 32px !important;
     }
     .final-summary-col {
         background-color: rgba(14, 165, 233, 0.1);
         font-weight: bold;
+        width: 80px !important;
+        min-width: 80px !important;
+        text-align: center !important;
+        vertical-align: middle !important;
+    }
+    .normal-status {
+        font-size: 0.8rem !important;
+        white-space: nowrap;
+        text-align: center;
+        display: block;
+        line-height: 1.2;
+        writing-mode: horizontal-tb !important;
+        transform: none !important;
+    }
+    .normal-status.is-fail {
+        color: #dc3545 !important;
+        font-weight: 800 !important;
+    }
+    .compact-status {
+        font-size: 0.5rem !important;
+        white-space: nowrap;
+        text-align: center;
+        display: block;
+        line-height: 1.2;
+        writing-mode: horizontal-tb !important;
+        transform: none !important;
+    }
+    .compact-status.is-fail {
+        color: #dc3545 !important;
+        font-weight: 800 !important;
     }
 
     /* Page Loader Styles */
@@ -147,15 +181,6 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-    }
-    .rotated-text {
-        writing-mode: vertical-rl;
-        text-orientation: mixed;
-        transform: rotate(180deg);
-        white-space: nowrap;
-        font-size: 0.7rem;
-        padding: 5px 2px !important;
-        width: 30px;
     }
     .main-item-header {
         background: rgba(14, 165, 233, 0.05);
@@ -236,6 +261,15 @@
     }
     .table tbody tr:hover td.num-col, .table tbody tr:hover td.name-col {
         background-color: #f1f3f5 !important;
+    }
+    .score-input.is-zero {
+        color: #dc3545 !important;
+        border-color: #dc3545 !important;
+        background-color: rgba(220, 53, 69, 0.05) !important;
+    }
+    .text-danger-bold {
+        color: #dc3545 !important;
+        font-weight: 800 !important;
     }
 </style>
 
@@ -382,7 +416,9 @@
                                             ข้อที่ <?= $mainItem['item_order'] ?>
                                         </th>
                                     <?php endforeach; ?>
-                                    <th rowspan="4" class="rotated-text final-summary-col">สรุปผลภาพรวม</th>
+                                    <th rowspan="4" class="final-summary-col align-middle text-center">
+                                        <div class="compact-status-header">สรุปผลภาพรวม</div>
+                                    </th>
                                 </tr>
                                 <tr class="bg-light">
                                     <?php foreach ($assessmentItems as $mainItem): ?>
@@ -396,7 +432,9 @@
                                 <tr>
                                     <?php foreach ($assessmentItems as $mainItem): ?>
                                         <th colspan="<?= count($mainItem['sub_items']) ?>" class="smallest text-muted text-uppercase">ตัวชี้วัด</th>
-                                        <th rowspan="2" class="rotated-text summary-col">ผลประเมิน</th>
+                                        <th rowspan="2" class="summary-col">
+                                            <div class="compact-status-header">ผลประเมิน</div>
+                                        </th>
                                     <?php endforeach; ?>
                                 </tr>
                                 <tr>
@@ -433,10 +471,11 @@
                                         <?php foreach ($assessmentItems as $mainItem): ?>
                                             <?php foreach ($mainItem['sub_items'] as $subItem): ?>
                                                 <td class="sub-item-col-<?= $subItem['item_id'] ?>">
+                                                    <?php $scoreValue = $evaluations[$student['StudentID']][$subItem['item_id']] ?? ''; ?>
                                                     <input type="number" 
                                                         name="scores[<?= $student['StudentID'] ?>][<?= $subItem['item_id'] ?>]" 
-                                                        value="<?= esc($evaluations[$student['StudentID']][$subItem['item_id']] ?? '') ?>" 
-                                                        class="form-control-modern score-input mx-auto" 
+                                                        value="<?= esc($scoreValue) ?>" 
+                                                        class="form-control-modern score-input mx-auto <?= ($scoreValue === '0' || $scoreValue === 0) ? 'is-zero' : '' ?>" 
                                                         data-main-item="<?= $mainItem['item_id'] ?>"
                                                         min="0" max="3">
                                                 </td>
@@ -446,8 +485,11 @@
                                             </td>
                                         <?php endforeach; ?>
 
-                                        <td class="final-summary-col overall-result fw-bold text-primary smallest">
-                                            <?= $studentResults[$student['StudentID']]['overall_level'] ?? '-' ?>
+                                        <td class="final-summary-col overall-result fw-bold text-primary align-middle text-center">
+                                            <?php $overallLevel = $studentResults[$student['StudentID']]['overall_level'] ?? '-'; ?>
+                                            <div class="normal-status <?= ($overallLevel === 'ไม่ผ่าน') ? 'is-fail' : '' ?>">
+                                                <?= esc($overallLevel) ?>
+                                            </div>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -516,20 +558,34 @@ $(document).ready(function() {
     function updateRowCalculations(row) {
         let studentTotalScore = 0;
         let totalSubItems = 0;
+        let hasZero = false;
 
         assessmentItems.forEach(mainItem => {
             let mId = mainItem.item_id;
             let mScore = 0;
             let subCount = mainItem.sub_items.length;
+            let hasZeroInMainItem = false;
             
             if (subCount > 0) {
                 totalSubItems += subCount;
                 row.find(`.score-input[data-main-item="${mId}"]`).each(function() {
                     let s = $(this).val();
-                    if ($.isNumeric(s)) mScore += parseFloat(s);
+                    if ($.isNumeric(s)) {
+                        let scoreVal = parseFloat(s);
+                        mScore += scoreVal;
+                        if (scoreVal === 0) {
+                            hasZero = true;
+                            hasZeroInMainItem = true;
+                        }
+                    }
                 });
                 let avg = mScore / subCount;
                 let lvlTxt = getQualityLevel(avg);
+
+                if (hasZeroInMainItem) {
+                    lvlTxt = 'ไม่ผ่าน';
+                }
+
                 row.find(`.main-item-result[data-main-item-result="${mId}"]`).text(getLevelAsNumber(lvlTxt));
                 studentTotalScore += mScore;
             }
@@ -537,15 +593,33 @@ $(document).ready(function() {
 
         if (totalSubItems > 0) {
             let overallAvg = studentTotalScore / totalSubItems;
-            row.find('.overall-result').text(getQualityLevel(overallAvg));
+            let overallLevel = getQualityLevel(overallAvg);
+
+            if (hasZero) {
+                overallLevel = 'ไม่ผ่าน';
+                row.find('.overall-result .normal-status').addClass('is-fail');
+            } else {
+                row.find('.overall-result .normal-status').removeClass('is-fail');
+            }
+
+            row.find('.overall-result .normal-status').text(overallLevel);
         }
     }
 
     $('tbody').on('input', '.score-input', function() {
         let sVal = parseFloat($(this).val());
-        if (!isNaN(sVal) && (sVal > 3 || sVal < 0)) {
-            $(this).val('');
-            Toast.fire({ icon: 'warning', title: 'คะแนนต้องอยู่ระหว่าง 0 - 3' });
+        if (!isNaN(sVal)) {
+            if (sVal > 3 || sVal < 0) {
+                $(this).val('');
+                $(this).removeClass('is-zero');
+                Toast.fire({ icon: 'warning', title: 'คะแนนต้องอยู่ระหว่าง 0 - 3' });
+            } else if (sVal === 0) {
+                $(this).addClass('is-zero');
+            } else {
+                $(this).removeClass('is-zero');
+            }
+        } else {
+            $(this).removeClass('is-zero');
         }
         updateRowCalculations($(this).closest('tr'));
     });

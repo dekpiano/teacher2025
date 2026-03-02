@@ -119,6 +119,7 @@ class DesirableAssessmentController extends BaseController
             $studentTotalScore = 0;
             $studentTotalSubItems = count($allSubItems);
             $studentResults[$studentId] = ['main_item_levels' => []];
+            $hasZero = false;
 
             // Calculate score and level for each main item group
             foreach ($assessmentItems as $mainItem) {
@@ -126,9 +127,14 @@ class DesirableAssessmentController extends BaseController
                 $mainItemSubItemsCount = count($mainItem['sub_items']);
                 if ($mainItemSubItemsCount == 0) continue;
 
+                $hasZeroInMainItem = false;
                 foreach ($mainItem['sub_items'] as $subItem) {
                     $score = $evaluations[$studentId][$subItem['item_id']] ?? 0;
                     $mainItemScore += (int)$score;
+                    if ((int)$score == 0) {
+                        $hasZero = true;
+                        $hasZeroInMainItem = true;
+                    }
 
                     // Tally summary for each sub-item
                     $subItemLevel = $getQualityLevel($score, false);
@@ -137,6 +143,12 @@ class DesirableAssessmentController extends BaseController
 
                 $mainItemAverage = $mainItemScore / $mainItemSubItemsCount;
                 $mainItemLevel = $getQualityLevel($mainItemAverage, true);
+                
+                // NEW RULE: If any indicator is 0, the result is "ไม่ผ่าน"
+                if ($hasZeroInMainItem) {
+                    $mainItemLevel = 'ไม่ผ่าน';
+                }
+
                 $studentResults[$studentId]['main_item_levels'][$mainItem['item_id']] = $mainItemLevel;
                 $studentResults[$studentId]['main_item_numeric_levels'][$mainItem['item_id']] = $getLevelAsNumber($mainItemLevel);
                 $studentTotalScore += $mainItemScore;
@@ -149,6 +161,12 @@ class DesirableAssessmentController extends BaseController
             if($studentTotalSubItems > 0){
                 $studentOverallAverage = $studentTotalScore / $studentTotalSubItems;
                 $studentOverallLevel = $getQualityLevel($studentOverallAverage, true);
+                
+                // NEW RULE: If any indicator is 0, the result is "ไม่ผ่าน"
+                if ($hasZero) {
+                    $studentOverallLevel = 'ไม่ผ่าน';
+                }
+
                 $studentResults[$studentId]['overall_level'] = $studentOverallLevel;
 
                 // Tally overall summary
@@ -327,19 +345,31 @@ class DesirableAssessmentController extends BaseController
             $studentTotalScore = 0;
             $studentTotalSubItems = count($allSubItems);
             $studentResults[$studentId] = ['main_item_levels' => []]; // Initialize for student
+            $hasZero = false;
 
             foreach ($assessmentItems as $mainItem) {
                 $mainItemScore = 0;
                 $mainItemSubItemsCount = count($mainItem['sub_items']);
                 if ($mainItemSubItemsCount == 0) continue;
 
+                $hasZeroInMainItem = false;
                 foreach ($mainItem['sub_items'] as $subItem) {
                     $score = $evaluations[$studentId][$subItem['item_id']] ?? 0;
                     $mainItemScore += (int)$score;
+                    if ((int)$score == 0) {
+                        $hasZero = true;
+                        $hasZeroInMainItem = true;
+                    }
                 }
 
                 $mainItemAverage = $mainItemScore / $mainItemSubItemsCount;
                 $mainItemLevel = $getQualityLevel($mainItemAverage, true);
+                
+                // NEW RULE: If any indicator is 0, the result is "ไม่ผ่าน"
+                if ($hasZeroInMainItem) {
+                    $mainItemLevel = 'ไม่ผ่าน';
+                }
+
                 $report[$mainItem['item_id']]['summary'][$mainItemLevel]++;
                 $studentResults[$studentId]['main_item_levels'][$mainItem['item_id']] = $mainItemLevel; // Populate main item level
                 $studentResults[$studentId]['main_item_numeric_levels'][$mainItem['item_id']] = $getLevelAsNumber($mainItemLevel);
@@ -349,6 +379,12 @@ class DesirableAssessmentController extends BaseController
             if($studentTotalSubItems > 0){
                 $studentOverallAverage = $studentTotalScore / $studentTotalSubItems;
                 $studentOverallLevel = $getQualityLevel($studentOverallAverage, true);
+                
+                // NEW RULE: If any indicator is 0, the result is "ไม่ผ่าน"
+                if ($hasZero) {
+                    $studentOverallLevel = 'ไม่ผ่าน';
+                }
+
                 $overallSummary[$studentOverallLevel]++;
                 $studentResults[$studentId]['overall_level'] = $studentOverallLevel; // Populate overall level
             }

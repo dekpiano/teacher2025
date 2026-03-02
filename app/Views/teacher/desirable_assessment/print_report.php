@@ -53,8 +53,41 @@
         display: inline-block;
     }
 
-            .assessment-table-print .sub-item-col {
-                width: 35px;
+            .assessment-table-print .sub-item-col, 
+            .assessment-table-print .summary-col-print {
+                width: 32px;
+                min-width: 32px;
+                max-width: 32px;
+            }
+            .assessment-table-print .summary-col-final-print {
+                width: 75px;
+                min-width: 75px;
+                max-width: 75px;
+            }
+            .compact-text-cell {
+                font-size: 0.5rem !important;
+                white-space: nowrap;
+                padding: 1px !important;
+                display: block;
+                text-align: center;
+                line-height: 1;
+                writing-mode: horizontal-tb !important;
+                transform: none !important;
+            }
+            .vertical-header-cell {
+                font-size: 0.65rem !important;
+                white-space: nowrap;
+                padding: 1px !important;
+                display: inline-block; /* Changed to inline-block for centering */
+                text-align: center;
+                line-height: 1;
+                writing-mode: vertical-rl !important;
+                transform: rotate(180deg) !important;
+                margin: 0 auto;
+            }
+            .text-danger-custom {
+                color: #dc3545 !important;
+                font-weight: 800 !important;
             }
             .main-item-name-header {
                 white-space: nowrap;
@@ -92,8 +125,10 @@
             margin-top: 20px;
             line-height: 1.2;
         }
-
-
+    }
+    .text-danger-custom {
+        color: #dc3545 !important;
+        font-weight: bold !important;
     }
     </style>
 </head>
@@ -125,7 +160,7 @@
                     <?php if ($totalAssessedStudents > 0): ?>
                     <?php foreach ($report as $key => $mainItemReport): ?>
                     <tr>
-                        <td class="text-start"><?=($key+1).'.'. esc($mainItemReport['name']) ?></td>
+                        <td class="text-start"><?=($key+0).'.'. esc($mainItemReport['name']) ?></td>
                         <td><?= $mainItemReport['summary']['ดีเยี่ยม'] ?></td>
                         <td><?= $mainItemReport['summary']['ดี'] ?></td>
                         <td><?= $mainItemReport['summary']['ผ่าน'] ?></td>
@@ -231,9 +266,9 @@
                     <?php foreach ($assessmentItems as $mainItem): ?>
                     <th colspan="<?= count($mainItem['sub_items']) + 1 ?>">ข้อที่ <?= $mainItem['item_order'] ?></th>
                     <?php endforeach; ?>
-                    <th rowspan="4"
-                        style="writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg);">
-                        สรุปผลการประเมิน</th>
+                    <th rowspan="4" class="summary-col-final-print align-middle text-center">
+                        <div class="vertical-header-cell">สรุปผลการประเมิน</div>
+                    </th>
                 </tr>
                                     <tr>
                                         <?php foreach ($assessmentItems as $mainItem): ?>
@@ -242,9 +277,9 @@
                                     </tr>                <tr>
                     <?php foreach ($assessmentItems as $mainItem): ?>
                     <th colspan="<?= count($mainItem['sub_items']) ?>">ตัวชี้วัด</th>
-                    <th rowspan="2"
-                        style="writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg);">
-                        ผลการประเมิน</th>
+                    <th rowspan="2" class="summary-col-print">
+                        <div class="vertical-header-cell">ผลการประเมิน</div>
+                    </th>
                     <?php endforeach; ?>
                 </tr>
                 <tr>
@@ -265,17 +300,24 @@
 
                     <?php foreach ($assessmentItems as $mainItem): ?>
                     <?php foreach ($mainItem['sub_items'] as $subItem): ?>
-                    <td class="sub-item-col">
-                        <?= esc($evaluations[$student['StudentID']][$subItem['item_id']] ?? '-') ?>
+                    <?php $score = $evaluations[$student['StudentID']][$subItem['item_id']] ?? '-'; ?>
+                    <td class="sub-item-col <?= ($score === '0' || $score === 0) ? 'text-danger-custom' : '' ?>">
+                        <?= esc($score) ?>
                     </td>
                     <?php endforeach; ?>
-                    <td style="background-color: #f8f9fa; font-weight: bold;">
-                        <?= $studentResults[$student['StudentID']]['main_item_numeric_levels'][$mainItem['item_id']] ?? '-' ?>
+                    <td class="summary-col-print" style="background-color: #f8f9fa; font-weight: bold;">
+                        <?php $mainLevelNumeric = $studentResults[$student['StudentID']]['main_item_numeric_levels'][$mainItem['item_id']] ?? '-'; ?>
+                        <div style="font-size: 0.8rem; text-align: center;" class="<?= ($mainLevelNumeric === '0' || $mainLevelNumeric === 0) ? 'text-danger-custom' : '' ?>">
+                            <?= $mainLevelNumeric ?>
+                        </div>
                     </td>
                     <?php endforeach; ?>
 
-                    <td style="background-color: #fff3cd; font-weight: bold;">
-                        <?= $studentResults[$student['StudentID']]['overall_level'] ?? '-' ?>
+                    <td class="summary-col-final-print align-middle text-center" style="background-color: #fff3cd; font-weight: bold; vertical-align: middle;">
+                        <?php $overallLevel = $studentResults[$student['StudentID']]['overall_level'] ?? '-'; ?>
+                        <div style="font-size: 0.8rem; text-align: center; width: 100%;" class="horizontal-normal-text <?= ($overallLevel === 'ไม่ผ่าน') ? 'text-danger-custom' : '' ?>">
+                            <?= $overallLevel ?>
+                        </div>
                     </td>
                 </tr>
                 <?php endforeach; ?>
