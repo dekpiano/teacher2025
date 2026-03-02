@@ -133,7 +133,6 @@
                                 <tbody>
                                     <?php if (!empty($check_student)) : ?>
                                         <?php foreach ($check_student as $v_check_student) : ?>
-                                            <?php if ($v_check_student->RepeatStatus != '') : ?>
                                                 <tr>
                                                     <td class="text-center text-muted"><?= esc($v_check_student->StudentClass) ?></td>
                                                     <td class="text-center fw-bold"><?= esc($v_check_student->StudentNumber) ?></td>
@@ -194,7 +193,6 @@
                                                         </span>
                                                     </td>
                                                 </tr>
-                                            <?php endif; ?>
                                         <?php endforeach; ?>
                                     <?php else : ?>
                                         <tr>

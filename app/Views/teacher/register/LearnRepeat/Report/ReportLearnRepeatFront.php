@@ -42,8 +42,8 @@
     <tbody>
         <tr>
             <?php $sub_year = explode("/",$CheckRepeat[0]->onoff_year);?>
-            <td style="width: 50%;text-align: right;padding-right: 10px;">ภาคเรียนที่ <?=$sub_year[0];?></td>
-            <td style="padding-left: 10px;">ปีการศึกษา <?=$sub_year[1];?></td>
+            <td style="width: 50%;text-align: right;padding-right: 10px;">ภาคเรียนที่ <?=$sub_year[0];?> / <?=$sub_year[1];?></td>
+            <td style="padding-left: 10px;">ครั้งที่ <?=$CheckRepeat[0]->onoff_detail;?></td>
         </tr>
         <tr>
             <td style="width: 50%;text-align: right;padding-right: 10px;">ชั้นมัธยมศึกษาปีที่

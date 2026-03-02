@@ -185,57 +185,102 @@ $(document).ready(function() {
             return;
         }
 
-        var formData = new FormData(this);
+        const fileInput = $('#seres_file')[0];
+        const file = fileInput.files[0];
         const submitButton = $(this).find('button[type="submit"]');
+
+        if (!file) {
+            Swal.fire({ icon: 'error', title: 'กรุณาเลือกไฟล์', text: 'ต้องแนบไฟล์งานวิจัยก่อนส่ง' });
+            return;
+        }
+
+        // Configuration
+        const chunkSize = 500 * 1024; // 500KB per chunk to stay under 1MB limit
+        const totalChunks = Math.ceil(file.size / chunkSize);
         
+        // Generate a unique filename (Limit prefix to 30 characters)
+        let researchName = $('#seres_research_name').val() || 'research';
+        researchName = researchName.substring(0, 30); // Truncate to 30 chars
+        const safePrefix = researchName.replace(/[^a-z0-9ก-ฮ]/gi, '_').toLowerCase();
+        
+        const timestamp = Math.floor(Date.now() / 1000);
+        const fileExt = file.name.split('.').pop();
+        const finalFileName = safePrefix + '_' + timestamp + '.' + fileExt;
+
         Swal.fire({
-            title: 'กำลังส่งข้อมูล...',
-            text: 'ระบบกำลังดําเนินการอัปโหลดไฟล์งานวิจัย',
+            title: 'กำลังอัปโหลด...',
+            html: 'ระบบกำลังเริ่มดำเนินการ (0%)',
             allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
+            didOpen: () => { Swal.showLoading(); }
         });
 
         submitButton.prop('disabled', true);
 
-        $.ajax({
-            url: '<?= site_url('research/insert-research') ?>',
-            type: 'POST',
-            data: formData,
-            dataType: 'json',
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                if (response.status === 'success') {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'ส่งงานวิจัยสําเร็จ!',
-                        text: response.message,
-                        timer: 2000,
-                        showConfirmButton: false
-                    }).then(() => {
-                        window.location.href = '<?= site_url('research') ?>';
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'การส่งล้มเหลว',
-                        text: response.message
-                    });
+        const uploadSingleChunk = async (chunkIndex) => {
+            const start = chunkIndex * chunkSize;
+            const end = Math.min(start + chunkSize, file.size);
+            const chunk = file.slice(start, end);
+
+            const formData = new FormData();
+            formData.append('file', chunk);
+            formData.append('path', 'academic/teacher/research/' + '<?= $setup->seres_setup_year ?>' + '/' + '<?= $setup->seres_setup_term ?>');
+            formData.append('filename', finalFileName);
+            formData.append('chunk', chunkIndex);
+            formData.append('chunks', totalChunks);
+
+            return $.ajax({
+                url: '<?= site_url('research/upload-chunk') ?>',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false
+            });
+        };
+
+        const executeUploadProcess = async () => {
+            try {
+                // Upload all chunks sequentially
+                for (let i = 0; i < totalChunks; i++) {
+                    await uploadSingleChunk(i);
+                    const percent = Math.round(((i + 1) / totalChunks) * 100);
+                    Swal.update({ html: `กำลังอัปโหลดส่วนประกอบของไฟล์ (${percent}%)` });
                 }
-            },
-            error: function(xhr, status, error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'เกิดข้อผิดพลาด',
-                    text: 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้ในขณะนี้'
+
+                // Chunks uploaded, now save research record
+                const mainForm = $('#form_insert_research')[0];
+                const finalData = new FormData(mainForm);
+                finalData.set('seres_file_name_ready', finalFileName); // Pass the filename that was just uploaded
+                finalData.delete('seres_file'); // Remove original file blob to keep request small
+
+                $.ajax({
+                    url: '<?= site_url('research/insert-research') ?>',
+                    type: 'POST',
+                    data: finalData,
+                    processData: false,
+                    contentType: false,
+                    success: function(res) {
+                        if (res.status === 'success') {
+                            Swal.fire({ icon: 'success', title: 'ส่งงานวิจัยสำเร็จ!', text: res.message, timer: 2000, showConfirmButton: false }).then(() => {
+                                window.location.href = '<?= site_url('research') ?>';
+                            });
+                        } else {
+                            Swal.fire({ icon: 'error', title: 'การส่งล้มเหลว', text: res.message });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถบันทึกข้อมูลงานวิจัยได้' });
+                    },
+                    complete: function() { submitButton.prop('disabled', false); }
                 });
-            },
-            complete: function() {
+
+            } catch (err) {
+                console.error('Upload Error:', err);
+                Swal.fire({ icon: 'error', title: 'การอัปโหลดขัดข้อง', text: 'ไม่สามารถส่งไฟล์ได้ (แนะนำให้ลองบีบอัดไฟล์ PDF)' });
                 submitButton.prop('disabled', false);
             }
-        });
+        };
+
+        executeUploadProcess();
     });
 });
 </script>

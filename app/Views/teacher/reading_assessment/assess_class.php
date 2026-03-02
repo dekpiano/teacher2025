@@ -101,6 +101,69 @@
         border-radius: 2rem;
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
     }
+    /* Compact Table Styling */
+    .table-sm th, .table-sm td {
+        padding: 0.35rem 0.25rem !important;
+        font-size: 0.85rem;
+    }
+    .form-control-modern {
+        border-radius: 4px;
+        border: 2px solid #e9ecef;
+        padding: 0.15rem;
+        text-align: center;
+        font-weight: 700;
+        transition: all 0.2s;
+        width: 40px; /* More compact */
+        font-size: 0.85rem;
+    }
+    .num-col {
+        position: sticky !important;
+        left: 0;
+        z-index: 1006;
+        background-color: inherit;
+        width: 50px;
+    }
+    .name-col {
+        position: sticky !important;
+        left: 50px; /* Offset by num-col width */
+        z-index: 1006;
+        background-color: inherit;
+        min-width: 150px !important;
+        max-width: 200px !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Header override for sticky columns to stay above body sticky columns */
+    .table thead .num-col, .table thead .name-col {
+        z-index: 1100;
+        background-color: #f8f9fa !important;
+    }
+    .table tbody td.num-col, .table tbody td.name-col {
+        background-color: #fff !important;
+    }
+    .table tbody tr:hover td.num-col, .table tbody tr:hover td.name-col {
+        background-color: #f1f3f5 !important;
+    }
+
+    /* Sticky Table Header */
+    .table-responsive {
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+    .table thead {
+        position: sticky;
+        top: 0;
+        z-index: 1050;
+    }
+    .table thead th {
+        position: sticky;
+        top: 0;
+        background-color: #f8f9fa !important;
+        box-shadow: inset 0 -1px 0 #dee2e6, inset 0 1px 0 #dee2e6;
+        padding: 8px 4px !important;
+    }
 </style>
 
 <!-- Page Loader -->
@@ -237,11 +300,11 @@
             <div class="card-body p-0">
                 <?php if (!empty($students)) : ?>
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
+                        <table class="table table-bordered table-sm table-hover align-middle mb-0">
                             <thead class="bg-light text-start text-nowrap">
                                 <tr>
-                                    <th class="ps-4" style="width: 80px;">เลขที่</th>
-                                    <th>ชื่อ-นามสกุล</th>
+                                    <th class="ps-4 num-col">เลขที่</th>
+                                    <th class="name-col">ชื่อ-นามสกุล</th>
                                     <?php foreach (($assessmentItems ?? []) as $item) : ?>
                                         <th class="text-center" style="min-width: 100px;">
                                             <div class="smallest text-muted text-uppercase fw-bold mb-1">ข้อ <?= esc($item['ItemID']) ?></div>
@@ -265,8 +328,8 @@
                             <tbody class="text-start">
                                 <?php foreach ($students as $student) : ?>
                                     <tr id="student-row-<?= $student['StudentID'] ?>">
-                                        <td class="ps-4 fw-bold text-muted"><?= esc($student['StudentNumber']) ?></td>
-                                        <td>
+                                        <td class="ps-4 fw-bold text-muted num-col"><?= esc($student['StudentNumber']) ?></td>
+                                        <td class="name-col">
                                             <div class="fw-bold text-dark"><?= esc($student['StudentPrefix'] . $student['StudentFirstName'] . ' ' . $student['StudentLastName']) ?></div>
                                             <div class="smallest text-muted">รหัส: <?= esc($student['StudentID']) ?></div>
                                         </td>

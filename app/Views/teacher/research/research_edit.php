@@ -155,57 +155,112 @@ $(document).ready(function() {
             return;
         }
 
-        var formData = new FormData(this);
+        const fileInput = $('#seres_file')[0];
+        const file = fileInput.files[0];
         const submitButton = $(this).find('button[type="submit"]');
-        
-        Swal.fire({
-            title: 'กำลังอัปเดตข้อมูล...',
-            text: 'ระบบกำลังดำเนินการบันทึกข้อมูลและไฟล์ใหม่',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
 
-        submitButton.prop('disabled', true);
+        // Logic: If there's a file, do chunked upload. If not, just submit normally.
+        if (file) {
+            const chunkSize = 500 * 1024; // 500KB
+            const totalChunks = Math.ceil(file.size / chunkSize);
+            
+            // Format Filename (Limit 30 chars)
+            let researchName = $('#seres_research_name').val() || 'research';
+            researchName = researchName.substring(0, 30);
+            const safePrefix = researchName.replace(/[^a-z0-9ก-ฮ]/gi, '_').toLowerCase();
+            const timestamp = Math.floor(Date.now() / 1000);
+            const finalFileName = safePrefix + '_' + '<?= $research['seres_usersend'] ?>' + '_' + timestamp + '.' + file.name.split('.').pop();
 
-        $.ajax({
-            url: '<?= site_url('research/update-research') ?>',
-            type: 'POST',
-            data: formData,
-            dataType: 'json',
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                if (response.status === 'success') {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'อัปเดตสําเร็จ!',
-                        text: response.message,
-                        timer: 2000,
-                        showConfirmButton: false
-                    }).then(() => {
-                        window.location.href = '<?= site_url('research') ?>';
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'อัปเดตไม่สำเร็จ',
-                        text: response.message
-                    });
-                }
-            },
-            error: function(xhr, status, error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'เกิดข้อผิดพลาด',
-                    text: 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้ในขณะนี้'
+            Swal.fire({
+                title: 'กำลังอัปโหลดไฟล์ใหม่...',
+                html: 'ระบบกำลังเริ่มดำเนินการ (0%)',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            submitButton.prop('disabled', true);
+
+            const uploadChunk = async (index) => {
+                const start = index * chunkSize;
+                const end = Math.min(start + chunkSize, file.size);
+                const chunk = file.slice(start, end);
+
+                const formData = new FormData();
+                formData.append('file', chunk);
+                formData.append('path', 'academic/teacher/research/' + '<?= $research['seres_year'] ?>' + '/' + '<?= $research['seres_term'] ?>');
+                formData.append('filename', finalFileName);
+                formData.append('chunk', index);
+                formData.append('chunks', totalChunks);
+
+                return $.ajax({
+                    url: '<?= site_url('research/upload-chunk') ?>',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false
                 });
-            },
-            complete: function() {
-                submitButton.prop('disabled', false);
+            };
+
+            const runProcess = async () => {
+                try {
+                    for (let i = 0; i < totalChunks; i++) {
+                        await uploadChunk(i);
+                        const percent = Math.round(((i + 1) / totalChunks) * 100);
+                        Swal.update({ html: `กำลังอัปโหลดส่วนประกอบของไฟล์ (${percent}%)` });
+                    }
+
+                    // Done uploading chunks, now update DB
+                    saveMetadata(finalFileName);
+
+                } catch (err) {
+                    console.error(err);
+                    Swal.fire({ icon: 'error', title: 'อัปโหลดล้มเหลว', text: 'ไม่สามารถส่งไฟล์ได้' });
+                    submitButton.prop('disabled', false);
+                }
+            };
+            runProcess();
+
+        } else {
+            // No file selected, just update other data
+            Swal.fire({
+                title: 'กำลังบันทึก...',
+                text: 'กำลังอัปเดตข้อมูลงานวิจัย',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+            saveMetadata(null);
+        }
+
+        function saveMetadata(fileNameReady) {
+            const formData = new FormData($('#form_edit_research')[0]);
+            if (fileNameReady) {
+                formData.set('seres_file_name_ready', fileNameReady);
+                formData.delete('seres_file');
             }
-        });
+
+            $.ajax({
+                url: '<?= site_url('research/update-research') ?>',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.status === 'success') {
+                        Swal.fire({ icon: 'success', title: 'อัปเดตสำเร็จ!', text: response.message, timer: 2000, showConfirmButton: false }).then(() => {
+                            window.location.href = '<?= site_url('research') ?>';
+                        });
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'ไม่สามารถอัปเดตได้', text: response.message });
+                    }
+                },
+                error: function() {
+                    Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้' });
+                },
+                complete: function() {
+                    submitButton.prop('disabled', false);
+                }
+            });
+        }
     });
 });
 </script>

@@ -177,6 +177,7 @@ $routes->get('login/googleCallback', 'Login::googleCallback');
         $routes->get('', 'ResearchController::index');
         $routes->get('(:num)/(:num)', 'ResearchController::index/$1/$2'); // For year/term filtering
         $routes->get('send', 'ResearchController::sendResearch');
+        $routes->post('upload-chunk', 'ResearchController::uploadChunk');
         $routes->post('insert-research', 'ResearchController::insertResearch');
         $routes->get('edit-research/(:num)', 'ResearchController::editResearch/$1');
         $routes->post('update-research', 'ResearchController::updateResearch');

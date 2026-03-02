@@ -59,6 +59,11 @@ class ControllerSaveScoreRepeat extends BaseController
                             ->join('tb_subjects','tb_subjects.SubjectID = tb_register.SubjectID')
                             ->where('tb_register.RepeatTeacher',$this->session->get('person_id'))
                             ->where('tb_register.RepeatYear', $register_onoff[0]->onoff_year)
+                            ->groupStart()
+                                ->where('tb_register.Grade_Type', $register_onoff[0]->onoff_detail)
+                                ->orWhere('tb_register.Grade_Type', '')
+                                ->orWhere('tb_register.Grade_Type', NULL)
+                            ->groupEnd()
                             ->groupBy('tb_register.SubjectID')
                             ->groupBy('tb_register.RepeatYear')
                             ->orderBy('tb_subjects.SubjectCode','ASC')
@@ -81,8 +86,8 @@ class ControllerSaveScoreRepeat extends BaseController
         $data['title']  = "หน้าบันทึกผลการเรียน (ซ้ำ)";
         $data['teacher'] = $this->personnelDb->table('tb_personnel')->select('pers_id,pers_prefix,pers_firstname,pers_lastname,pers_img')->where('pers_id',$this->session->get('person_id'))->get()->getResult();
         $data['OnOff'] = $this->db->table('tb_send_plan_setup')->select('*')->get()->getResult();
-        $data['onoff'] = $this->db->table('tb_register_onoff')->where('onoff_id', 11)->get()->getResult();
-        $register_onoff = $this->db->table('tb_register_onoff')->where('onoff_id', 7)->get()->getResult();
+        $data['onoff'] = $this->db->table('tb_register_onoff')->where('onoff_id', 7)->get()->getResult();
+        $register_onoff = $data['onoff'];
        
         // Add a check here
         $onoff_detail = '';
@@ -101,6 +106,11 @@ class ControllerSaveScoreRepeat extends BaseController
                                 ->join('tb_students','tb_students.StudentID = tb_register.StudentID')
                                 ->where('tb_register.RepeatTeacher',$this->session->get('person_id'))
                                 ->where('tb_register.RepeatYear',$onoff_year)
+                                ->groupStart()
+                                    ->where('tb_register.Grade_Type', $onoff_detail)
+                                    ->orWhere('tb_register.Grade_Type', '')
+                                    ->orWhere('tb_register.Grade_Type', NULL)
+                                ->groupEnd()
                                 ->where('tb_register.SubjectID',($subject))
                                 //->where('tb_students.StudentClass','ม.6/3')
                                 ->orderBy('tb_students.StudentClass','ASC')
@@ -141,6 +151,11 @@ class ControllerSaveScoreRepeat extends BaseController
                                 ->join('tb_students','tb_students.StudentID = tb_register.StudentID','LEFT')
                                 ->where('tb_register.RepeatTeacher',$this->session->get('person_id'))
                                 ->where('tb_register.RepeatYear',$onoff_year)
+                                ->groupStart()
+                                    ->where('tb_register.Grade_Type', $onoff_detail)
+                                    ->orWhere('tb_register.Grade_Type', '')
+                                    ->orWhere('tb_register.Grade_Type', NULL)
+                                ->groupEnd()
                                 ->where('tb_register.SubjectID',($subject))
                                 ->where('tb_students.StudentBehavior !=','จำหน่าย')                                
                                 ->orderBy('tb_students.StudentClass','ASC')
@@ -406,15 +421,24 @@ class ControllerSaveScoreRepeat extends BaseController
             return $this->response->setStatusCode(403, 'Forbidden');
         }
         $loginId = $this->session->get('person_id');
+        
+        // ดึงข้อมูล onoff สำหรับกรองห้องเรียนที่มีนักเรียนในรอบปัจจุบัน
+        $checkRepeat = $this->db->table('tb_register_onoff')->select('onoff_year, onoff_detail')->where('onoff_id', 7)->get()->getRow();
+        $currentRepeatYear = $checkRepeat ? $checkRepeat->onoff_year : '';
+        $currentRepeatDetail = $checkRepeat ? $checkRepeat->onoff_detail : '';
 
         $check_room = $this->db->table('skjacth_academic.tb_register')
             ->select('skjacth_academic.tb_students.StudentClass')
             ->join('skjacth_academic.tb_subjects', 'skjacth_academic.tb_subjects.SubjectID = skjacth_academic.tb_register.SubjectID')
             ->join('skjacth_academic.tb_students', 'skjacth_academic.tb_students.StudentID = skjacth_academic.tb_register.StudentID')
             ->where('skjacth_academic.tb_register.RepeatTeacher', $loginId)
-            ->where('skjacth_academic.tb_register.RegisterYear', $this->request->getPost('report_yaer'))
+            ->where('skjacth_academic.tb_register.RepeatYear', $currentRepeatYear)
             ->where('skjacth_academic.tb_register.SubjectID', $this->request->getPost('report_subject'))
-            ->where('skjacth_academic.tb_register.Grade_Type !=', '')
+            ->groupStart()
+                ->where('skjacth_academic.tb_register.Grade_Type', $currentRepeatDetail)
+                ->orWhere('skjacth_academic.tb_register.Grade_Type', '')
+                ->orWhere('skjacth_academic.tb_register.Grade_Type', NULL)
+            ->groupEnd()
             ->groupBy('skjacth_academic.tb_students.StudentClass')
             ->orderBy('skjacth_academic.tb_students.StudentClass', 'ASC')
             ->get()->getResult();
@@ -488,12 +512,13 @@ class ControllerSaveScoreRepeat extends BaseController
             ->where('pers_id', $loginId)
             ->get()->getRow();
 
-        // ดึงข้อมูล onoff_year สำหรับกรอง RepeatYear
-        $checkRepeat = $this->db->table('tb_register_onoff')->select('onoff_year')->where('onoff_id', 7)->get()->getRow();
+        // ดึงข้อมูล onoff สำหรับกรอง (RepeatYear และ Grade_Type)
+        $checkRepeat = $this->db->table('tb_register_onoff')->select('onoff_year, onoff_detail')->where('onoff_id', 7)->get()->getRow();
         $currentRepeatYear = $checkRepeat ? $checkRepeat->onoff_year : '';
+        $currentRepeatDetail = $checkRepeat ? $checkRepeat->onoff_detail : '';
 
         // Base query for student data
-        $baseStudentQuery = function ($class = null) use ($loginId, $reportRegisterYear, $reportSubjectID, $currentRepeatYear) {
+        $baseStudentQuery = function ($class = null) use ($loginId, $reportRegisterYear, $reportSubjectID, $currentRepeatYear, $currentRepeatDetail) {
             $builder = $this->db->table('skjacth_academic.tb_register');
             $builder->select('
                     skjacth_academic.tb_register.SubjectID, skjacth_academic.tb_register.RegisterYear, skjacth_academic.tb_register.RegisterClass,
@@ -514,6 +539,11 @@ class ControllerSaveScoreRepeat extends BaseController
                 ->where('skjacth_academic.tb_subjects.SubjectYear', $reportRegisterYear)
                 ->where('skjacth_academic.tb_register.SubjectID', $reportSubjectID)
                 ->where('skjacth_academic.tb_register.RepeatYear', $currentRepeatYear)
+                ->groupStart()
+                    ->where('skjacth_academic.tb_register.Grade_Type', $currentRepeatDetail)
+                    ->orWhere('skjacth_academic.tb_register.Grade_Type', '')
+                    ->orWhere('skjacth_academic.tb_register.Grade_Type', NULL)
+                ->groupEnd()
                 ->where('skjacth_academic.tb_students.StudentBehavior !=', 'จำหน่าย')
                 ->orderBy('skjacth_academic.tb_students.StudentClass', 'ASC')
                 ->orderBy('skjacth_academic.tb_students.StudentNumber', 'ASC');

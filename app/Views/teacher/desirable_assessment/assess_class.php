@@ -126,6 +126,117 @@
         border-radius: 2rem;
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
     }
+    /* Compact Table Styling */
+    .table-sm th, .table-sm td {
+        padding: 0.25rem 0.2rem !important;
+        font-size: 0.85rem;
+    }
+    .form-control-modern {
+        border-radius: 4px;
+        border: 1px solid #e9ecef;
+        padding: 0.15rem;
+        text-align: center;
+        font-weight: 700;
+        transition: all 0.2s;
+        width: 38px; /* Compact width */
+        font-size: 0.8rem;
+    }
+    .name-col {
+        min-width: 150px !important;
+        max-width: 180px !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .rotated-text {
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+        transform: rotate(180deg);
+        white-space: nowrap;
+        font-size: 0.7rem;
+        padding: 5px 2px !important;
+        width: 30px;
+    }
+    .main-item-header {
+        background: rgba(14, 165, 233, 0.05);
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 2px !important;
+    }
+    .sub-item-header {
+        font-size: 0.65rem;
+        color: #64748b;
+        padding: 2px !important;
+    }
+
+    /* Sticky Table Header - Multi-row Support */
+    .table-responsive {
+        max-height: 75vh;
+        overflow-y: auto;
+    }
+    .table thead {
+        position: sticky;
+        top: 0;
+        z-index: 1050;
+    }
+    .table thead th {
+        position: sticky;
+        background-color: #f8f9fa !important;
+        box-shadow: inset 0 -1px 0 #dee2e6, inset 0 1px 0 #dee2e6;
+        padding: 4px 2px !important;
+    }
+    /* Row 1: Main Items & Rowspan Cells */
+    .table thead tr:nth-child(1) th {
+        top: 0;
+        z-index: 1004;
+    }
+    /* Row 2: Item Name */
+    .table thead tr:nth-child(2) th {
+        top: 23px; /* Adjusted offset */
+        z-index: 1003;
+    }
+    /* Row 3: Labels */
+    .table thead tr:nth-child(3) th {
+        top: 45px; /* Adjusted offset */
+        z-index: 1002;
+    }
+    /* Row 4: Sub-items */
+    .table thead tr:nth-child(4) th {
+        top: 62px; /* Adjusted offset */
+        z-index: 1001;
+    }
+    /* Fix for cells spanning all rows (Number, Name) */
+    .table thead th[rowspan="4"] {
+        top: 0 !important;
+        z-index: 1100; /* Highest priority */
+        background-color: #f8f9fa !important;
+    }
+    
+    /* Sticky Columns (Left) */
+    .num-col {
+        position: sticky !important;
+        left: 0;
+        z-index: 1006;
+        background-color: inherit;
+    }
+    .name-col {
+        position: sticky !important;
+        left: 54px; /* Offset by num-col width */
+        z-index: 1006;
+        background-color: inherit;
+    }
+    
+    /* Header override for sticky columns to stay above body sticky columns */
+    .table thead .num-col, .table thead .name-col {
+        z-index: 1100;
+        background-color: #f8f9fa !important;
+    }
+    .table tbody td.num-col, .table tbody td.name-col {
+        background-color: #fff !important;
+    }
+    .table tbody tr:hover td.num-col, .table tbody tr:hover td.name-col {
+        background-color: #f1f3f5 !important;
+    }
 </style>
 
 <!-- Page Loader -->
@@ -261,11 +372,11 @@
             <div class="card-body p-0">
                 <?php if (!empty($students) && !empty($assessmentItems)): ?>
                     <div class="table-responsive">
-                        <table class="table table-bordered align-middle mb-0 text-center">
+                        <table class="table table-bordered table-sm align-middle mb-0 text-center">
                             <thead>
                                 <tr class="bg-light">
-                                    <th rowspan="4" class="ps-3" style="min-width: 60px;">เลขที่</th>
-                                    <th rowspan="4" class="text-start" style="min-width: 200px;">ชื่อ-นามสกุล</th>
+                                    <th rowspan="4" class="ps-3 num-col" style="min-width: 55px;">เลขที่</th>
+                                    <th rowspan="4" class="text-start name-col">ชื่อ-นามสกุล</th>
                                     <?php foreach ($assessmentItems as $mainItem): ?>
                                         <th colspan="<?= count($mainItem['sub_items']) + 1 ?>" class="main-item-header">
                                             ข้อที่ <?= $mainItem['item_order'] ?>
@@ -314,8 +425,8 @@
                             <tbody>
                                 <?php foreach ($students as $student): ?>
                                     <tr id="student-row-<?= $student['StudentID'] ?>">
-                                        <td class="fw-bold text-muted"><?= esc($student['StudentNumber']) ?></td>
-                                        <td class="text-start">
+                                        <td class="fw-bold text-muted num-col"><?= esc($student['StudentNumber']) ?></td>
+                                        <td class="text-start name-col">
                                             <div class="fw-bold text-dark smallest-mobile"><?= esc($student['StudentPrefix'] . $student['StudentFirstName'] . ' ' . $student['StudentLastName']) ?></div>
                                         </td>
                                         

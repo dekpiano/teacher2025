@@ -20,6 +20,7 @@ class ResearchController extends BaseController
             exit;
         }
 
+        helper(['url', 'text']); // Load URL and Text helpers
         $this->researchModel = new ResearchModel();
         $this->db = db_connect();
         $this->setup = $this->db->table('tb_send_research_setup')->get()->getRow();
@@ -73,6 +74,7 @@ class ResearchController extends BaseController
 
         $data['title'] = "ส่งงานวิจัยในชั้นเรียน";
         $data['OnOff'] = [$this->setup];
+        $data['setup'] = $this->setup;
        
         $tiemstart = strtotime($this->setup->seres_setup_startdate);
         $tiemEnd = strtotime($this->setup->seres_setup_enddate);
@@ -93,28 +95,32 @@ class ResearchController extends BaseController
              return $this->response->setJSON(['status' => 'error', 'message' => 'ยังไม่ได้ตั้งค่าระบบส่งงานวิจัย กรุณาติดต่อผู้ดูแล']);
         }
 
+        $post = $this->request->getPost();
+        $isChunked = !empty($post['seres_file_name_ready']);
+
         $rules = [
             'seres_research_name' => 'required',
             'seres_namesubject'   => 'required',
             'seres_coursecode'    => 'required',
             'seres_gradelevel'    => 'required',
-            'seres_file' => [
+        ];
+
+        if (!$isChunked) {
+            $rules['seres_file'] = [
                 'rules' => 'uploaded[seres_file]|ext_in[seres_file,pdf]',
                 'errors' => [
                     'uploaded' => 'กรุณาเลือกไฟล์งานวิจัย',
-                    'ext_in' => 'อนุญาตเฉพาะไฟล์ PDF เท่านั้น'
+                    'ext_in'   => 'อนุญาตเฉพาะไฟล์ PDF เท่านั้น'
                 ]
-            ]
-        ];
+            ];
+        }
 
         if (!$this->validate($rules)) {
             $errors = $this->validator->getErrors();
-            // Return first error message for simplicity or all errors
             return $this->response->setJSON(['status' => 'error', 'message' => implode(', ', $errors), 'errors' => $errors]);
         }
 
-        $post = $this->request->getPost();
-        $file = $this->request->getFile('seres_file');
+        $file = $isChunked ? null : $this->request->getFile('seres_file');
 
         $seres_coursecode = $post['seres_coursecode'] ?? null;
         $seres_usersend = $this->session->get('person_id');
@@ -145,14 +151,28 @@ class ResearchController extends BaseController
             'seres_status'        => 'ส่งแล้ว', // Default status
         ];
 
-        if ($file->isValid() && !$file->hasMoved()) {
+        // If file was pre-uploaded via chunks
+        if (!empty($post['seres_file_name_ready'])) {
+            $insertData['seres_file'] = $post['seres_file_name_ready'];
+        } 
+        // Standard single-file upload (backup)
+        else if ($file->isValid() && !$file->hasMoved()) {
             $uploadBasePath = 'academic/teacher/research';
-            $originalName = url_title($post['seres_research_name'], '-', true) . '_' . $seres_usersend . '.' . $file->getExtension();
-            $remoteUploadPath = "{$uploadBasePath}/{$seres_year}/{$seres_term}/";
+            
+            // Generate a safe filename
+            $researchName = $post['seres_research_name'] ?? 'research';
+            $safeName = url_title($researchName, '-', true);
+            if (empty($safeName)) { $safeName = 'research'; }
+            $originalName = $safeName . '_' . $seres_usersend . '_' . time() . '.' . $file->getExtension();
+            
+            $remoteUploadPath = "{$uploadBasePath}/{$seres_year}/{$seres_term}";
 
             $uploadResult = $this->_uploadFileToServer($file, $remoteUploadPath, $originalName);
             if ($uploadResult['status'] !== 'success') {
-                 return $this->response->setJSON(['status' => 'error', 'message' => $uploadResult['message']]);
+                 return $this->response->setJSON([
+                     'status' => 'error', 
+                     'message' => $uploadResult['message'] . " (Path: {$remoteUploadPath})"
+                 ]);
             }
             $insertData['seres_file'] = $uploadResult['filename'];
         }
@@ -161,6 +181,37 @@ class ResearchController extends BaseController
             return $this->response->setJSON(['status' => 'success', 'message' => 'ส่งงานวิจัยสำเร็จ']);
         } else {
             return $this->response->setJSON(['status' => 'error', 'message' => 'ไม่สามารถบันทึกข้อมูลงานวิจัยได้']);
+        }
+    }
+
+    /**
+     * Proxies file chunks from browser to the remote upload server
+     */
+    public function uploadChunk()
+    {
+        $file = $this->request->getFile('file');
+        $post = $this->request->getPost();
+        
+        $uploadUrl = env('upload.server.url');
+        $client = \Config\Services::curlrequest();
+
+        try {
+            $postData = [
+                'path'     => $post['path'],
+                'filename' => $post['filename'],
+                'chunk'    => $post['chunk'],
+                'chunks'   => $post['chunks'],
+                'file'     => new \CURLFile($file->getTempName(), $file->getMimeType(), $post['filename'])
+            ];
+
+            $response = $client->post($uploadUrl, [
+                'multipart' => $postData,
+                'http_errors' => false
+            ]);
+
+            return $this->response->setStatusCode($response->getStatusCode())->setBody($response->getBody());
+        } catch (\Exception $e) {
+            return $this->response->setJSON(['status' => 'error', 'message' => $e->getMessage()]);
         }
     }
 
@@ -184,20 +235,27 @@ class ResearchController extends BaseController
             return $this->response->setStatusCode(200);
         }
 
+        $post = $this->request->getPost();
+        $isChunked = !empty($post['seres_file_name_ready']);
+
         $rules = [
-            'seres_file' => [
+            'seres_ID' => 'required'
+        ];
+
+        // Only validate file if it's NOT a chunked upload
+        if (!$isChunked && $this->request->getFile('seres_file') && $this->request->getFile('seres_file')->isValid()) {
+            $rules['seres_file'] = [
                 'rules' => 'ext_in[seres_file,pdf]',
                 'errors' => [
                     'ext_in' => 'อนุญาตเฉพาะไฟล์ PDF เท่านั้น'
                 ]
-            ]
-        ];
-
-        if (!$this->validate($rules)) {
-            return $this->response->setJSON(['status' => 'error', 'message' => $this->validator->getErrors()['seres_file']]);
+            ];
         }
 
-        $post = $this->request->getPost();
+        if (!$this->validate($rules)) {
+            $error = $this->validator->getErrors();
+            return $this->response->setJSON(['status' => 'error', 'message' => implode(', ', $error)]);
+        }
         $seres_ID = $post['seres_ID'] ?? null;
 
         if (!$seres_ID) {
@@ -210,36 +268,50 @@ class ResearchController extends BaseController
         }
 
         $updateData = [
-            'seres_research_name' => $post['seres_research_name'] ?? $research['seres_research_name'],
-            'seres_sendcomment'   => nl2br(htmlentities($post['seres_sendcomment'] ?? $research['seres_sendcomment'], ENT_QUOTES, 'UTF-8')),
-        ];
+        'seres_research_name' => $post['seres_research_name'] ?? $research['seres_research_name'],
+        'seres_sendcomment'   => nl2br(htmlentities($post['seres_sendcomment'] ?? (string)$research['seres_sendcomment'], ENT_QUOTES, 'UTF-8')),
+    ];
 
+    $uploadBasePath = 'academic/teacher/research';
+    $folderYear = $research['seres_year'];
+    $folderTerm = $research['seres_term'];
+
+    // If file was pre-uploaded via chunks
+    if (!empty($post['seres_file_name_ready'])) {
+        // Delete old file if it exists
+        if (!empty($research['seres_file'])) {
+            $oldPath = "{$uploadBasePath}/{$folderYear}/{$folderTerm}/{$research['seres_file']}";
+            $this->_deleteFileFromServer($oldPath);
+        }
+        $updateData['seres_file'] = $post['seres_file_name_ready'];
+    } 
+    // Standard upload (fallback)
+    else {
         $file = $this->request->getFile('seres_file');
-
-        // Handle file upload only if a file is provided
         if ($file && $file->isValid() && !$file->hasMoved()) {
-            $folderYear = $research['seres_year'];
-            $folderTerm = $research['seres_term'];
-            // Adjust upload path for research
-            $uploadBasePath = 'academic/teacher/research';  
-
-            // Create a filename that includes research name and user ID for uniqueness
-            $originalName = url_title($research['seres_research_name'], '-', true) . '_' . $research['seres_usersend'] . '.' . $file->getExtension();
-            $remoteUploadPath = "{$uploadBasePath}/{$folderYear}/{$folderTerm}/";
+            // Generate a safe filename
+            $researchName = $post['seres_research_name'] ?? $research['seres_research_name'];
+            $safeName = url_title($researchName, '-', true);
+            if (empty($safeName)) { $safeName = 'research'; }
+            $originalName = $safeName . '_' . $research['seres_usersend'] . '_' . time() . '.' . $file->getExtension();
+            $remoteUploadPath = "{$uploadBasePath}/{$folderYear}/{$folderTerm}";
             
-            // Delete old file before uploading new one
+            // Delete old file
             if (!empty($research['seres_file'])) {
-                $oldRemoteFilePath = "{$uploadBasePath}/{$research['seres_year']}/{$research['seres_term']}/{$research['seres_file']}";
-                $this->_deleteFileFromServer($oldRemoteFilePath);
+                $oldPath = "{$uploadBasePath}/{$folderYear}/{$folderTerm}/{$research['seres_file']}";
+                $this->_deleteFileFromServer($oldPath);
             }
 
-            // Upload the new file
             $uploadResult = $this->_uploadFileToServer($file, $remoteUploadPath, $originalName);
             if ($uploadResult['status'] !== 'success') {
-                return $this->response->setJSON($uploadResult);
+                 return $this->response->setJSON([
+                     'status' => 'error', 
+                     'message' => $uploadResult['message'] . " (Path: {$remoteUploadPath})"
+                 ]);
             }
             $updateData['seres_file'] = $uploadResult['filename'];
         }
+    }    
 
         if ($this->researchModel->update($seres_ID, $updateData)) {
             return $this->response->setJSON(['status' => 'success', 'message' => 'อัปเดตงานวิจัยสำเร็จ']);
@@ -341,7 +413,8 @@ class ResearchController extends BaseController
             ]);
 
             $statusCode = $response->getStatusCode();
-            $body = json_decode($response->getBody(), true);
+            $rawBody = $response->getBody();
+            $body = json_decode($rawBody, true);
 
             if ($statusCode === 200 && isset($body['status']) && $body['status'] === 'success') {
                 return [
@@ -349,7 +422,13 @@ class ResearchController extends BaseController
                     'filename' => $body['filename']
                 ];
             } else {
-                $errorMessage = $body['message'] ?? 'An unknown error occurred during file upload.';
+                // If body is not JSON or message missing, show raw response for debugging
+                if ($body === null) {
+                    $errorMessage = "Server error (Status: {$statusCode}). Response: " . substr(strip_tags($rawBody), 0, 100);
+                } else {
+                    $errorMessage = $body['message'] ?? 'An unknown error occurred during file upload.';
+                }
+                
                 log_message('error', "File upload failed: {$errorMessage} (Status: {$statusCode})");
                 return ['status' => 'error', 'message' => "ไม่สามารถอัปโหลดไฟล์ได้: {$errorMessage}"];
             }
