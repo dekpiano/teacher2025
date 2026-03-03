@@ -147,11 +147,11 @@
             </div>
             <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
                 <?php if (isset($hasAttendanceRecord) && $hasAttendanceRecord): ?>
-                    <span class="status-badge-lg bg-white text-success shadow-sm d-inline-block">
+                    <span class="status-badge-lg bg-success text-white shadow-sm d-inline-block">
                         <i class="bi bi-check-circle-fill me-2"></i> บันทึกข้อมูลแล้ว
                     </span>
                 <?php else: ?>
-                    <span class="status-badge-lg bg-white bg-opacity-10 text-white border border-white border-opacity-25 d-inline-block">
+                    <span class="status-badge-lg bg-warning text-dark shadow-sm d-inline-block">
                         <i class="bi bi-clock-history me-2"></i> ยังไม่ได้บันทึก
                     </span>
                 <?php endif; ?>

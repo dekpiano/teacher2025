@@ -174,12 +174,16 @@ class ClubModel extends Model
      * @param int $scheduleId The ID of the schedule.
      * @return array An array of attendance records.
      */
-    public function getAttendanceBySchedule(int $scheduleId): array
+    public function getAttendanceBySchedule(int $scheduleId, int $clubId = 0): array
     {
-        return $this->db->table('tb_club_record_activity')
-                        ->where('trca_schedule_id', $scheduleId)
-                        ->get()
-                        ->getResult();
+        $builder = $this->db->table('tb_club_record_activity')
+                        ->where('trca_schedule_id', $scheduleId);
+        
+        if ($clubId > 0) {
+            $builder->where('tcra_club_id', $clubId);
+        }
+
+        return $builder->get()->getResult();
     }
 
     public function getAttendanceByScheduleIds(array $scheduleIds): array
@@ -219,10 +223,15 @@ class ClubModel extends Model
      */
     public function saveScheduleAttendance(array $data): bool
     {
-        // Check if a record already exists for this schedule
-        $existingRecord = $this->db->table('tb_club_record_activity')
-                                   ->where('trca_schedule_id', $data['trca_schedule_id'])
-                                   ->get()->getRow();
+        // Check if a record already exists for this schedule AND this club
+        $builder = $this->db->table('tb_club_record_activity')
+                                   ->where('trca_schedule_id', $data['trca_schedule_id']);
+        
+        if (isset($data['tcra_club_id'])) {
+            $builder->where('tcra_club_id', $data['tcra_club_id']);
+        }
+
+        $existingRecord = $builder->get()->getRow();
 
         if ($existingRecord) {
             // Update existing record
@@ -327,16 +336,22 @@ class ClubModel extends Model
     }
 
     /**
-     * Checks if attendance has been recorded for a specific schedule.
+     * Checks if attendance has been recorded for a specific schedule and club.
      *
      * @param int $scheduleId The ID of the schedule.
+     * @param int $clubId The ID of the club.
      * @return bool True if attendance is recorded, false otherwise.
      */
-    public function hasAttendanceRecorded(int $scheduleId): bool
+    public function hasAttendanceRecorded(int $scheduleId, int $clubId = 0): bool
     {
-        $record = $this->db->table('tb_club_record_activity')
-                           ->where('trca_schedule_id', $scheduleId)
-                           ->get()->getRow();
+        $builder = $this->db->table('tb_club_record_activity')
+                           ->where('trca_schedule_id', $scheduleId);
+        
+        if ($clubId > 0) {
+            $builder->where('tcra_club_id', $clubId);
+        }
+
+        $record = $builder->get()->getRow();
         return !empty($record);
     }
 

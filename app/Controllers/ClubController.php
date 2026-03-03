@@ -293,7 +293,7 @@ class ClubController extends BaseController
 
         // Add attendance status to each schedule
         foreach ($data['schedules'] as $schedule) {
-            $schedule->attendance_recorded = $this->clubModel->hasAttendanceRecorded($schedule->tcs_schedule_id);
+            $schedule->attendance_recorded = $this->clubModel->hasAttendanceRecorded($schedule->tcs_schedule_id, (int)$clubId);
         }
 
         return view('teacher/club/schedule', $data);
@@ -395,7 +395,7 @@ class ClubController extends BaseController
 
         // Fetch existing attendance for this schedule
         $existingAttendance = [];
-        $record = $this->clubModel->getAttendanceBySchedule($scheduleId);        
+        $record = $this->clubModel->getAttendanceBySchedule($scheduleId, (int)$clubId);        
         $data['hasAttendanceRecord'] = !empty($record);
         if (!empty($record)) {
             // The model returns an array of records, but we expect only one
