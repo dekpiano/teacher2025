@@ -116,13 +116,9 @@
         }
 
         @media print {
-            @page {
-                margin: 0 !important;
-            }
             body {
                 -webkit-print-color-adjust: exact;
                 color-adjust: exact;
-                padding: 1.5cm;
             }
             .table-bordered {
                 font-size: 9pt;

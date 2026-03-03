@@ -23,6 +23,7 @@ class DesirableAssessmentModel extends Model
                         ->select('Reg_Class')
                         ->where('class_teacher', $teacherId)
                         ->where('Reg_Year', $academicYear)
+                        ->like('Reg_Class', '/', 'both')  // เฉพาะครูที่ปรึกษา (Reg_Class รูปแบบ "ระดับ/ห้อง" เช่น 1/1)
                         ->distinct()
                         ->get()
                         ->getResultArray();
