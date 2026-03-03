@@ -116,9 +116,13 @@
         }
 
         @media print {
+            @page {
+                margin: 0 !important;
+            }
             body {
                 -webkit-print-color-adjust: exact;
                 color-adjust: exact;
+                padding: 1.5cm;
             }
             .table-bordered {
                 font-size: 9pt;
@@ -180,6 +184,10 @@
                     <td class="cover-info-label">ผู้ดูแลกิจกรรม</td>
                     <td class="cover-info-value"><?= esc($evaluatorName) ?></td>
                 </tr>
+                <!-- <tr>
+                    <td class="cover-info-label">หัวหน้าฝ่ายวัดผล</td>
+                    <td class="cover-info-value"><?= esc($measurementHeadName) ?></td>
+                </tr> -->
             </tbody>
         </table>
 
@@ -368,47 +376,47 @@
     </div>
 
     <!-- PAGE 5: SUMMARY & OBJECTIVES (PORTRAIT) - FORMAL STYLE -->
-    <div class="printable-page container-fluid" style="padding: 2rem 3rem;">
-        <div class="mb-5">
-            <p class="fw-bold mb-3" style="font-size: 16pt; text-decoration: underline;">จุดประสงค์กิจกรรม</p>
+    <div class="printable-page container-fluid" style="padding: 1rem 2rem;">
+        <div class="mb-3">
+            <p class="fw-bold mb-2" style="font-size: 12pt; text-decoration: underline;">จุดประสงค์กิจกรรม</p>
             <?php if (!empty($club_objectives)): ?>
-                <table class="table table-bordered" style="width: 100%; font-size: 14pt;">
+                <table class="table table-bordered" style="width: 100%; font-size: 10pt;">
                     <tbody>
                         <?php foreach ($club_objectives as $objective): ?>
                             <tr>
-                                <td style="width: 80px; padding: 10px;" class="text-center fw-bold"><?= esc($objective->objective_order) ?>.</td>
-                                <td style="padding: 10px 15px;"><?= esc($objective->objective_name) ?></td>
+                                <td style="width: 60px; padding: 5px;" class="text-center fw-bold"><?= esc($objective->objective_order) ?>.</td>
+                                <td style="padding: 5px 10px;"><?= esc($objective->objective_name) ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
             <?php else: ?>
-                <p class="text-center" style="font-size: 14pt;">- ยังไม่มีข้อมูลจุดประสงค์ -</p>
+                <p class="text-center" style="font-size: 10pt;">- ยังไม่มีข้อมูลจุดประสงค์ -</p>
             <?php endif; ?>
         </div>
 
         <div>
-            <p class="fw-bold mb-3" style="font-size: 16pt; text-decoration: underline;">สรุปผลการเข้าร่วมกิจกรรม</p>
-            <table class="table table-bordered text-center" style="width: 100%; font-size: 14pt;">
+            <p class="fw-bold mb-2" style="font-size: 12pt; text-decoration: underline;">สรุปผลการเข้าร่วมกิจกรรม</p>
+            <table class="table table-bordered text-center" style="width: 100%; font-size: 10pt;">
                 <thead style="background-color: #f0f0f0;">
                     <tr>
-                        <th rowspan="2" class="align-middle" style="padding: 12px;">จำนวนนักเรียน<br>ทั้งหมด</th>
-                        <th colspan="4" style="padding: 10px;">ระดับผลการเข้าร่วมกิจกรรม</th>
+                        <th rowspan="2" class="align-middle" style="padding: 6px;">จำนวนนักเรียน<br>ทั้งหมด</th>
+                        <th colspan="4" style="padding: 6px;">ระดับผลการเข้าร่วมกิจกรรม</th>
                     </tr>
                     <tr>
-                        <th style="width: 18%; padding: 10px;">ผ่าน</th>
-                        <th style="width: 18%; padding: 10px;">ไม่ผ่าน</th>
-                        <th style="width: 18%; padding: 10px;">ขาดเรียนนาน</th>
-                        <th style="width: 18%; padding: 10px;">จำหน่าย</th>
+                        <th style="width: 18%; padding: 6px;">ผ่าน</th>
+                        <th style="width: 18%; padding: 6px;">ไม่ผ่าน</th>
+                        <th style="width: 18%; padding: 6px;">ขาดเรียนนาน</th>
+                        <th style="width: 18%; padding: 6px;">จำหน่าย</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td class="fw-bold" style="padding: 15px; font-size: 18pt;"><?= esc($summaryParticipation['totalStudents']) ?></td>
-                        <td class="fw-bold" style="padding: 15px; font-size: 18pt;"><?= esc($summaryParticipation['passed']) ?></td>
-                        <td class="fw-bold" style="padding: 15px; font-size: 18pt;"><?= esc($summaryParticipation['failed']) ?></td>
-                        <td style="padding: 15px; font-size: 18pt;"><?= esc($summaryParticipation['longAbsence']) ?></td>
-                        <td style="padding: 15px; font-size: 18pt;"><?= esc($summaryParticipation['dismissed']) ?></td>
+                        <td class="fw-bold" style="padding: 8px; font-size: 13pt;"><?= esc($summaryParticipation['totalStudents']) ?></td>
+                        <td class="fw-bold" style="padding: 8px; font-size: 13pt;"><?= esc($summaryParticipation['passed']) ?></td>
+                        <td class="fw-bold" style="padding: 8px; font-size: 13pt;"><?= esc($summaryParticipation['failed']) ?></td>
+                        <td style="padding: 8px; font-size: 13pt;"><?= esc($summaryParticipation['longAbsence']) ?></td>
+                        <td style="padding: 8px; font-size: 13pt;"><?= esc($summaryParticipation['dismissed']) ?></td>
                     </tr>
                 </tbody>
             </table>

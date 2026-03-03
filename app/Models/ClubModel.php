@@ -256,7 +256,7 @@ class ClubModel extends Model
     {
         return $this->db->table('tb_club_activities')
                         ->where('act_club_id', $clubId)
-                        ->orderBy('act_date', 'DESC')
+                        ->orderBy('act_date', 'ASC')
                         ->get()
                         ->getResult();
     }
