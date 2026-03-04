@@ -132,14 +132,23 @@
                                 </thead>
                                 <tbody>
                                     <?php if (!empty($check_student)) : ?>
-                                        <?php foreach ($check_student as $v_check_student) : ?>
-                                                <tr>
+                                        <?php foreach ($check_student as $v_check_student) : 
+                                            // Check if this student's round (Grade_Type) is the current active round
+                                            $currentRound = @$onoff[0]->onoff_detail;
+                                            $studentRound = $v_check_student->Grade_Type;
+                                            // Lock if student has a round assigned and it's not the current one
+                                            $isRoundLocked = (!empty($studentRound) && $studentRound != $currentRound);
+                                        ?>
+                                                <tr class="<?= $isRoundLocked ? 'bg-light opacity-75' : '' ?>">
                                                     <td class="text-center text-muted"><?= esc($v_check_student->StudentClass) ?></td>
                                                     <td class="text-center fw-bold"><?= esc($v_check_student->StudentNumber) ?></td>
                                                     <td class="text-center text-muted font-monospace small"><?= esc($v_check_student->StudentCode) ?></td>
                                                     <td class="ps-4">
                                                         <div class="fw-bold text-dark mb-0"><?= esc($v_check_student->StudentPrefix . $v_check_student->StudentFirstName . ' ' . $v_check_student->StudentLastName) ?></div>
-                                                        <small class="badge bg-label-secondary border-0 mt-1"><?= esc($v_check_student->Grade_Type) ?></small>
+                                                        <small class="badge <?= $isRoundLocked ? 'bg-label-danger' : 'bg-label-secondary' ?> border-0 mt-1">
+                                                            ครั้งที่: <?= esc($studentRound ?: $currentRound) ?>
+                                                            <?= $isRoundLocked ? ' (ล็อคข้อมูล)' : '' ?>
+                                                        </small>
                                                         <input type="hidden" name="StudentID[]" value="<?= esc($v_check_student->StudentID) ?>">
                                                         <input type="hidden" name="RegisterYear[]" value="<?= esc($v_check_student->RegisterYear) ?>">
                                                     </td>
@@ -147,7 +156,8 @@
                                                         <div class="score-input-wrapper">
                                                             <input type="text" class="form-control study_time KeyEnter text-center fw-bold bg-label-info border-transparent" 
                                                                    name="study_time[]" value="<?= esc($v_check_student->StudyTime) ?>" 
-                                                                   check-time="<?= $timeNum ?>" autocomplete="off" style="width: 60px;">
+                                                                   check-time="<?= $timeNum ?>" autocomplete="off" style="width: 60px;"
+                                                                   <?= $isRoundLocked ? 'readonly' : '' ?>>
                                                         </div>
                                                     </td>
                                                     <?php
@@ -160,6 +170,8 @@
                                                                 break;
                                                             }
                                                         }
+                                                        
+                                                        $finalLock = ($isRoundLocked || $onoff_status == "off");
                                                     ?>
                                                         <td class="text-center">
                                                             <div class="score-input-wrapper">
@@ -167,7 +179,7 @@
                                                                        name="<?= esc($v_check_student->StudentID) ?>[]" 
                                                                        value="<?= esc($scores[$key] ?? '') ?>" 
                                                                        check-score-key="<?= esc($v_set_score->regscore_score) ?>"
-                                                                       <?= $onoff_status == "off" ? "readonly bg-light" : "" ?> 
+                                                                       <?= $finalLock ? "readonly bg-light" : "" ?> 
                                                                        autocomplete="off" style="width: 60px;">
                                                             </div>
                                                         </td>

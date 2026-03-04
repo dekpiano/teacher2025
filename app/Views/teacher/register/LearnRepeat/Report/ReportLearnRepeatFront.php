@@ -125,38 +125,33 @@ foreach ($check_student as $key => $v_check_student) {
         continue;
     }
 
-    if($v_check_student->Grade_Type != ''){
-        $count_all += 1;
-        if($v_check_student->Grade == "มส"){
-            $gradeMS += 1;
-       }else if($v_check_student->Grade == "ร"){
+    $count_all += 1;
+    if($v_check_student->Grade == "มส"){
+        $gradeMS += 1;
+    }else if($v_check_student->Grade == "ร"){
         $gradeR += 1;
-        }else{
-            $sum = floatval($v_check_student->Grade);
-            if (($sum > 100) || ($sum < 0)) {
-                $grade_error = "ไม่สามารถคิดเกรดได้ คะแนนเกิน";
-                } else if (($sum == 4)) {
-                    $grade4 += 1;
-                } else if (($sum == 3.5)) {
-                    $grade35 += 1;
-                } else if (($sum == 3)) {
-                    $grade3 += 1;
-                } else if (($sum == 2.5)) {
-                    $grade25 += 1;
-                } else if (($sum == 2)) {
-                    $grade2 += 1;
-                } else if (($sum == 1.5)) {
-                    $grade15 += 1;
-                } else if (($sum == 1)) {
-                    $grade1 += 1;
-                } else if ($sum == 0) {
-                    $grade0 += 1;
-                }
+    }else if($v_check_student->Grade !== '' && $v_check_student->Grade !== null){
+        $sum = floatval($v_check_student->Grade);
+        if (($sum > 4) || ($sum < 0)) {
+            // Skip invalid grades
+        } else if (($sum == 4)) {
+            $grade4 += 1;
+        } else if (($sum == 3.5)) {
+            $grade35 += 1;
+        } else if (($sum == 3)) {
+            $grade3 += 1;
+        } else if (($sum == 2.5)) {
+            $grade25 += 1;
+        } else if (($sum == 2)) {
+            $grade2 += 1;
+        } else if (($sum == 1.5)) {
+            $grade15 += 1;
+        } else if (($sum == 1)) {
+            $grade1 += 1;
+        } else if ($sum == 0) {
+            $grade0 += 1;
         }
-
-      
     }
-  
 } 
 
 if ($count_all > 0) {

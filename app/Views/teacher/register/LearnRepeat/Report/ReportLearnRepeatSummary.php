@@ -51,13 +51,14 @@ td {
 <table class="table" style="width: 100%;margin-top: 10px;">
     <thead>
         <tr>
-            <th colspan="4">ข้อมูลนักเรียน</th>
+            <th colspan="5">ข้อมูลนักเรียน</th>
             <th colspan="7">การประเมินผลการเรียน</th>
         </tr>
         <tr>
             <th rowspan="2" style="width: 5%">ห้อง</th>
+            <th rowspan="2" style="width: 5%">เรียนซ้ำ</th>
             <th rowspan="2" style="width: 5%">เลขที่</th>
-            <th rowspan="2" style="width: 4%">เลขประจำตัวนักเรียน</th>
+            <th rowspan="2" style="width: 4%">เลขประจำตัว</th>
             <th rowspan="2" style="width: 25%">ชื่อ - นามสกุล</th>
             <th rowspan="2" style="width: 8%">เวลาเรียน (<?=$re_subjuct[0]->SubjectHour?>)</th>
             <?php 
@@ -90,10 +91,10 @@ td {
         <?php 
         
         foreach ($check_student1 as $key => $v_check_student) :
-            if($v_check_student->Grade_Type != ''):
         ?>
         <tr>
             <td class="center"><?=$v_check_student->StudentClass?></td>
+            <td class="center"><?= str_replace('เรียนซ้ำ', '', $v_check_student->Grade_Type ?: $CheckRepeat[0]->onoff_detail) ?></td>
             <td class="center"><?=$v_check_student->StudentNumber?></td>
             <td class="center"><?=$v_check_student->StudentCode?></td>
             <td><?=$v_check_student->StudentPrefix?><?=$v_check_student->StudentFirstName?>
@@ -115,7 +116,6 @@ td {
             <td class="center" style="white-space: nowrap; overflow: hidden; font-size: 14px;"><?=$v_check_student->StudentBehavior?></td>
         </tr>
         <?php 
-            endif ;
             endforeach; 
             ?>
     </tbody>
