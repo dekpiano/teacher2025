@@ -178,7 +178,13 @@ if ($count_all > 0) {
     $avgMS = 0;
 }
 
-$avg3_up = $avg3 + $avg35 + $avg4;
+    $avg3_up = $avg3 + $avg35 + $avg4;
+    $avg_NoPass = $avg0 + $avgR + $avgMS;
+    $avgSubject = round(((($grade4*4)+($grade35*3.5)+($grade3*3)+($grade25*2.5)+($grade2*2)+($grade15*1.5)+($grade1*1)+($grade0*0))/$count_all),2);
+} else {
+    $avg4 = 0; $avg35 = 0; $avg3 = 0; $avg25 = 0; $avg2 = 0; $avg15 = 0; $avg1 = 0; $avg0 = 0; $avgR = 0; $avgMS = 0;
+    $avg3_up = 0; $avg_NoPass = 0; $avgSubject = 0;
+}
 ?>
 
 
@@ -229,28 +235,28 @@ $avg3_up = $avg3 + $avg35 + $avg4;
         </tr>
         <tr>
             <td style="width: 16.7401%; text-align: center; vertical-align: middle;"><strong>คิดเป็นร้อยละ</strong></td>
-            <td style="width: 7.1585%; text-align: center; vertical-align: middle;"><strong><?=$avg4;?></strong></td>
-            <td style="width: 7.1587%; text-align: center; vertical-align: middle;"><strong><?=$avg35;?></strong></td>
-            <td style="width: 7.0037%; text-align: center; vertical-align: middle;"><strong><?=$avg3;?></strong></td>
-            <td style="width: 7.0382%; text-align: center; vertical-align: middle;"><strong><?=$avg25;?></strong></td>
-            <td style="width: 8.0208%; text-align: center; vertical-align: middle;"><strong><?=$avg2;?></strong></td>
-            <td style="width: 8.6299%; text-align: center; vertical-align: middle;"><strong><?=$avg15;?></strong></td>
-            <td style="width: 7.439%; text-align: center; vertical-align: middle;"><strong><?=$avg1;?></strong></td>
-            <td style="width: 6.2672%; text-align: center; vertical-align: middle;"><strong><?=$avg0;?></strong></td>
-            <td style="width: 6.7525%; text-align: center; vertical-align: middle;"><strong><?=$avgR;?></strong></td>
-            <td style="width: 6.1639%; text-align: center; vertical-align: middle;"><strong><?=$avgMS;?></strong></td>
+            <td style="width: 7.1585%; text-align: center; vertical-align: middle;"><strong><?=number_format($avg4, 2, '.', '');?></strong></td>
+            <td style="width: 7.1587%; text-align: center; vertical-align: middle;"><strong><?=number_format($avg35, 2, '.', '');?></strong></td>
+            <td style="width: 7.0037%; text-align: center; vertical-align: middle;"><strong><?=number_format($avg3, 2, '.', '');?></strong></td>
+            <td style="width: 7.0382%; text-align: center; vertical-align: middle;"><strong><?=number_format($avg25, 2, '.', '');?></strong></td>
+            <td style="width: 8.0208%; text-align: center; vertical-align: middle;"><strong><?=number_format($avg2, 2, '.', '');?></strong></td>
+            <td style="width: 8.6299%; text-align: center; vertical-align: middle;"><strong><?=number_format($avg15, 2, '.', '');?></strong></td>
+            <td style="width: 7.439%; text-align: center; vertical-align: middle;"><strong><?=number_format($avg1, 2, '.', '');?></strong></td>
+            <td style="width: 6.2672%; text-align: center; vertical-align: middle;"><strong><?=number_format($avg0, 2, '.', '');?></strong></td>
+            <td style="width: 6.7525%; text-align: center; vertical-align: middle;"><strong><?=number_format($avgR, 2, '.', '');?></strong></td>
+            <td style="width: 6.1639%; text-align: center; vertical-align: middle;"><strong><?=number_format($avgMS, 2, '.', '');?></strong></td>
             <td style="width: 8.1773%; text-align: center; vertical-align: middle;"><strong></strong></td>
         </tr>
         <tr>
             <td colspan="5" style="width: 45.2832%;"><strong>ร้อยละของนักเรียนที่ได้ผลการเรียนระดับดี(3)
                     ขึ้นไป&nbsp;</strong></td>
-            <td style="width: 8.0208%; text-align: center; vertical-align: middle;"><strong><?=$avg3_up;?></strong></td>
+            <td style="width: 8.0208%; text-align: center; vertical-align: middle;"><strong><?=number_format($avg3_up, 2, '.', '');?></strong></td>
             <td colspan="5" style="width: 37.1541%;"><strong>ผลการเรียนเฉลี่ยของรายวิชา</strong></td>
-            <td style="width: 8.1773%; text-align: center; vertical-align: middle;"><strong>0.00</strong></td>
+            <td style="width: 8.1773%; text-align: center; vertical-align: middle;"><strong><?=number_format($avgSubject, 2, '.', '');?></strong></td>
         </tr>
         <tr>
             <td colspan="5" style="width: 45.2832%;"><strong>ร้อยละของนักเรียนที่ไม่ผ่านการประเมิน</strong></td>
-            <td style="width: 8.0208%; text-align: center; vertical-align: middle;"><strong>0.00</strong></td>
+            <td style="width: 8.0208%; text-align: center; vertical-align: middle;"><strong><?=number_format($avg_NoPass, 2, '.', '');?></strong></td>
             <td colspan="6" style="width: 46.6255%;"><strong>ส่วนเบี่ยงเบนมาตรฐาน</strong></td>
         </tr>
     </tbody>

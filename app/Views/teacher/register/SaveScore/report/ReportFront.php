@@ -42,20 +42,21 @@
         </tr>
         <tr>
             <td style="width: 50%;text-align: right;padding-right: 10px;">ชั้นมัธยมศึกษาปีที่
-                <?php if($CheckPrint == 'all'): ?>
                 <?php 
-                $sub_room = explode(".",$re_room); 
-                $tub = explode('/',$sub_room[1]);
+                $room_display = $re_room;
+                if ($CheckPrint == 'all' && $room_display == "ทุกห้อง") {
+                    $room_display = str_replace("ม.", "", $re_subjuct[0]->SubjectClass);
+                }
+                
+                $sub_room = explode(".", $room_display); 
+                $room_part = isset($sub_room[1]) ? $sub_room[1] : $sub_room[0];
+                $tub = explode('/', $room_part);
                 echo $tub[0];
                 ?>
-                <?php else: ?>
-                    <?php $sub_room = explode(".",$re_room); echo $sub_room[1];?>
-                <?php endif; ?>
             </td>
             <td style="padding-left: 10px;">
                 ระดับมัธยมศึกษา<?php 
-            $sub_level = explode("/",$sub_room[1]);
-           echo $sub_level[0] >= 4?"ตอนปลาย":"ตอนต้น";
+            echo intval($tub[0]) >= 4 ? "ตอนปลาย" : "ตอนต้น";
             ?>
             </td>
         </tr>
@@ -141,21 +142,26 @@ foreach ($check_student as $key => $v_check_student) {
   
 } 
 
-$avg4 = round(($grade4*100)/$count_all,2);
-$avg35 = round(($grade35*100)/$count_all,2);
-$avg3 = round(($grade3*100)/$count_all,2);
-$avg25 = round(($grade25*100)/$count_all,2);
-$avg2 = round(($grade2*100)/$count_all,2);
-$avg15 = round(($grade15*100)/$count_all,2);
-$avg1 = round(($grade1*100)/$count_all,2);
-$avg0 = round(($grade0*100)/$count_all,2);
-$avgR = round(($gradeR*100)/$count_all,2);;
-$avgMS=round(($gradeMS*100)/$count_all,2);
+if ($count_all > 0) {
+    $avg4 = round(($grade4*100)/$count_all,2);
+    $avg35 = round(($grade35*100)/$count_all,2);
+    $avg3 = round(($grade3*100)/$count_all,2);
+    $avg25 = round(($grade25*100)/$count_all,2);
+    $avg2 = round(($grade2*100)/$count_all,2);
+    $avg15 = round(($grade15*100)/$count_all,2);
+    $avg1 = round(($grade1*100)/$count_all,2);
+    $avg0 = round(($grade0*100)/$count_all,2);
+    $avgR = round(($gradeR*100)/$count_all,2);
+    $avgMS = round(($gradeMS*100)/$count_all,2);
 
-$avg3_up = $avg3 + $avg35 + $avg4;
-$avg_NoPass = $avg0 + $avgR + $avgMS;
+    $avg3_up = $avg3 + $avg35 + $avg4;
+    $avg_NoPass = $avg0 + $avgR + $avgMS;
 
-$avgSubject = round(((($grade4*4)+($grade35*3.5)+($grade3*3)+($grade25*2.5)+($grade2*2)+($grade15*1.5)+($grade1*1)+($grade0*0))/$count_all),2);
+    $avgSubject = round(((($grade4*4)+($grade35*3.5)+($grade3*3)+($grade25*2.5)+($grade2*2)+($grade15*1.5)+($grade1*1)+($grade0*0))/$count_all),2);
+} else {
+    $avg4 = 0; $avg35 = 0; $avg3 = 0; $avg25 = 0; $avg2 = 0; $avg15 = 0; $avg1 = 0; $avg0 = 0; $avgR = 0; $avgMS = 0;
+    $avg3_up = 0; $avg_NoPass = 0; $avgSubject = 0;
+}
 ?>
 
 

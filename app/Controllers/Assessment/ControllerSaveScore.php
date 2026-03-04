@@ -25,9 +25,25 @@ class ControllerSaveScore extends BaseController
         $data = [];
         $data['title'] = "หน้าบันทึกผลการเรียนหลัก";
 
-        // Get current school year
-        $schoolyear = $this->db->table('tb_schoolyear')->get()->getRow();
-        $currentSchoolYear = $schoolyear ? $schoolyear->schyear_year : null;
+        // Get current school year (Robust sorting for latest term/year)
+        $allEntries = $this->db->table('tb_schoolyear')->select('schyear_year')->get()->getResultArray();
+        $currentSchoolYear = null;
+        if (!empty($allEntries)) {
+            usort($allEntries, function($a, $b) {
+                $partsA = explode('/', $a['schyear_year']);
+                $partsB = explode('/', $b['schyear_year']);
+                if (count($partsA) < 2 || count($partsB) < 2) return 0;
+                
+                list($termA, $yearA) = $partsA;
+                list($termB, $yearB) = $partsB;
+                
+                if ($yearB != $yearA) {
+                    return $yearB <=> $yearA;
+                }
+                return $termB <=> $termA;
+            });
+            $currentSchoolYear = $allEntries[0]['schyear_year'];
+        }
 
         // Get onoff status
         $data['onoff'] = $this->db->table('tb_register_onoff')->where('onoff_id', 10)->get()->getResult();
@@ -44,7 +60,6 @@ class ControllerSaveScore extends BaseController
                     tb_register.TeacherID,
                     tb_subjects.SubjectName,
                     tb_subjects.SubjectCode,
-                    tb_subjects.SubjectID,
                     tb_subjects.SubjectUnit,
                     tb_subjects.SubjectHour,
                     (SELECT COUNT(*) FROM tb_register_score WHERE regscore_subjectID = tb_register.SubjectID) as score_settings_count
@@ -52,7 +67,6 @@ class ControllerSaveScore extends BaseController
                 ->join('tb_subjects', 'tb_subjects.SubjectID = tb_register.SubjectID')
                 ->where('tb_register.TeacherID', $loginId)
                 ->where('tb_register.RegisterYear', $currentSchoolYear)
-                ->where('tb_subjects.SubjectYear', $currentSchoolYear)
                 ->groupBy('tb_register.SubjectID')
                 ->groupBy('tb_register.RegisterYear')
                 ->groupBy('tb_register.TeacherID')
@@ -416,9 +430,19 @@ class ControllerSaveScore extends BaseController
 
         if ($selectPrint == "all") {
             $data['CheckPrint'] = "all";
-            $data['re_room'] = $subject->SubjectClass;
+            $data['re_room'] = "ทุกห้อง";
             $data['re_teacher'] = "";
 
+            // Fetch all students for the cover page statistics (Total stats across all rooms)
+            $all_students = $baseStudentQuery();
+            $data['check_student'] = $all_students;
+            $data['test'] = $reportRegisterYear;
+
+            // Generate Front Page (once for all)
+            $reportFront = view('teacher/register/SaveScore/report/ReportFront', $data);
+            $mpdf->WriteHTML($reportFront);
+
+            // Get list of rooms
             $levels = $this->db->table('tb_register')
                 ->select('tb_students.StudentClass')
                 ->join('tb_subjects', 'tb_subjects.SubjectID = tb_register.SubjectID')
@@ -431,23 +455,16 @@ class ControllerSaveScore extends BaseController
                 ->orderBy('tb_students.StudentClass', 'ASC')
                 ->get()->getResult();
 
-            foreach ($levels as $key => $level) {
+            foreach ($levels as $level) {
                 $data['check_student1'] = $baseStudentQuery($level->StudentClass);
                 $data['re_room'] = $level->StudentClass;
-
-                if ($key == 0) {
-                    $data['check_student'] = $data['check_student1'];
-                    $data['test'] = $reportRegisterYear;
-                    $reportFront = view('teacher/register/SaveScore/report/ReportFront', $data);
-                    $mpdf->WriteHTML($reportFront);
-                }
 
                 $mpdf->AddPage();
                 $reportSummary = view('teacher/register/SaveScore/report/ReportSummary', $data);
                 $mpdf->WriteHTML($reportSummary);
             }
         } else {
-            $data['CheckPrint'] = "";
+            $data['CheckPrint'] = "single"; // Mark as single room for logic if needed
             $data['re_room'] = $selectPrint;
 
             $sub_Year = explode("/", $reportRegisterYear);
@@ -470,12 +487,17 @@ class ControllerSaveScore extends BaseController
                 $data['re_teacher'] = [];
             }
 
-            $data['check_student'] = $baseStudentQuery($selectPrint);
+            // Fetch students only for this specific room
+            $room_students = $baseStudentQuery($selectPrint);
+            $data['check_student'] = $room_students;
+            $data['check_student1'] = $room_students; // For summary page compatibility
             $data['test'] = $reportRegisterYear;
 
+            // Generate Front Page for single room
             $reportFront = view('teacher/register/SaveScore/report/ReportFront', $data);
             $mpdf->WriteHTML($reportFront);
 
+            // Append Summary Page
             $mpdf->AddPage();
             $reportSummary = view('teacher/register/SaveScore/report/ReportSummary', $data);
             $mpdf->WriteHTML($reportSummary);
