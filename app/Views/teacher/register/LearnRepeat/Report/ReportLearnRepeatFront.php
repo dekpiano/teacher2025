@@ -43,7 +43,7 @@
         <tr>
             <?php $sub_year = explode("/",$CheckRepeat[0]->onoff_year);?>
             <td style="width: 50%;text-align: right;padding-right: 10px;">ภาคเรียนที่ <?=$sub_year[0];?> / <?=$sub_year[1];?></td>
-            <td style="padding-left: 10px;">ครั้งที่ <?=$CheckRepeat[0]->onoff_detail;?></td>
+            <td style="padding-left: 10px;"><?=$CheckRepeat[0]->onoff_detail;?></td>
         </tr>
         <tr>
             <td style="width: 50%;text-align: right;padding-right: 10px;">ชั้นมัธยมศึกษาปีที่
@@ -164,20 +164,8 @@ if ($count_all > 0) {
     $avg1 = round(($grade1*100)/$count_all,2);
     $avg0 = round(($grade0*100)/$count_all,2);
     $avgR = round(($gradeR*100)/$count_all,2);
-    $avgMS=round(($gradeMS*100)/$count_all,2);
-} else {
-    $avg4 = 0;
-    $avg35 = 0;
-    $avg3 = 0;
-    $avg25 = 0;
-    $avg2 = 0;
-    $avg15 = 0;
-    $avg1 = 0;
-    $avg0 = 0;
-    $avgR = 0;
-    $avgMS = 0;
-}
-
+    $avgMS = round(($gradeMS*100)/$count_all,2);
+    
     $avg3_up = $avg3 + $avg35 + $avg4;
     $avg_NoPass = $avg0 + $avgR + $avgMS;
     $avgSubject = round(((($grade4*4)+($grade35*3.5)+($grade3*3)+($grade25*2.5)+($grade2*2)+($grade15*1.5)+($grade1*1)+($grade0*0))/$count_all),2);
