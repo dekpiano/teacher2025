@@ -17,8 +17,12 @@
                     <h4 class="mb-1 text-warning">ระบบบันทึกผลการเรียน (นักเรียนเรียนซ้ำ)</h4>
                     <p class="mb-0 opacity-75">จัดการข้อมูลคะแนนสำหรับนักเรียนที่ลงทะเบียนเรียนซ้ำในปีการศึกษาปัจจุบัน</p>
                 </div>
+<?php 
+    $statusOff = (($onoff[0]->onoff_status ?? 'off') == 'off');
+    $systemClosed = $statusOff || !(isset($isDateTimeOpen) ? $isDateTimeOpen : true);
+?>
                 <div class="ms-auto d-none d-md-block">
-                    <?php if (($onoff[0]->onoff_status ?? 'off') == 'off') : ?>
+                    <?php if ($systemClosed) : ?>
                         <span class="badge bg-danger p-2 px-3">
                             <i class="bi bi-clock-history me-1"></i> ระบบปิดการบันทึกคะแนน
                         </span>
@@ -82,20 +86,30 @@
         </div>
     </div>
     <div class="col-12 col-md-6 col-lg-3">
-        <div class="card h-100 <?= (($onoff[0]->onoff_status ?? 'off') == 'off') ? 'bg-label-danger' : 'bg-label-success' ?> border-0">
+        <div class="card h-100 <?= $systemClosed ? 'bg-label-danger' : 'bg-label-success' ?> border-0">
             <div class="card-body">
                 <div class="d-flex align-items-center mb-2 pb-1">
                     <div class="avatar me-2">
-                        <span class="avatar-initial rounded <?= (($onoff[0]->onoff_status ?? 'off') == 'off') ? 'bg-danger' : 'bg-success' ?> text-white font-weight-bold">
-                            <i class="bi <?= (($onoff[0]->onoff_status ?? 'off') == 'off') ? 'bi-lock-fill' : 'bi-unlock-fill' ?>"></i>
+                        <span class="avatar-initial rounded <?= $systemClosed ? 'bg-danger' : 'bg-success' ?> text-white font-weight-bold">
+                            <i class="bi <?= $systemClosed ? 'bi-lock-fill' : 'bi-unlock-fill' ?>"></i>
                         </span>
                     </div>
-                    <h5 class="ms-1 mb-0"><?= (($onoff[0]->onoff_status ?? 'off') == 'off') ? 'ปิดระบบ' : 'เปิดระบบ' ?></h5>
+                    <h5 class="ms-1 mb-0"><?= $systemClosed ? 'ปิดระบบ' : 'เปิดระบบ' ?></h5>
                 </div>
                 <p class="mb-1">สถานะการบันทึกข้อมูล</p>
-                <p class="mb-0">
-                    <small class="text-muted opacity-75">จัดการโดยฝ่ายวิชาการ</small>
-                </p>
+                <?php if (!empty($onoff_start_date) && !empty($onoff_end_date)) : ?>
+                    <div class="mt-2 pt-2 border-top" style="border-color: rgba(0,0,0,0.1) !important;">
+                        <small class="d-block mb-1"><i class="bi bi-play-circle me-1 text-success"></i>เปิด: <strong><?= date('d/m/Y H:i', strtotime($onoff_start_date)) ?></strong> น.</small>
+                        <small class="d-block"><i class="bi bi-stop-circle me-1 text-danger"></i>ปิด: <strong><?= date('d/m/Y H:i', strtotime($onoff_end_date)) ?></strong> น.</small>
+                        <?php if (!$statusOff && !$isDateTimeOpen) : ?>
+                            <span class="badge bg-warning text-dark mt-2 w-100"><i class="bi bi-exclamation-triangle me-1"></i>ไม่อยู่ในช่วงเวลา</span>
+                        <?php endif; ?>
+                    </div>
+                <?php else : ?>
+                    <p class="mb-0">
+                        <small class="text-muted opacity-75">จัดการโดยฝ่ายวิชาการ</small>
+                    </p>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -117,12 +131,16 @@
                 </div>
             </div>
             <div class="card-body pt-0">
-                <?php if (($onoff[0]->onoff_status ?? 'off') == 'off') : ?>
+                <?php if ($systemClosed) : ?>
                     <div class="alert alert-danger d-flex align-items-center border-0 shadow-sm mb-4" role="alert">
                         <i class="bi bi-exclamation-triangle-fill flex-shrink-0 me-3 fs-4"></i>
                         <div>
                             <h6 class="alert-heading mb-1 fw-bold">ระบบยังไม่เปิดให้บันทึกผลการเรียน!</h6>
-                            <span>ขณะนี้ฝ่ายวิชาการยังไม่เปิดระบบให้บันทึกคะแนนสำหรับการเรียนซ้ำ กรุณารอประกาศแจ้งอีกครั้ง</span>
+                            <?php if (!$statusOff && !empty($onoff_start_date) && !empty($onoff_end_date) && !(isset($isDateTimeOpen) ? $isDateTimeOpen : true)) : ?>
+                                <span>ระบบจะเปิดให้บันทึกคะแนนตั้งแต่ <strong><?= date('d/m/Y H:i', strtotime($onoff_start_date)) ?> น.</strong> ถึง <strong><?= date('d/m/Y H:i', strtotime($onoff_end_date)) ?> น.</strong></span>
+                            <?php else : ?>
+                                <span>ขณะนี้ฝ่ายวิชาการยังไม่เปิดระบบให้บันทึกคะแนนสำหรับการเรียนซ้ำ กรุณารอประกาศแจ้งอีกครั้ง</span>
+                            <?php endif; ?>
                         </div>
                     </div>
                 <?php endif; ?>
@@ -183,7 +201,7 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="d-flex gap-2 justify-content-center">
-                                                <?php if (($onoff[0]->onoff_status ?? 'off') == 'off') : ?>
+                                                <?php if ($systemClosed) : ?>
                                                     <button type="button" class="btn btn-secondary btn-sm px-3 disabled" data-bs-toggle="tooltip" title="ระบบปิดการบันทึก">
                                                         <i class="bi bi-lock me-1"></i> บันทึกผล
                                                     </button>

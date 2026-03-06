@@ -32,12 +32,26 @@ class ControllerSaveScoreRepeat extends BaseController
         $data['title']  = "หน้าหลักบันทึกผลการเรียน (ซ้ำ)";
         $data['teacher'] = $this->personnelDb->table('tb_personnel')->select('pers_id,pers_img')->where('pers_id',$this->session->get('person_id'))->get()->getResult();
         $data['OnOff'] = $this->db->table('tb_send_plan_setup')->select('*')->get()->getResult();
-        $onoff_status = $this->db->table('tb_register_onoff')->where('onoff_id', 11)->get()->getRow();
         $register_onoff = $this->db->table('tb_register_onoff')->where('onoff_id', 7)->get()->getResult();
+        $onoff_row = !empty($register_onoff) ? $register_onoff[0] : null;
+        
+        // ตรวจสอบวันเวลาเปิด/ปิดระบบ (ใช้ onoff_id = 7 เรียนซ้ำ)
+        $isDateTimeOpen = true; // default true ถ้าไม่ได้กำหนดวันเวลา
+        $now = date('Y-m-d H:i:s');
+        if ($onoff_row) {
+            $startDate = $onoff_row->onoff_StartDate ?? null;
+            $endDate = $onoff_row->onoff_EndDate ?? null;
+            if (!empty($startDate) && !empty($endDate)) {
+                $isDateTimeOpen = ($now >= $startDate && $now <= $endDate);
+            }
+        }
+        $data['isDateTimeOpen'] = $isDateTimeOpen;
+        $data['onoff_start_date'] = $onoff_row->onoff_StartDate ?? null;
+        $data['onoff_end_date'] = $onoff_row->onoff_EndDate ?? null;
         
         // Safety check for main toggle
-        if (!$onoff_status || $onoff_status->onoff_status == 'off') {
-            $data['onoff'] = $onoff_status ? [$onoff_status] : [];
+        if (!$onoff_row || $onoff_row->onoff_status == 'off') {
+            $data['onoff'] = $register_onoff;
             $data['check_subject'] = [];
             return view('teacher/register/LearnRepeat/LearnRepeatMain', $data);
         }
@@ -89,6 +103,26 @@ class ControllerSaveScoreRepeat extends BaseController
         $data['onoff'] = $this->db->table('tb_register_onoff')->where('onoff_id', 7)->get()->getResult();
         $register_onoff = $data['onoff'];
        
+        // ตรวจสอบวันเวลาเปิด/ปิดระบบ (ใช้ onoff_id = 7 เรียนซ้ำ)
+        $onoff_row = !empty($register_onoff) ? $register_onoff[0] : null;
+        $isDateTimeOpen = true;
+        $now = date('Y-m-d H:i:s');
+        if ($onoff_row) {
+            // ถ้าสถานะ off ปิดทันที
+            if ($onoff_row->onoff_status == 'off') {
+                $isDateTimeOpen = false;
+            } else {
+                $startDate = $onoff_row->onoff_StartDate ?? null;
+                $endDate = $onoff_row->onoff_EndDate ?? null;
+                if (!empty($startDate) && !empty($endDate)) {
+                    $isDateTimeOpen = ($now >= $startDate && $now <= $endDate);
+                }
+            }
+        }
+        $data['isDateTimeOpen'] = $isDateTimeOpen;
+        $data['onoff_start_date'] = $onoff_row->onoff_StartDate ?? null;
+        $data['onoff_end_date'] = $onoff_row->onoff_EndDate ?? null;
+
         // Add a check here
         $onoff_detail = '';
         $onoff_year = '';
@@ -152,7 +186,14 @@ class ControllerSaveScoreRepeat extends BaseController
                                 ->orderBy('tb_students.StudentNumber','ASC');
 
         if ($room != "all") {
-             $builder->where('tb_students.StudentClass', $room);
+            // แปลงค่า room จาก URL format (เช่น "6-3") กลับเป็นรูปแบบ StudentClass (เช่น "ม.6/3")
+            $roomParts = explode('-', $room);
+            if (count($roomParts) == 2) {
+                $roomClass = 'ม.' . $roomParts[0] . '/' . $roomParts[1];
+            } else {
+                $roomClass = $room;
+            }
+            $builder->where('tb_students.StudentClass', $roomClass);
         }
 
         $data['check_student'] = $builder->get()->getResult();
@@ -253,9 +294,31 @@ class ControllerSaveScoreRepeat extends BaseController
         }
     }
 
+    /**
+     * ตรวจสอบว่าระบบเรียนซ้ำเปิดอยู่หรือไม่ (ตรวจทั้ง status และวันเวลา)
+     */
+    private function isRepeatSystemOpen() {
+        $onoff_row = $this->db->table('tb_register_onoff')->where('onoff_id', 7)->get()->getRow();
+        if (!$onoff_row || $onoff_row->onoff_status == 'off') {
+            return false;
+        }
+        $startDate = $onoff_row->onoff_StartDate ?? null;
+        $endDate = $onoff_row->onoff_EndDate ?? null;
+        if (!empty($startDate) && !empty($endDate)) {
+            $now = date('Y-m-d H:i:s');
+            return ($now >= $startDate && $now <= $endDate);
+        }
+        return true; // ถ้าไม่ได้กำหนดวันเวลา ให้เปิดตาม status
+    }
+
     public function insertScore(){
         if (!$this->request->isAJAX()) {
             return $this->response->setStatusCode(403, 'Forbidden');
+        }
+
+        // ตรวจสอบวันเวลาเปิด/ปิดระบบ (server-side)
+        if (!$this->isRepeatSystemOpen()) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'ระบบปิดการบันทึกคะแนน ไม่อยู่ในช่วงเวลาที่กำหนด']);
         }
 
          $CheckRepeat = $this->db->table('tb_register_onoff')->select('onoff_detail,onoff_year')->where('onoff_id',7)->get()->getResult();
@@ -329,6 +392,12 @@ class ControllerSaveScoreRepeat extends BaseController
         if (!$this->request->isAJAX()) {
             return $this->response->setStatusCode(403, 'Forbidden');
         }
+
+        // ตรวจสอบวันเวลาเปิด/ปิดระบบ (server-side)
+        if (!$this->isRepeatSystemOpen()) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'ระบบปิดการบันทึกคะแนน ไม่อยู่ในช่วงเวลาที่กำหนด']);
+        }
+
         $CheckRepeat = $this->db->table('tb_register_onoff')->select('onoff_detail,onoff_year')->where('onoff_id',7)->get()->getResult();
         $studentID = $this->request->getPost('StudentID');
         $subjectID = $this->request->getPost('SubjectID');

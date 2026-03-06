@@ -5,6 +5,9 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
+<?php 
+    $systemClosed = !(isset($isDateTimeOpen) ? $isDateTimeOpen : true);
+?>
 <div class="row g-4">
     <!-- Page Loader Wrap -->
     <div id="page-loader-wrapper">
@@ -55,6 +58,23 @@
             </div>
         </div>
     </div>
+
+    <!-- Date/Time Warning -->
+    <?php if ($systemClosed) : ?>
+    <div class="col-12">
+        <div class="alert alert-danger d-flex align-items-center border-0 shadow-sm mb-0" role="alert">
+            <i class="bi bi-lock-fill flex-shrink-0 me-3 fs-3"></i>
+            <div>
+                <h6 class="alert-heading mb-1 fw-bold">ระบบปิดการบันทึกคะแนน!</h6>
+                <?php if (!empty($onoff_start_date) && !empty($onoff_end_date)) : ?>
+                    <span>ระบบจะเปิดให้บันทึกคะแนนตั้งแต่ <strong><?= date('d/m/Y H:i', strtotime($onoff_start_date)) ?> น.</strong> ถึง <strong><?= date('d/m/Y H:i', strtotime($onoff_end_date)) ?> น.</strong> เท่านั้น (ดูอย่างเดียว ไม่สามารถแก้ไขข้อมูลได้)</span>
+                <?php else : ?>
+                    <span>ขณะนี้ระบบยังไม่เปิดให้บันทึกคะแนน กรุณาติดต่อฝ่ายวิชาการ</span>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <!-- Main Content -->
     <div class="col-12">
@@ -157,7 +177,7 @@
                                                             <input type="text" class="form-control study_time KeyEnter text-center fw-bold bg-label-info border-transparent" 
                                                                    name="study_time[]" value="<?= esc($v_check_student->StudyTime) ?>" 
                                                                    check-time="<?= $timeNum ?>" autocomplete="off" style="width: 60px;"
-                                                                   <?= $isRoundLocked ? 'readonly' : '' ?>>
+                                                                   <?= ($isRoundLocked || $systemClosed) ? 'readonly' : '' ?>>
                                                         </div>
                                                     </td>
                                                     <?php
@@ -171,7 +191,7 @@
                                                             }
                                                         }
                                                         
-                                                        $finalLock = ($isRoundLocked || $onoff_status == "off");
+                                                        $finalLock = ($isRoundLocked || $onoff_status == "off" || $systemClosed);
                                                     ?>
                                                         <td class="text-center">
                                                             <div class="score-input-wrapper">
@@ -222,9 +242,15 @@
                         
                         <?php if (!empty($check_student)) : ?>
                             <div class="card-footer bg-light border-top d-flex justify-content-center py-4">
+                                <?php if ($systemClosed) : ?>
+                                <button type="button" class="btn btn-secondary btn-lg shadow px-5 disabled">
+                                    <i class="bi bi-lock-fill me-2"></i> ระบบปิดการบันทึก
+                                </button>
+                                <?php else : ?>
                                 <button type="submit" class="btn btn-warning btn-lg shadow px-5 hover-elevate">
                                     <i class="bi bi-save-fill me-2"></i> บันทึกข้อมูลคะแนนทั้งหมด
                                 </button>
+                                <?php endif; ?>
                             </div>
                         <?php endif; ?>
                     </form>
@@ -706,6 +732,8 @@
         });
 
         // Auto Save logic
+        const systemClosed = <?= $systemClosed ? 'true' : 'false' ?>;
+
         const Toast = Swal.mixin({ 
             toast: true, 
             position: 'bottom-end', 
@@ -715,7 +743,9 @@
         });
 
         $(document).on('input', '.check_score, .study_time', function() {
+            if (systemClosed) return; // ระบบปิด ไม่ให้ auto-save
             var $input = $(this);
+
             var val = $input.val();
             var max = parseFloat($input.attr('check-score-key') || $input.attr('check-time'));
 
@@ -761,6 +791,10 @@
         // Manual Save
         $(document).on('submit', '.form_score_repeat', function(e) {
             e.preventDefault();
+            if (systemClosed) {
+                Swal.fire({ icon: 'warning', title: 'ระบบปิดการบันทึก', text: 'ไม่อยู่ในช่วงเวลาที่กำหนดให้บันทึกคะแนน' });
+                return;
+            }
             var $form = $(this);
             var $btn = $form.find('button[type="submit"]');
             var originalText = $btn.html();
