@@ -3,6 +3,12 @@
 <?= $this->section('title') ?><?= $title ?><?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
+<style>
+    .dropdown-hover:hover > .dropdown-menu {
+        display: block;
+        margin-top: 0;
+    }
+</style>
 <div class="row">
     <div class="col-md-11 mx-auto">
         <div class="card mb-4 shadow-sm border-0">
@@ -28,82 +34,79 @@
             </div>
         </div>
 
-        <?php if ($evaluation) : ?>
-            <div class="card mb-4 border-start border-success border-5 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-patch-check-fill text-success fs-1 me-3"></i>
-                            <div>
-                                <h5 class="mb-1 text-success fw-bold">ส่งข้อมูลแล้ว</h5>
-                                <div class="btn-group btn-group-sm">
-                                    <a href="<?= env('upload.server.baseurl.evaluation') . $evaluation['eva_year'] . '/' . $evaluation['eva_round'] . '/' . $evaluation['eva_file'] ?>" target="_blank" class="btn btn-outline-primary">
-                                        <i class="bi bi-file-pdf me-1"></i> ไฟล์ PDF เดิม
-                                    </a>
-                                    <?php if (!empty($evaluation['eva_canva_link'])) : ?>
-                                        <a href="<?= $evaluation['eva_canva_link'] ?>" target="_blank" class="btn btn-outline-danger">
-                                            <i class="bi bi-play-circle me-1"></i> ลิ้งก์ Canva เดิม
-                                        </a>
-                                    <?php endif; ?>
-                                </div>
-                                <div class="mt-1 small text-muted">ส่งล่าสุดเมื่อ: <?= date('d/m/Y H:i', strtotime($evaluation['eva_updated_at'] ?? $evaluation['eva_created_at'])) ?></div>
-                            </div>
-                        </div>
-                        <div class="text-end">
-                            <span class="badge bg-success">สถานะ: <?= $evaluation['eva_status'] ?></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        <?php endif; ?>
-
-        <form id="uploadForm" action="<?= base_url('evaluation/upload') ?>" method="post" enctype="multipart/form-data">
+        <form id="uploadForm" class="no-loader" action="<?= base_url('evaluation/upload') ?>" method="post" enctype="multipart/form-data">
             <input type="hidden" name="eva_year" value="<?= $current_year ?>">
             <input type="hidden" name="eva_round" value="<?= $current_round ?>">
 
             <div class="row">
                 <div class="col-md-6">
                     <!-- Card 1: PDF Upload -->
-                    <div class="card mb-4 shadow-sm border-0 h-100">
-                        <div class="card-header bg-white border-bottom py-3">
-                            <h6 class="mb-0 fw-bold text-primary"><i class="bi bi-1-circle-fill me-2"></i> เอกสารสรุปผลการปฏิบัติงาน (PDF)</h6>
+                    <div class="card mb-4 shadow-sm h-100 <?= ($evaluation && !empty($evaluation['eva_file'])) ? 'border-success border-5' : 'border-0' ?>">
+                        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0 fw-bold text-primary"><i class="bi bi-1-circle-fill me-2"></i> เอกสารสรุปผล (PDF)</h6>
+                            <?php if ($evaluation && !empty($evaluation['eva_file'])) : ?>
+                                <span class="badge bg-label-success"><i class="bi bi-check-circle-fill me-1"></i> ส่งไฟล์แล้ว</span>
+                            <?php endif; ?>
                         </div>
-                        <div class="card-body py-4">
-                            <div class="mb-0">
-                                <label for="eva_file" class="form-label fw-bold">เลือกไฟล์ PDF อัปโหลดใหม่ <?= $evaluation ? '(ส่งทับไฟล์เดิม)' : '' ?></label>
-                                <input class="form-control form-control-lg border-primary" type="file" id="eva_file" name="eva_file" accept=".pdf" <?= $evaluation ? '' : 'required' ?>>
+                        <div class="card-body py-4 h-100 d-flex flex-column">
+                            <div class="flex-grow-1">
+                                <?php if ($evaluation && !empty($evaluation['eva_file'])) : ?>
+                                    <div class="alert alert-outline-success d-flex align-items-center mb-4" role="alert">
+                                        <i class="bi bi-file-earmark-pdf-fill fs-3 me-2"></i>
+                                        <div>
+                                            <div class="fw-bold">พบไฟล์เดิมในระบบ</div>
+                                            <a href="<?= env('upload.server.baseurl.evaluation') . $evaluation['eva_year'] . '/' . $evaluation['eva_round'] . '/' . $evaluation['eva_file'] ?>" target="_blank" class="alert-link small">คลิกเพื่อดูไฟล์ที่ส่งแล้ว</a>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+
+                                <label for="eva_file" class="form-label fw-bold">อัปโหลดไฟล์ PDF <?= ($evaluation && !empty($evaluation['eva_file'])) ? 'ใหม่เพื่อแทนที่' : '' ?></label>
+                                <input class="form-control form-control-lg border-primary" type="file" id="eva_file" name="eva_file" accept=".pdf">
                                 <div class="form-text text-danger mt-3">
                                     <i class="bi bi-exclamation-triangle-fill me-1"></i> ไฟล์ PDF ขนาดไม่เกิน 20MB
                                 </div>
                             </div>
+                            <button type="submit" id="btn-save-pdf" class="btn btn-primary btn-lg w-100 mt-4 shadow-sm">
+                                <i class="bi bi-cloud-arrow-up-fill me-2"></i> บันทึกไฟล์ PDF
+                            </button>
                         </div>
                     </div>
                 </div>
 
                 <div class="col-md-6">
                     <!-- Card 2: Canva Link -->
-                    <div class="card mb-4 shadow-sm border-0 h-100">
-                        <div class="card-header bg-white border-bottom py-3">
-                            <h6 class="mb-0 fw-bold text-danger"><i class="bi bi-2-circle-fill me-2"></i> สื่อนำเสนอผลการปฏิบัติงาน (Canva)</h6>
+                    <div class="card mb-4 shadow-sm h-100 <?= ($evaluation && !empty($evaluation['eva_canva_link'])) ? 'border-success border-5' : 'border-0' ?>">
+                        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0 fw-bold text-danger"><i class="bi bi-2-circle-fill me-2"></i> สื่อนำเสนอผลงาน (Canva)</h6>
+                            <?php if ($evaluation && !empty($evaluation['eva_canva_link'])) : ?>
+                                <span class="badge bg-label-success"><i class="bi bi-check-circle-fill me-1"></i> ส่งลิ้งก์แล้ว</span>
+                            <?php endif; ?>
                         </div>
-                        <div class="card-body py-4">
-                            <div class="mb-0">
-                                <label for="eva_canva_link" class="form-label fw-bold">ลิ้งก์วิดีโอนำเสนอจาก Canva หรือสื่ออื่นๆ</label>
+                        <div class="card-body py-4 h-100 d-flex flex-column">
+                            <div class="flex-grow-1">
+                                <?php if ($evaluation && !empty($evaluation['eva_canva_link'])) : ?>
+                                    <div class="alert alert-outline-danger d-flex align-items-center mb-4" role="alert">
+                                        <i class="bi bi-link-45deg fs-3 me-2"></i>
+                                        <div>
+                                            <div class="fw-bold">พบลิ้งก์เดิมในระบบ</div>
+                                            <a href="<?= $evaluation['eva_canva_link'] ?>" target="_blank" class="alert-link small text-truncate d-inline-block" style="max-width: 200px;">คลิกเพื่อเปิดดูลิ้งก์เดิม</a>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+
+                                <label for="eva_canva_link" class="form-label fw-bold">ลิ้งก์นำเสนอจาก Canva หรือสื่ออื่นๆ</label>
                                 <div class="input-group input-group-merge border-primary">
                                     <span class="input-group-text bg-light"><i class="bi bi-link-45deg"></i></span>
                                     <input type="url" class="form-control form-control-lg" id="eva_canva_link" name="eva_canva_link" placeholder="https://www.canva.com/design/..." value="<?= $evaluation['eva_canva_link'] ?? '' ?>">
                                 </div>
                                 <div class="form-text mt-3">ส่งเป็น URL จาก Canva, YouTube หรือ Google Drive เพื่อเป็นสื่อประกอบ</div>
                             </div>
+                            <button type="submit" id="btn-save-canva" class="btn btn-primary btn-lg w-100 mt-4 shadow-sm">
+                                <i class="bi bi-link-45deg me-2"></i> บันทึกลิ้งก์สื่อนำเสนอ
+                            </button>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="d-grid mb-5 mt-2">
-                <button type="submit" class="btn btn-primary btn-lg shadow p-3">
-                    <i class="bi bi-cloud-arrow-up-fill me-2"></i> บันทึกและส่งผลการปฏิบัติงานทั้งหมด
-                </button>
             </div>
         </form>
 
@@ -121,12 +124,13 @@
                                 <th>วันที่ส่ง</th>
                                 <th class="text-center">เอกสาร PDF</th>
                                 <th class="text-center">สื่อนำเสนอ</th>
+                                <th class="text-center">จัดการ</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if (empty($history)) : ?>
                                 <tr>
-                                    <td colspan="4" class="text-center py-4">ไม่พบประวัติการส่ง</td>
+                                    <td colspan="6" class="text-center py-4">ไม่พบประวัติการส่ง</td>
                                 </tr>
                             <?php else : ?>
                                 <?php foreach ($history as $row) : ?>
@@ -135,9 +139,13 @@
                                         <td>ครั้งที่ <?= $row['eva_round'] ?></td>
                                         <td><?= date('d/m/Y H:i', strtotime($row['eva_created_at'])) ?></td>
                                         <td class="text-center">
-                                            <a href="<?= env('upload.server.baseurl.evaluation') . $row['eva_year'] . '/' . $row['eva_round'] . '/' . $row['eva_file'] ?>" target="_blank" class="btn btn-icon btn-label-primary">
-                                                <i class="bi bi-file-earmark-pdf"></i>
-                                            </a>
+                                            <?php if (!empty($row['eva_file'])) : ?>
+                                                <a href="<?= env('upload.server.baseurl.evaluation') . $row['eva_year'] . '/' . $row['eva_round'] . '/' . $row['eva_file'] ?>" target="_blank" class="btn btn-icon btn-label-primary">
+                                                    <i class="bi bi-file-earmark-pdf"></i>
+                                                </a>
+                                            <?php else : ?>
+                                                <span class="badge bg-label-secondary small pe-none">ไม่ได้ส่ง</span>
+                                            <?php endif; ?>
                                         </td>
                                         <td class="text-center">
                                             <?php if (!empty($row['eva_canva_link'])) : ?>
@@ -145,8 +153,43 @@
                                                     <i class="bi bi-play-circle-fill"></i>
                                                 </a>
                                             <?php else : ?>
-                                                <span class="text-muted small">- ไม่มี -</span>
+                                                <span class="badge bg-label-secondary small pe-none">ไม่ได้ส่ง</span>
                                             <?php endif; ?>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="dropdown dropdown-hover d-inline-block">
+                                                <button class="btn btn-icon btn-label-secondary p-0" type="button">
+                                                    <i class="bi bi-trash-fill text-danger fs-5"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                                    <li><h6 class="dropdown-header">เลือกสิ่งที่ต้องการลบ</h6></li>
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center btn-delete <?= empty($row['eva_file']) ? 'disabled text-muted' : '' ?>" 
+                                                           href="javascript:void(0)" 
+                                                           data-id="<?= $row['eva_id'] ?>" 
+                                                           data-type="file">
+                                                            <i class="bi bi-file-earmark-pdf me-2"></i> ลบไฟล์ PDF
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center btn-delete <?= empty($row['eva_canva_link']) ? 'disabled text-muted' : '' ?>" 
+                                                           href="javascript:void(0)" 
+                                                           data-id="<?= $row['eva_id'] ?>" 
+                                                           data-type="link">
+                                                            <i class="bi bi-link-45deg me-2"></i> ลบลิ้งก์ผลงาน
+                                                        </a>
+                                                    </li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center btn-delete text-danger fw-bold" 
+                                                           href="javascript:void(0)" 
+                                                           data-id="<?= $row['eva_id'] ?>" 
+                                                           data-type="all">
+                                                            <i class="bi bi-trash3-fill me-2"></i> ลบข้อมูลรายการนี้ทั้งหมด
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -163,13 +206,22 @@
 <?= $this->section('scripts') ?>
 <script>
     $(document).ready(function() {
+        let activeBtn = null;
+        let originalHtml = '';
+
+        $('#uploadForm button[type="submit"]').on('click', function() {
+            activeBtn = $(this);
+            originalHtml = activeBtn.html();
+        });
+
         $('#uploadForm').on('submit', function(e) {
             e.preventDefault();
             
             const fileInput = $('#eva_file')[0];
             const file = fileInput.files[0];
             const canvaLink = $('#eva_canva_link').val().trim();
-            const $submitBtn = $(this).find('button[type="submit"]');
+            const $submitBtn = activeBtn || $(this).find('button[type="submit"]').first();
+            activeBtn = $submitBtn; // safety
 
             // Check if at least one is provided
             const hasExistingFile = <?= $evaluation && !empty($evaluation['eva_file']) ? 'true' : 'false' ?>;
@@ -184,13 +236,13 @@
             }
 
             Swal.fire({
-                title: 'ยืนยันการส่ง?',
-                text: "ข้อมูลเดิมจะถูกแทนที่ด้วยไฟล์ปัจจุบัน (หากมี)",
-                icon: 'warning',
+                title: 'ยืนยันการบันทึก?',
+                text: "ระบบจะบันทึกข้อมูลและส่งผลการปฏิบัติงาน",
+                icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
-                confirmButtonText: 'ยืนยันอัปโหลด',
+                confirmButtonText: 'ยืนยัน',
                 cancelButtonText: 'ยกเลิก'
             }).then((result) => {
                 if (result.isConfirmed) {
@@ -220,12 +272,12 @@
                             Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: res.message, timer: 2000, showConfirmButton: false }).then(() => location.reload());
                         } else {
                             Swal.fire('ผิดพลาด', res.message, 'error');
-                            restoreBtn();
+                            restoreBtn(submitButton);
                         }
                     },
                     error: function() {
                         Swal.fire('ผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้', 'error');
-                        restoreBtn();
+                        restoreBtn(submitButton);
                     }
                 });
             }
@@ -259,7 +311,7 @@
 
                     const formData = new FormData();
                     formData.append('file', chunk);
-                    formData.append('path', `academic/teacher/evaluation/${year}/${round}`);
+                    formData.append('path', `personnel/teacher/evaluation/${year}/${round}`);
                     formData.append('filename', finalFileName);
                     formData.append('chunk', chunkIndex);
                     formData.append('chunks', totalChunks);
@@ -305,12 +357,12 @@
                                 });
                             } else {
                                 Swal.fire('ผิดพลาด', res.message, 'error');
-                                restoreBtn();
+                                restoreBtn(submitButton);
                             }
                         },
                         error: function() {
                             Swal.fire('ผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้', 'error');
-                            restoreBtn();
+                            restoreBtn(submitButton);
                         }
                     });
 
@@ -321,13 +373,56 @@
                         title: 'การอัปโหลดขัดข้อง', 
                         text: 'ไม่สามารถส่งไฟล์ได้ (แนะนำให้ลองบีบอัดไฟล์ PDF หรือเชื่อมต่ออินเทอร์เน็ตที่เสถียร)' 
                     });
-                    restoreBtn();
+                    restoreBtn(submitButton);
                 }
             }
 
-            function restoreBtn() {
-                $submitBtn.prop('disabled', false).html('<i class="bi bi-cloud-arrow-up-fill me-2"></i> ยืนยันการอัปโหลดไฟล์');
+            function restoreBtn(btn) {
+                if (btn) {
+                    btn.prop('disabled', false).html(originalHtml);
+                }
             }
+        });
+
+        // Delete Logic
+        $('.btn-delete').on('click', function() {
+            const id = $(this).data('id');
+            const type = $(this).data('type');
+            let typeText = 'ข้อมูล';
+            
+            if (type === 'file') typeText = 'ไฟล์ PDF';
+            else if (type === 'link') typeText = 'ลิ้งก์ผลงาน';
+            else if (type === 'all') typeText = 'ข้อมูลและไฟล์ทั้งหมดในรอบนี้';
+
+            Swal.fire({
+                title: `ยืนยันการลบ${typeText}?`,
+                text: "การดำเนินการนี้ไม่สามารถเรียกคืนได้",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'ยืนยันการลบ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '<?= site_url('evaluation/delete-item') ?>',
+                        type: 'POST',
+                        data: { id: id, type: type },
+                        success: function(res) {
+                            if (res.status === 'success') {
+                                Swal.fire({ icon: 'success', title: 'ลบสำเร็จ!', text: res.message, timer: 1500, showConfirmButton: false })
+                                .then(() => location.reload());
+                            } else {
+                                Swal.fire('ผิดพลาด', res.message, 'error');
+                            }
+                        },
+                        error: function() {
+                            Swal.fire('ผิดพลาด', 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้', 'error');
+                        }
+                    });
+                }
+            });
         });
     });
 </script>

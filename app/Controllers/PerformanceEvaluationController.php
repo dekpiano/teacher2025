@@ -120,7 +120,7 @@ class PerformanceEvaluationController extends BaseController
         // Check if already exists
         $existing = $this->evaluationModel->getEvaluation($teacherId, $year, $round);
         
-        $uploadBasePath = 'academic/teacher/evaluation';
+        $uploadBasePath = 'personnel/teacher/evaluation';
         $remoteUploadPath = "{$uploadBasePath}/{$year}/{$round}";
         
         $insertData = [
@@ -201,6 +201,57 @@ class PerformanceEvaluationController extends BaseController
             ]);
 
             return $this->response->setStatusCode($response->getStatusCode())->setBody($response->getBody());
+        } catch (\Exception $e) {
+            return $this->response->setJSON(['status' => 'error', 'message' => $e->getMessage()]);
+        }
+    }
+
+    public function deleteItem()
+    {
+        $id = $this->request->getPost('id');
+        $type = $this->request->getPost('type'); // 'file' or 'link'
+        
+        $evaluation = $this->evaluationModel->find($id);
+        if (!$evaluation) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'ไม่พบข้อมูลที่ต้องการลบ']);
+        }
+
+        // Security check
+        if ($evaluation['eva_teacher_id'] !== $this->session->get('person_id') && $this->session->get('person_id') !== 'admin') {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'คุณไม่มีสิทธิ์ลบข้อมูลนี้']);
+        }
+
+        if ($type === 'file') {
+            if (!empty($evaluation['eva_file'])) {
+                $remotePath = "personnel/teacher/evaluation/{$evaluation['eva_year']}/{$evaluation['eva_round']}/{$evaluation['eva_file']}";
+                $this->_deleteFileFromServer($remotePath);
+                $updateData['eva_file'] = null;
+            }
+        } elseif ($type === 'link') {
+            $updateData['eva_canva_link'] = null;
+        } elseif ($type === 'all') {
+            // Delete file if exists
+            if (!empty($evaluation['eva_file'])) {
+                $remotePath = "personnel/teacher/evaluation/{$evaluation['eva_year']}/{$evaluation['eva_round']}/{$evaluation['eva_file']}";
+                $this->_deleteFileFromServer($remotePath);
+            }
+            // Delete entire record
+            try {
+                $this->evaluationModel->delete($id);
+                return $this->response->setJSON(['status' => 'success', 'message' => 'ลบข้อมูลทั้งหมดเรียบร้อยแล้ว']);
+            } catch (\Exception $e) {
+                return $this->response->setJSON(['status' => 'error', 'message' => $e->getMessage()]);
+            }
+        }
+
+        if (empty($updateData)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'ไม่มีข้อมูลให้ลบ']);
+        }
+
+        // Update record
+        try {
+            $this->evaluationModel->update($id, $updateData);
+            return $this->response->setJSON(['status' => 'success', 'message' => 'ลบข้อมูลสำเร็จ']);
         } catch (\Exception $e) {
             return $this->response->setJSON(['status' => 'error', 'message' => $e->getMessage()]);
         }

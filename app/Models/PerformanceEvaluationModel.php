@@ -6,6 +6,7 @@ use CodeIgniter\Model;
 
 class PerformanceEvaluationModel extends Model
 {
+    protected $DBGroup          = 'personnel';
     protected $table            = 'tb_teacher_evaluation';
     protected $primaryKey       = 'eva_id';
     protected $useAutoIncrement = true;

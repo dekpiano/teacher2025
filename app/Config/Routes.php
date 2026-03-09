@@ -209,4 +209,5 @@ $routes->get('login/googleCallback', 'Login::googleCallback');
         $routes->get('', 'PerformanceEvaluationController::index');
         $routes->post('upload', 'PerformanceEvaluationController::upload');
         $routes->post('upload-chunk', 'PerformanceEvaluationController::uploadChunk');
+        $routes->post('delete-item', 'PerformanceEvaluationController::deleteItem');
     });
