@@ -17,6 +17,7 @@ class PerformanceEvaluationModel extends Model
         'eva_year',
         'eva_round',
         'eva_file',
+        'eva_canva_link',
         'eva_status',
         'eva_comment'
     ];

@@ -89,15 +89,21 @@ class PerformanceEvaluationController extends BaseController
             'eva_round' => 'required',
         ];
 
-        if (!$isChunked) {
-            $rules['eva_file'] = [
-                'rules' => 'uploaded[eva_file]|ext_in[eva_file,pdf]|max_size[eva_file,20480]',
-                'errors' => [
-                    'uploaded' => 'กรุณาเลือกไฟล์ PDF',
-                    'ext_in'   => 'อนุญาตเฉพาะไฟล์ PDF เท่านั้น',
-                    'max_size' => 'ไฟล์ต้องมีขนาดไม่เกิน 20MB'
-                ]
-            ];
+        if (!$isChunked && empty($post['eva_canva_link'])) {
+            // Check if we already have a file (for updates)
+            $teacherId = $this->session->get('person_id');
+            $existing = $this->evaluationModel->getEvaluation($teacherId, $post['eva_year'], $post['eva_round']);
+            
+            if (!$existing || empty($existing['eva_file'])) {
+                $rules['eva_file'] = [
+                    'rules' => 'uploaded[eva_file]|ext_in[eva_file,pdf]|max_size[eva_file,20480]',
+                    'errors' => [
+                        'uploaded' => 'กรุณาอัปโหลดไฟล์ PDF หรือใส่ลิ้งก์ Canva อย่างใดอย่างหนึ่ง',
+                        'ext_in'   => 'อนุญาตเฉพาะไฟล์ PDF เท่านั้น',
+                        'max_size' => 'ไฟล์ต้องมีขนาดไม่เกิน 20MB'
+                    ]
+                ];
+            }
         }
 
         if (!$this->validate($rules)) {
@@ -121,6 +127,7 @@ class PerformanceEvaluationController extends BaseController
             'eva_teacher_id' => $teacherId,
             'eva_year'       => $year,
             'eva_round'      => $round,
+            'eva_canva_link' => $post['eva_canva_link'] ?? null,
             'eva_status'     => 'ส่งแล้ว'
         ];
 
@@ -136,21 +143,23 @@ class PerformanceEvaluationController extends BaseController
         // Standard single-file upload (backup)
         else {
             $file = $this->request->getFile('eva_file');
-            // Use teacher name or ID as part of filename
-            $safeName = "PA_{$year}_{$round}_{$teacherId}_" . time() . ".pdf";
+            if ($file && $file->isValid()) {
+                // Use teacher name or ID as part of filename
+                $safeName = "PA_{$year}_{$round}_{$teacherId}_" . time() . ".pdf";
 
-            $uploadResult = $this->_uploadFileToServer($file, $remoteUploadPath, $safeName);
+                $uploadResult = $this->_uploadFileToServer($file, $remoteUploadPath, $safeName);
 
-            if ($uploadResult['status'] !== 'success') {
-                return $this->response->setJSON($uploadResult);
+                if ($uploadResult['status'] !== 'success') {
+                    return $this->response->setJSON($uploadResult);
+                }
+
+                // Delete old file if updating
+                if ($existing && !empty($existing['eva_file'])) {
+                    $oldPath = "{$remoteUploadPath}/{$existing['eva_file']}";
+                    $this->_deleteFileFromServer($oldPath);
+                }
+                $insertData['eva_file'] = $uploadResult['filename'];
             }
-
-            // Delete old file if updating
-            if ($existing && !empty($existing['eva_file'])) {
-                $oldPath = "{$remoteUploadPath}/{$existing['eva_file']}";
-                $this->_deleteFileFromServer($oldPath);
-            }
-            $insertData['eva_file'] = $uploadResult['filename'];
         }
 
         if ($existing) {

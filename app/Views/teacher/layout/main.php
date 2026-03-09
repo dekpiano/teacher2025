@@ -243,20 +243,19 @@
                         </ul>
                     </li>
 
-                    <!-- งานบุคลากร -->
-                    <li class="menu-item <?= is_open_segment([['leave']], $segments) ?>">
+                    <li class="menu-item <?= is_open_segment([['leave'], ['evaluation'], ['generate-leave-form']], $segments) ?>">
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
                             <i class="menu-icon tf-icons bi-person-badge-fill"></i>
                             <div data-i18n="งานบุคลากร">งานบุคลากร</div>
                         </a>
                         <ul class="menu-sub">
-                            <li class="menu-item <?= is_active_segment(['leave'], $segments) ?>">
+                            <li class="menu-item <?= is_active_segment(['leave'], $segments) || is_active_segment(['generate-leave-form'], $segments) ? 'active' : '' ?>">
                                 <a href="<?= base_url('leave') ?>" class="menu-link">
                                     <i class="bi bi-calendar-check me-2"></i>
                                     <div data-i18n="ระบบการลา">ระบบการลา</div>
                                 </a>
                             </li>
-                            <li class="menu-item <?= is_active_segment(['evaluation'], $segments) && !in_array('admin', $segments) ? 'active' : '' ?>">
+                            <li class="menu-item <?= is_active_segment(['evaluation'], $segments) ? 'active' : '' ?>">
                                 <a href="<?= base_url('evaluation') ?>" class="menu-link">
                                     <i class="bi bi-file-earmark-pdf me-2"></i>
                                     <div data-i18n="ประเมินผลการปฏิบัติงาน (PA)">ประเมินผลการปฏิบัติงาน (PA)</div>
@@ -267,7 +266,7 @@
 
                     <?php if (session()->get('pers_groupleade') !== null && session()->get('pers_groupleade') !== ''): ?>
                     <li class="menu-header small text-uppercase"><span class="menu-header-text">หัวหน้ากลุ่มสาระ</span></li>
-                    <li class="menu-item <?= is_open_segment([['assessment-head', 'check-plan'], ['assessment-head', 'check-plan-detail'], ['assessment-head', 'check-score'], ['assessment-head', 'check-score-detail']], $segments) ?>">
+                    <li class="menu-item <?= is_open_segment([['assessment-head']], $segments) ?>">
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
                             <i class="menu-icon tf-icons bi-shield-check"></i>
                             <div data-i18n="เมนูหัวหน้ากลุ่มสาระ">เมนูหัวหน้ากลุ่มสาระ</div>
