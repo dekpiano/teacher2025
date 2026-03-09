@@ -367,6 +367,17 @@
                             </div>
                         </a>
                     </div>
+                    <?php if ($isPAPermitted): ?>
+                    <div class="col-lg-4 col-md-6">
+                        <a href="<?= base_url('evaluation') ?>" class="luxe-card">
+                            <i class="bi bi-file-earmark-pdf card-icon text-danger"></i>
+                            <div class="card-text">
+                                <h6>สรุปผลการปฏิบัติงาน (PA)</h6>
+                                <p>อัปโหลดไฟล์สรุปผลการประเมินรอบปัจจุบัน</p>
+                            </div>
+                        </a>
+                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

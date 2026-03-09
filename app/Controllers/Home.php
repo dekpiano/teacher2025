@@ -105,8 +105,31 @@ class Home extends BaseController
         helper('recent_pages');
         $recentPages = get_recent_pages(2);
 
+        // Check PA Permission
+        $isPAPermitted = false;
+        $userPos = $db_personnel->table('tb_personnel')
+            ->select('skjacth_skj.tb_position.posi_name')
+            ->join($db_skj->database . '.tb_position', $db_skj->database . '.tb_position.posi_id = tb_personnel.pers_position', 'left')
+            ->where('pers_id', $session->get('person_id'))
+            ->get()->getRow();
+        
+        if ($userPos) {
+            $allowed = ['ครูผู้ช่วย', 'ครู', 'ครูชำนาญการ', 'ครูชำนาญการพิเศษ', 'ครูเชี่ยวชาญ', 'ครูเชี่ยวชาญพิเศษ', 'ผู้อำนวยการ', 'รองผู้อำนวยการ'];
+            if ($session->get('person_id') === 'admin') {
+                $isPAPermitted = true;
+            } else {
+                foreach ($allowed as $a) {
+                    if (mb_strpos($userPos->posi_name, $a) !== false) {
+                        $isPAPermitted = true;
+                        break;
+                    }
+                }
+            }
+        }
+
         // Prepare data for the view
         $data = [
+            'isPAPermitted'         => $isPAPermitted,
             'title'                 => 'หน้าแรก',
             'CheckHomeVisitManager' => $CheckHomeVisitManager,
             'OnOff'                 => $OnOff,

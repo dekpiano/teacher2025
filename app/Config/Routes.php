@@ -203,3 +203,10 @@ $routes->get('login/googleCallback', 'Login::googleCallback');
         $routes->post('save_class', 'DesirableAssessmentController::saveClassEvaluation');
         $routes->get('print_report/(:num)/(:num)', 'DesirableAssessmentController::printReport/$1/$2');
     });
+
+    // Evaluation Routes
+    $routes->group('evaluation', static function ($routes) {
+        $routes->get('', 'PerformanceEvaluationController::index');
+        $routes->post('upload', 'PerformanceEvaluationController::upload');
+        $routes->post('upload-chunk', 'PerformanceEvaluationController::uploadChunk');
+    });

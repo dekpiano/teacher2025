@@ -256,6 +256,12 @@
                                     <div data-i18n="ระบบการลา">ระบบการลา</div>
                                 </a>
                             </li>
+                            <li class="menu-item <?= is_active_segment(['evaluation'], $segments) && !in_array('admin', $segments) ? 'active' : '' ?>">
+                                <a href="<?= base_url('evaluation') ?>" class="menu-link">
+                                    <i class="bi bi-file-earmark-pdf me-2"></i>
+                                    <div data-i18n="ประเมินผลการปฏิบัติงาน (PA)">ประเมินผลการปฏิบัติงาน (PA)</div>
+                                </a>
+                            </li>
                         </ul>
                     </li>
 
