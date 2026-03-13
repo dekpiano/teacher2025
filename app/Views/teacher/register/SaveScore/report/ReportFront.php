@@ -46,12 +46,19 @@
                 $room_display = $re_room;
                 if ($CheckPrint == 'all' && $room_display == "ทุกห้อง") {
                     $room_display = str_replace("ม.", "", $re_subjuct[0]->SubjectClass);
+                } else {
+                    $room_display = str_replace("ม.", "", $re_room);
                 }
                 
                 $sub_room = explode(".", $room_display); 
                 $room_part = isset($sub_room[1]) ? $sub_room[1] : $sub_room[0];
                 $tub = explode('/', $room_part);
-                echo $tub[0];
+                
+                if ($CheckPrint == 'all') {
+                    echo $tub[0];
+                } else {
+                    echo $room_part;
+                }
                 ?>
             </td>
             <td style="padding-left: 10px;">

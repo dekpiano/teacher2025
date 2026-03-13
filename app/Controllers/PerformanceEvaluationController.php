@@ -8,6 +8,7 @@ use CodeIgniter\HTTP\ResponseInterface;
 class PerformanceEvaluationController extends BaseController
 {
     protected $evaluationModel;
+    protected $configModel;
     protected $db;
     protected $db_personnel;
     protected $db_skj;
@@ -22,7 +23,8 @@ class PerformanceEvaluationController extends BaseController
         }
 
         helper(['url', 'text', 'form']);
-        $this->evaluationModel = new PerformanceEvaluationModel();
+        $this->evaluationModel = new \App\Models\PerformanceEvaluationModel();
+        $this->configModel = new \App\Models\TeacherEvaluationConfigModel();
         $this->db = db_connect();
         $this->db_personnel = db_connect('personnel');
         $this->db_skj = db_connect('skj');
@@ -66,6 +68,34 @@ class PerformanceEvaluationController extends BaseController
         $data['current_round'] = $round;
         $data['evaluation'] = $this->evaluationModel->getEvaluation($person_id, $year, $round);
         
+        // System Config Check
+        $config = $this->configModel->getConfig($year, $round);
+        $isOpen = false;
+        $configMsg = "";
+        
+        if ($config) {
+            $today = date('Y-m-d');
+            $isOpen = ($config['conf_status'] == 1 && $today >= $config['conf_start_date'] && $today <= $config['conf_end_date']);
+            
+            if (!$isOpen) {
+                if ($config['conf_status'] == 0) {
+                    $configMsg = "ระบบปิดรับการส่งเอกสารชั่วคราวโดยผู้ดูแลระบบ";
+                } elseif ($today < $config['conf_start_date']) {
+                    $configMsg = "ยังไม่ถึงกำหนดการเปิดรับการส่งเอกสาร (เริ่ม " . date('d/m/Y', strtotime($config['conf_start_date'] . ' +543 years')) . ")";
+                } elseif ($today > $config['conf_end_date']) {
+                    $configMsg = "หมดเวลาการส่งเอกสารสำหรับรอบนี้แล้ว (สิ้นสุดเมื่อ " . date('d/m/Y', strtotime($config['conf_end_date'] . ' +543 years')) . ")";
+                }
+            }
+        } else {
+            $configMsg = "ยังไม่ได้เปิดระบบการส่งเอกสารสำหรับปี {$year} ครั้งที่ {$round}";
+        }
+        
+        $data['system_config'] = [
+            'is_open' => $isOpen,
+            'message' => $configMsg,
+            'config'  => $config
+        ];
+
         // History of evaluations for this teacher
         $data['history'] = $this->evaluationModel->where('eva_teacher_id', $person_id)
                                                 ->orderBy('eva_year', 'DESC')
@@ -116,6 +146,18 @@ class PerformanceEvaluationController extends BaseController
         $teacherId = $this->session->get('person_id');
         $year = $post['eva_year'];
         $round = $post['eva_round'];
+
+        // System Config Check
+        $config = $this->configModel->getConfig($year, $round);
+        $isOpen = false;
+        if ($config) {
+            $today = date('Y-m-d');
+            $isOpen = ($config['conf_status'] == 1 && $today >= $config['conf_start_date'] && $today <= $config['conf_end_date']);
+        }
+
+        if (!$isOpen && $this->session->get('person_id') !== 'admin') {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'ขณะนี้อยู่นอกระยะเวลาการส่งเอกสาร ไม่สามารถอัปโหลดได้']);
+        }
 
         // Check if already exists
         $existing = $this->evaluationModel->getEvaluation($teacherId, $year, $round);
@@ -214,6 +256,18 @@ class PerformanceEvaluationController extends BaseController
         $evaluation = $this->evaluationModel->find($id);
         if (!$evaluation) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'ไม่พบข้อมูลที่ต้องการลบ']);
+        }
+
+        // System Config Check
+        $config = $this->configModel->getConfig($evaluation['eva_year'], $evaluation['eva_round']);
+        $isOpen = false;
+        if ($config) {
+            $today = date('Y-m-d');
+            $isOpen = ($config['conf_status'] == 1 && $today >= $config['conf_start_date'] && $today <= $config['conf_end_date']);
+        }
+
+        if (!$isOpen && $this->session->get('person_id') !== 'admin') {
+             return $this->response->setJSON(['status' => 'error', 'message' => 'ขณะนี้อยู่นอกระยะเวลาการส่งเอกสาร ไม่สามารถลบข้อมูลได้']);
         }
 
         // Security check

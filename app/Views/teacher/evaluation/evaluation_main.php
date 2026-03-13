@@ -17,17 +17,51 @@
                 <span class="badge bg-white text-primary">ปีงบประมาณ <?= $current_year ?> | ครั้งที่ <?= $current_round ?></span>
             </div>
             <div class="card-body pt-4">
-                <div class="alert alert-info border-0 shadow-sm mb-0">
-                    <div class="d-flex">
-                        <div class="me-3">
-                            <i class="bi bi-info-circle-fill fs-3"></i>
+                <div class="row g-3">
+                    <div class="col-lg-8">
+                        <div class="alert alert-info border-0 shadow-sm mb-0">
+                            <div class="d-flex h-100 align-items-center">
+                                <div class="me-3">
+                                    <i class="bi bi-info-circle-fill fs-3"></i>
+                                </div>
+                                <div>
+                                    <strong>คำแนะนำ:</strong> กรุณาส่งเอกสารประกอบการประเมินให้ครบถ้วน 
+                                    <br><span class="badge bg-warning text-dark"><i class="bi bi-info-circle me-1"></i> สามารถเลือกส่งเฉพาะไฟล์ PDF หรือเฉพาะลิ้งก์ Canva อย่างใดอย่างหนึ่งก็ได้</span>
+                                    <br><small>สำหรับรอบการประเมิน: 
+                                        <?= $current_round == 1 ? "1 ตุลาคม " . ($current_year - 1) . " - 31 มีนาคม " . ($current_year) : "1 เมษายน " . ($current_year) . " - 30 กันยายน " . ($current_year) ?>
+                                    </small>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <strong>คำแนะนำ:</strong> กรุณาส่งเอกสารประกอบการประเมินให้ครบถ้วน 
-                            <br><span class="badge bg-warning text-dark"><i class="bi bi-info-circle me-1"></i> สามารถเลือกส่งเฉพาะไฟล์ PDF หรือเฉพาะลิ้งก์ Canva อย่างใดอย่างหนึ่งก็ได้</span>
-                            <br><small>สำหรับรอบการประเมิน: 
-                                <?= $current_round == 1 ? "1 ตุลาคม " . ($current_year - 1) . " - 31 มีนาคม " . ($current_year) : "1 เมษายน " . ($current_year) . " - 30 กันยายน " . ($current_year) ?>
-                            </small>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card h-100 <?= $system_config['is_open'] ? 'bg-label-success' : 'bg-label-danger' ?> border-0 shadow-sm">
+                            <div class="card-body d-flex flex-column justify-content-center align-items-center text-center py-2">
+                                <h6 class="fw-bold mb-1 <?= $system_config['is_open'] ? 'text-success' : 'text-danger' ?>">
+                                    <i class="bi <?= $system_config['is_open'] ? 'bi-calendar-check-fill' : 'bi-calendar-x-fill' ?> me-2"></i> กำหนดการรับเอกสาร
+                                </h6>
+                                
+                                <?php if (!$system_config['is_open']) : ?>
+                                    <div class="text-danger fw-bold mb-2 p-1 bg-white rounded-3 shadow-xs small w-100">
+                                        <i class="bi bi-exclamation-triangle-fill"></i> <?= $system_config['message'] ?>
+                                    </div>
+                                <?php endif; ?>
+
+                                <?php if ($system_config['config']): ?>
+                                    <div class="d-flex align-items-center justify-content-center">
+                                        <span class="badge bg-white <?= $system_config['is_open'] ? 'text-success' : 'text-danger' ?> fs-7 py-2 px-3 shadow-sm border">
+                                            <?= date('d/m/Y', strtotime($system_config['config']['conf_start_date'] . ' +543 years')) ?> 
+                                            <i class="bi bi-arrow-right mx-1"></i>
+                                            <?= date('d/m/Y', strtotime($system_config['config']['conf_end_date'] . ' +543 years')) ?>
+                                        </span>
+                                    </div>
+                                    <small class="fw-bold mt-1 <?= $system_config['is_open'] ? 'text-success' : 'text-danger' ?> x-small">
+                                        <?= $system_config['is_open'] ? 'กำลังเปิดรับข้อมูล' : 'ระบบปิดรับข้อมูล' ?>
+                                    </small>
+                                <?php else: ?>
+                                    <span class="text-muted small">ยังไม่มีการกำหนดวันที่</span>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -61,13 +95,13 @@
                                 <?php endif; ?>
 
                                 <label for="eva_file" class="form-label fw-bold">อัปโหลดไฟล์ PDF <?= ($evaluation && !empty($evaluation['eva_file'])) ? 'ใหม่เพื่อแทนที่' : '' ?></label>
-                                <input class="form-control form-control-lg border-primary" type="file" id="eva_file" name="eva_file" accept=".pdf">
+                                <input class="form-control form-control-lg border-primary" type="file" id="eva_file" name="eva_file" accept=".pdf" <?= !$system_config['is_open'] ? 'disabled' : '' ?>>
                                 <div class="form-text text-danger mt-3">
                                     <i class="bi bi-exclamation-triangle-fill me-1"></i> ไฟล์ PDF ขนาดไม่เกิน 20MB
                                 </div>
                             </div>
-                            <button type="submit" id="btn-save-pdf" class="btn btn-primary btn-lg w-100 mt-4 shadow-sm">
-                                <i class="bi bi-cloud-arrow-up-fill me-2"></i> บันทึกไฟล์ PDF
+                            <button type="submit" id="btn-save-pdf" class="btn btn-primary btn-lg w-100 mt-4 shadow-sm" <?= !$system_config['is_open'] ? 'disabled' : '' ?>>
+                                <i class="bi bi-cloud-arrow-up-fill me-2"></i> <?= !$system_config['is_open'] ? 'ระบบปิดรับส่ง' : 'บันทึกไฟล์ PDF' ?>
                             </button>
                         </div>
                     </div>
@@ -97,12 +131,12 @@
                                 <label for="eva_canva_link" class="form-label fw-bold">ลิ้งก์นำเสนอจาก Canva หรือสื่ออื่นๆ</label>
                                 <div class="input-group input-group-merge border-primary">
                                     <span class="input-group-text bg-light"><i class="bi bi-link-45deg"></i></span>
-                                    <input type="url" class="form-control form-control-lg" id="eva_canva_link" name="eva_canva_link" placeholder="https://www.canva.com/design/..." value="<?= $evaluation['eva_canva_link'] ?? '' ?>">
+                                    <input type="url" class="form-control form-control-lg" id="eva_canva_link" name="eva_canva_link" placeholder="https://www.canva.com/design/..." value="<?= $evaluation['eva_canva_link'] ?? '' ?>" <?= !$system_config['is_open'] ? 'disabled' : '' ?>>
                                 </div>
                                 <div class="form-text mt-3">ส่งเป็น URL จาก Canva, YouTube หรือ Google Drive เพื่อเป็นสื่อประกอบ</div>
                             </div>
-                            <button type="submit" id="btn-save-canva" class="btn btn-primary btn-lg w-100 mt-4 shadow-sm">
-                                <i class="bi bi-link-45deg me-2"></i> บันทึกลิ้งก์สื่อนำเสนอ
+                            <button type="submit" id="btn-save-canva" class="btn btn-primary btn-lg w-100 mt-4 shadow-sm" <?= !$system_config['is_open'] ? 'disabled' : '' ?>>
+                                <i class="bi bi-link-45deg me-2"></i> <?= !$system_config['is_open'] ? 'ระบบปิดรับส่ง' : 'บันทึกลิ้งก์สื่อนำเสนอ' ?>
                             </button>
                         </div>
                     </div>
@@ -137,7 +171,7 @@
                                     <tr>
                                         <td><?= $row['eva_year'] ?></td>
                                         <td>ครั้งที่ <?= $row['eva_round'] ?></td>
-                                        <td><?= date('d/m/Y H:i', strtotime($row['eva_created_at'])) ?></td>
+                                        <td><?= date('d/m/Y H:i', strtotime($row['eva_created_at'] . ' +543 years')) ?></td>
                                         <td class="text-center">
                                             <?php if (!empty($row['eva_file'])) : ?>
                                                 <a href="<?= env('upload.server.baseurl.evaluation') . $row['eva_year'] . '/' . $row['eva_round'] . '/' . $row['eva_file'] ?>" target="_blank" class="btn btn-icon btn-label-primary">
@@ -158,8 +192,8 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="dropdown dropdown-hover d-inline-block">
-                                                <button class="btn btn-icon btn-label-secondary p-0" type="button">
-                                                    <i class="bi bi-trash-fill text-danger fs-5"></i>
+                                                <button class="btn btn-icon btn-label-secondary p-0" type="button" <?= !$system_config['is_open'] && $row['eva_year'] == $current_year && $row['eva_round'] == $current_round ? 'disabled' : '' ?>>
+                                                    <i class="bi bi-trash-fill <?= !$system_config['is_open'] && $row['eva_year'] == $current_year && $row['eva_round'] == $current_round ? 'text-secondary' : 'text-danger' ?> fs-5"></i>
                                                 </button>
                                                 <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                                                     <li><h6 class="dropdown-header">เลือกสิ่งที่ต้องการลบ</h6></li>
