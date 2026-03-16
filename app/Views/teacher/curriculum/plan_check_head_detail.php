@@ -73,10 +73,16 @@
     <div class="teacher-profile-header d-flex flex-wrap align-items-center justify-content-between gap-3">
         <div class="d-flex align-items-center">
             <div class="avatar avatar-xl me-3 border-3 border-white rounded-circle overflow-hidden shadow">
-                 <img src="https://personnel.skj.ac.th/uploads/admin/Personnal/<?= esc($teacher_info->pers_img ?? '') ?>" 
+                 <?php 
+                    $teacher_name = esc($teacher_info->pers_firstname ?? 'Teacher');
+                    $img_src = !empty($teacher_info->pers_img) 
+                        ? "https://personnel.skj.ac.th/uploads/admin/Personnal/" . esc($teacher_info->pers_img)
+                        : "https://placehold.co/100x100/696cff/ffffff?text=" . urlencode($teacher_name);
+                 ?>
+                 <img src="<?= $img_src ?>" 
                       alt="Avatar" 
                       class="h-100 w-100 object-fit-cover"
-                      onerror="this.onerror=null;this.src='https://placehold.co/100x100/EFEFEF/AAAAAA&text=No+Image';">
+                      onerror="this.onerror=null;this.src='https://placehold.co/100x100/696cff/ffffff?text=<?= urlencode($teacher_name) ?>';">
             </div>
             <div>
                 <h4 class="mb-1 fw-bold text-white"><?= esc($teacher_info->pers_prefix . $teacher_info->pers_firstname . ' ' . $teacher_info->pers_lastname) ?></h4>
@@ -224,6 +230,21 @@
             </div>
         </div>
         <?php endforeach; ?>
+        
+        <?php if (empty($groupedPlans)) : ?>
+        <div class="col-12 mt-5">
+            <div class="card shadow-none border-0 text-center p-5 bg-label-secondary">
+                <div class="mb-3">
+                    <i class="bi bi-folder-x display-1 opacity-25"></i>
+                </div>
+                <h4 class="fw-bold">ไม่พบแผนการสอน</h4>
+                <p class="text-muted">ครูท่านนี้ยังไม่ได้ส่งแผนการสอนหรือไม่มีรายวิชาที่ลงทะเบียนในภาคเรียน <?= esc($current_term . '/' . $current_year) ?></p>
+                <div class="mt-3">
+                    <small>หากคิดว่าเป็นข้อผิดพลาด กรุณาติดต่อหัวหน้างานหลักสูตร</small>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
     </div>
 </div>
 

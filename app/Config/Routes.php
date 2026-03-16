@@ -161,6 +161,7 @@ $routes->get('login/googleCallback', 'Login::googleCallback');
         $routes->get('send-plan', 'CurriculumController::sendPlan');
         $routes->get('edit-plan/(:num)', 'CurriculumController::editPlan/$1');
         $routes->post('insert-plan', 'CurriculumController::insertPlan');
+        $routes->post('upload-chunk', 'CurriculumController::uploadChunk');
         $routes->post('update-plan', 'CurriculumController::updatePlan');
         $routes->post('set-main-subject', 'CurriculumController::setMainSubject');
         $routes->get('delete-plan/(:num)', 'CurriculumController::deletePlan/$1');

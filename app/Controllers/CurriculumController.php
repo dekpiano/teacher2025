@@ -38,20 +38,26 @@ class CurriculumController extends BaseController
 
         // Determine current year and term if not provided in URL
         if ($year === null || $term === null) {
-            // Get the latest year/term from the plan table
-            $latestPlan = $this->curriculumModel
-                                ->select('seplan_year, seplan_term')
-                                ->orderBy('seplan_year', 'DESC')
-                                ->orderBy('seplan_term', 'DESC')
-                                ->first();
-            
-            if ($latestPlan) {
-                $year = $latestPlan['seplan_year'];
-                $term = $latestPlan['seplan_term'];
+            // Priority 1: Use year/term from setup table
+            if ($this->setup && !empty($this->setup->seplanset_year) && !empty($this->setup->seplanset_term)) {
+                $year = $this->setup->seplanset_year;
+                $term = $this->setup->seplanset_term;
             } else {
-                // Fallback if no plans exist at all
-                $year = date('Y') + 543; // Buddhist year
-                $term = 1;
+                // Priority 2: Get the latest year/term from the plan table
+                $latestPlan = $this->curriculumModel
+                                    ->select('seplan_year, seplan_term')
+                                    ->orderBy('seplan_year', 'DESC')
+                                    ->orderBy('seplan_term', 'DESC')
+                                    ->first();
+                
+                if ($latestPlan) {
+                    $year = $latestPlan['seplan_year'];
+                    $term = $latestPlan['seplan_term'];
+                } else {
+                    // Fallback if no data at all
+                    $year = date('Y') + 543;
+                    $term = 1;
+                }
             }
         }
 
@@ -211,9 +217,10 @@ class CurriculumController extends BaseController
 
         $rules = [
             'seplan_file' => [
-                'rules' => 'ext_in[seplan_file,doc,docx,pdf]',
+                'rules' => 'ext_in[seplan_file,doc,docx,pdf]|max_size[seplan_file,20480]',
                 'errors' => [
-                    'ext_in' => 'อนุญาตเฉพาะไฟล์ .doc, .docx, .pdf เท่านั้น'
+                    'ext_in' => 'อนุญาตเฉพาะไฟล์ .doc, .docx, .pdf เท่านั้น',
+                    'max_size' => 'ไฟล์ต้องมีขนาดไม่เกิน 20MB'
                 ]
             ]
         ];
@@ -241,19 +248,28 @@ class CurriculumController extends BaseController
             'seplan_sendcomment' => $textToStore,
         ];
 
-        // Handle file upload only if a file is provided
-        if ($file && $file->isValid() && !$file->hasMoved()) {
-            $folderYear = $this->setup->seplanset_year ?? date('Y') + 543;
-            $folderTerm = $this->setup->seplanset_term ?? 1;
-            $uploadBasePath = 'academic/teacher/course/plan';
+        $folderYear = $this->setup->seplanset_year ?? date('Y') + 543;
+        $folderTerm = $this->setup->seplanset_term ?? 1;
+        $uploadBasePath = 'academic/teacher/course/plan';
+        $remoteUploadPath = "{$uploadBasePath}/{$folderYear}/{$folderTerm}/{$plan['seplan_namesubject']}";
 
+        // If file was pre-uploaded via chunks
+        if (!empty($post['seplan_file_name_ready'])) {
+            // Delete old file if updating and filename is different
+            if (!empty($plan['seplan_file']) && $plan['seplan_file'] !== $post['seplan_file_name_ready']) {
+                $oldRemoteFilePath = "{$uploadBasePath}/{$plan['seplan_year']}/{$plan['seplan_term']}/{$plan['seplan_namesubject']}/{$plan['seplan_file']}";
+                $this->_deleteFileFromServer($oldRemoteFilePath);
+            }
+            $updateData['seplan_file'] = $post['seplan_file_name_ready'];
+        }
+        // Handle standard single-file upload (fallback)
+        elseif ($file && $file->isValid() && !$file->hasMoved()) {
             // Use data from the database record for consistency
-            $remoteUploadPath = "{$uploadBasePath}/{$folderYear}/{$folderTerm}/{$plan['seplan_namesubject']}/";
             $originalName = "{$plan['seplan_namesubject']}_{$plan['seplan_typeplan']}_{$plan['seplan_usersend']}." . $file->getExtension();
 
             // Delete old file before uploading new one
             if (!empty($plan['seplan_file'])) {
-                $oldRemoteFilePath = "{$uploadBasePath}/{$plan['seplan_year']}/{$plan['seplan_term']}/{$plan['seplan_namesubject']}/{$plan['seplan_file']}";
+                $oldRemoteFilePath = "{$remoteUploadPath}/{$plan['seplan_file']}";
                 $this->_deleteFileFromServer($oldRemoteFilePath);
             }
 
@@ -296,6 +312,41 @@ class CurriculumController extends BaseController
             return $this->response->setJSON(['status' => 'success', 'message' => 'ตั้งค่าวิชาหลักสำเร็จ']);
         } else {
             return $this->response->setJSON(['status' => 'error', 'message' => 'ไม่สามารถตั้งค่าวิชาหลักได้']);
+        }
+    }
+
+    /**
+     * Proxies file chunks from browser to the remote upload server
+     */
+    public function uploadChunk()
+    {
+        $file = $this->request->getFile('file');
+        $post = $this->request->getPost();
+        
+        $uploadUrl = env('upload.server.url');
+        if (!$uploadUrl) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Upload server URL is not configured in .env file.']);
+        }
+
+        try {
+            $client = \Config\Services::curlrequest();
+
+            $postData = [
+                'path'     => $post['path'],
+                'filename' => $post['filename'],
+                'chunk'    => $post['chunk'],
+                'chunks'   => $post['chunks'],
+                'file'     => new \CURLFile($file->getTempName(), $file->getMimeType(), $post['filename'])
+            ];
+
+            $response = $client->post($uploadUrl, [
+                'multipart' => $postData,
+                'http_errors' => false
+            ]);
+
+            return $this->response->setStatusCode($response->getStatusCode())->setBody($response->getBody());
+        } catch (\Exception $e) {
+            return $this->response->setJSON(['status' => 'error', 'message' => $e->getMessage()]);
         }
     }
 
@@ -359,7 +410,8 @@ class CurriculumController extends BaseController
             ]);
 
             $statusCode = $response->getStatusCode();
-            $body = json_decode($response->getBody(), true);
+            $rawBody = $response->getBody();
+            $body = json_decode($rawBody, true);
 
             if ($statusCode === 200 && isset($body['status']) && $body['status'] === 'success') {
                 return [
@@ -367,7 +419,12 @@ class CurriculumController extends BaseController
                     'filename' => $body['filename']
                 ];
             } else {
-                $errorMessage = $body['message'] ?? 'An unknown error occurred during file upload.';
+                if ($body === null) {
+                    $errorMessage = "Server Error (Status: {$statusCode}). Response: " . substr(strip_tags($rawBody), 0, 150);
+                } else {
+                    $errorMessage = $body['message'] ?? 'An unknown error occurred during file upload.';
+                }
+                
                 log_message('error', "File upload failed: {$errorMessage} (Status: {$statusCode})");
                 return ['status' => 'error', 'message' => "ไม่สามารถอัปโหลดไฟล์ได้: {$errorMessage}"];
             }
@@ -461,20 +518,26 @@ class CurriculumController extends BaseController
 
         // Get current year/term if not provided
         if ($year === null || $term === null) {
-            // Get the latest year/term from the plan table
-            $latestPlan = $this->curriculumModel
-                                ->select('seplan_year, seplan_term')
-                                ->orderBy('seplan_year', 'DESC')
-                                ->orderBy('seplan_term', 'DESC')
-                                ->first();
-            
-            if ($latestPlan) {
-                $year = $latestPlan['seplan_year'];
-                $term = $latestPlan['seplan_term'];
+            // Priority 1: Use year/term from setup table
+            if ($this->setup && !empty($this->setup->seplanset_year) && !empty($this->setup->seplanset_term)) {
+                $year = $this->setup->seplanset_year;
+                $term = $this->setup->seplanset_term;
             } else {
-                // Fallback if no plans exist at all
-                $year = date('Y') + 543; // Buddhist year
-                $term = 1;
+                // Priority 2: Get the latest year/term from the plan table
+                $latestPlan = $this->curriculumModel
+                                    ->select('seplan_year, seplan_term')
+                                    ->orderBy('seplan_year', 'DESC')
+                                    ->orderBy('seplan_term', 'DESC')
+                                    ->first();
+                
+                if ($latestPlan) {
+                    $year = $latestPlan['seplan_year'];
+                    $term = $latestPlan['seplan_term'];
+                } else {
+                    // Fallback
+                    $year = date('Y') + 543;
+                    $term = 1;
+                }
             }
         }
 
@@ -701,20 +764,26 @@ class CurriculumController extends BaseController
         }
         
         if ($year === null || $term === null) {
-            // Get the latest year/term from the plan table
-            $latestPlan = $this->curriculumModel
-                                ->select('seplan_year, seplan_term')
-                                ->orderBy('seplan_year', 'DESC')
-                                ->orderBy('seplan_term', 'DESC')
-                                ->first();
-            
-            if ($latestPlan) {
-                $year = $latestPlan['seplan_year'];
-                $term = $latestPlan['seplan_term'];
+            // Priority 1: Use year/term from setup table
+            if ($this->setup && !empty($this->setup->seplanset_year) && !empty($this->setup->seplanset_term)) {
+                $year = $this->setup->seplanset_year;
+                $term = $this->setup->seplanset_term;
             } else {
-                // Fallback if no plans exist at all
-                $year = date('Y') + 543; // Buddhist year
-                $term = 1;
+                // Priority 2: Get the latest year/term from the plan table
+                $latestPlan = $this->curriculumModel
+                                    ->select('seplan_year, seplan_term')
+                                    ->orderBy('seplan_year', 'DESC')
+                                    ->orderBy('seplan_term', 'DESC')
+                                    ->first();
+                
+                if ($latestPlan) {
+                    $year = $latestPlan['seplan_year'];
+                    $term = $latestPlan['seplan_term'];
+                } else {
+                    // Fallback
+                    $year = date('Y') + 543;
+                    $term = 1;
+                }
             }
         }
 
@@ -795,10 +864,11 @@ class CurriculumController extends BaseController
                 ->where('seplan_year', $seplanYear)
                 ->where('seplan_term', $seplanTerm)
                 ->where('seplan_coursecode', $value->SubjectCode)
+                ->where('seplan_usersend', $value->TeacherID)
                 ->first();
 
             if ($existing) {
-                $response[] = ['status' => 'duplicate', 'subject' => $value->SubjectCode];
+                $response[] = ['status' => 'duplicate', 'subject' => $value->SubjectCode, 'teacher' => $value->TeacherID];
             } else {
                 // Use fetched plan types
                 $Class = explode('.', $value->SubjectClass);
@@ -821,7 +891,7 @@ class CurriculumController extends BaseController
                         'seplan_createdate'   => date('Y-m-d H:i:s'), // บันทึกวันที่ส่ง
                     ];
                 }
-                $response[] = ['status' => 'prepared', 'subject' => $value->SubjectCode];
+                $response[] = ['status' => 'prepared', 'subject' => $value->SubjectCode, 'teacher' => $value->TeacherID];
             }
         }
 
@@ -852,20 +922,25 @@ class CurriculumController extends BaseController
 
         $postYear = $this->request->getPost('Year');
         if (empty($postYear)) {
-            // Get the latest year/term from the plan table
-            $latestPlan = $this->curriculumModel
-                                ->select('seplan_year, seplan_term')
-                                ->orderBy('seplan_year', 'DESC')
-                                ->orderBy('seplan_term', 'DESC')
-                                ->first();
-            
-            if ($latestPlan) {
-                $data['year'] = $latestPlan['seplan_year'];
-                $data['term'] = $latestPlan['seplan_term'];
+            if ($this->setup && !empty($this->setup->seplanset_year) && !empty($this->setup->seplanset_term)) {
+                $data['year'] = $this->setup->seplanset_year;
+                $data['term'] = $this->setup->seplanset_term;
             } else {
-                // Fallback if no plans exist at all
-                $data['year'] = date('Y') + 543; // Buddhist year
-                $data['term'] = 1;
+                // Get the latest year/term from the plan table
+                $latestPlan = $this->curriculumModel
+                                    ->select('seplan_year, seplan_term')
+                                    ->orderBy('seplan_year', 'DESC')
+                                    ->orderBy('seplan_term', 'DESC')
+                                    ->first();
+                
+                if ($latestPlan) {
+                    $data['year'] = $latestPlan['seplan_year'];
+                    $data['term'] = $latestPlan['seplan_term'];
+                } else {
+                    // Fallback
+                    $data['year'] = date('Y') + 543;
+                    $data['term'] = 1;
+                }
             }
         } else {
             $CheckYear = explode('/', $postYear);
@@ -986,7 +1061,7 @@ class CurriculumController extends BaseController
         }
 
         $data['teacher_info'] = $this->db_personnel->table('tb_personnel')
-            ->select('pers_id, pers_prefix, pers_firstname, pers_lastname')
+            ->select('pers_id, pers_prefix, pers_firstname, pers_lastname, pers_img')
             ->where('pers_id', $teacher_id)
             ->get()->getRow();
 
@@ -994,20 +1069,26 @@ class CurriculumController extends BaseController
 
         // Determine current year and term if not provided
         if ($year === null || $term === null) {
-            // Get the latest year/term from the plan table
-            $latestPlan = $this->curriculumModel
-                                ->select('seplan_year, seplan_term')
-                                ->orderBy('seplan_year', 'DESC')
-                                ->orderBy('seplan_term', 'DESC')
-                                ->first();
-            
-            if ($latestPlan) {
-                $year = $latestPlan['seplan_year'];
-                $term = $latestPlan['seplan_term'];
+            // Priority 1: Use year/term from setup table
+            if ($this->setup && !empty($this->setup->seplanset_year) && !empty($this->setup->seplanset_term)) {
+                $year = $this->setup->seplanset_year;
+                $term = $this->setup->seplanset_term;
             } else {
-                // Fallback if no plans exist at all
-                $year = date('Y') + 543; // Buddhist year
-                $term = 1;
+                // Priority 2: Get the latest year/term from the plan table
+                $latestPlan = $this->curriculumModel
+                                    ->select('seplan_year, seplan_term')
+                                    ->orderBy('seplan_year', 'DESC')
+                                    ->orderBy('seplan_term', 'DESC')
+                                    ->first();
+                
+                if ($latestPlan) {
+                    $year = $latestPlan['seplan_year'];
+                    $term = $latestPlan['seplan_term'];
+                } else {
+                    // Fallback
+                    $year = date('Y') + 543;
+                    $term = 1;
+                }
             }
         }
 

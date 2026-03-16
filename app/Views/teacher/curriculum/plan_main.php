@@ -405,6 +405,16 @@
                         </div>
                         <div class="form-text small">รองรับ .doc, .docx, .pdf เท่านั้น</div>
                     </div>
+                    <!-- Progress Bar -->
+                    <div id="uploadProgressContainer" style="display: none;" class="mb-4">
+                        <label class="form-label d-flex justify-content-between">
+                            <span>กำลังอัปโหลด...</span>
+                            <span id="uploadPercentage">0%</span>
+                        </label>
+                        <div class="progress" style="height: 10px;">
+                            <div id="uploadProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
                     <div class="mb-0">
                         <label for="seplan_sendcomment" class="form-label fw-bold">หมายเหตุ (ถ้ามี)</label>
                         <textarea class="form-control" id="seplan_sendcomment" name="seplan_sendcomment" rows="3" placeholder="เช่น ส่งแผนครบแล้ว หรือ ส่งรายละเอียดเพิ่มเติม"></textarea>
@@ -617,38 +627,141 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Update Modal
     const modalUpdatePlan = new bootstrap.Modal(document.getElementById('ModalUpdatePlan'));
+    const uploadProgressContainer = document.getElementById('uploadProgressContainer');
+    const uploadProgressBar = document.getElementById('uploadProgressBar');
+    const uploadPercentage = document.getElementById('uploadPercentage');
+
     document.querySelectorAll('.Model_update').forEach(btn => {
         btn.addEventListener('click', function() {
             document.getElementById('seplan_ID').value = this.dataset.seplanId;
             document.getElementById('seplan_typeplan').value = this.dataset.seplanTypeplan;
             document.getElementById('seplan_coursecode').value = this.dataset.seplanCoursecode;
             document.getElementById('seplan_sendcomment').value = this.dataset.seplanSendcomment;
+            
+            // Reset Progress Bar
+            uploadProgressContainer.style.display = 'none';
+            uploadProgressBar.style.width = '0%';
+            uploadPercentage.innerText = '0%';
+            
             modalUpdatePlan.show();
         });
     });
 
+    /**
+     * Chunked Upload Implementation
+     */
+    async function uploadFileInChunks(file, targetPath, originalName) {
+        const chunkSize = 512 * 1024; // Reduce to 512KB chunks to bypass local POST limits
+        const totalChunks = Math.ceil(file.size / chunkSize);
+        
+        uploadProgressContainer.style.display = 'block';
+
+        for (let i = 0; i < totalChunks; i++) {
+            const start = i * chunkSize;
+            const end = Math.min(start + chunkSize, file.size);
+            const chunk = file.slice(start, end);
+
+            const formData = new FormData();
+            formData.append('file', chunk);
+            formData.append('path', targetPath);
+            formData.append('filename', originalName);
+            formData.append('chunk', i);
+            formData.append('chunks', totalChunks);
+
+            const response = await fetch('<?= site_url('curriculum/upload-chunk') ?>', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                let errorMsg = 'Error uploading chunk ' + (i + 1);
+                try {
+                    const errorData = await response.json();
+                    errorMsg = errorData.message || errorMsg;
+                } catch (e) {
+                    // If not JSON, it might be an HTML error page (like 413)
+                    const textError = await response.text();
+                    console.error('Server returned non-JSON error:', textError);
+                    errorMsg = `Server Error (${response.status}): อาจเป็นเพราะขนาดชิ้นส่วนไฟล์ใหญ่เกินไปสำหรับเซิร์ฟเวอร์ของคุณ`;
+                }
+                throw new Error(errorMsg);
+            }
+
+            const percentComplete = Math.round(((i + 1) / totalChunks) * 100);
+            uploadProgressBar.style.width = percentComplete + '%';
+            uploadPercentage.innerText = percentComplete + '%';
+        }
+
+        return true; 
+    }
+
     // Submission
     const updateForm = document.querySelector('.update_seplan');
     if(updateForm) {
-        updateForm.addEventListener('submit', function(e) {
+        updateForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             const btn = this.querySelector('button[type="submit"]');
             const originalHtml = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> กำลังประมวลผล...';
+            const fileInput = document.getElementById('seplan_file');
+            const file = fileInput.files[0];
 
-            fetch('<?= site_url('curriculum/update-plan') ?>', { method: 'POST', body: new FormData(this) })
-            .then(r => r.json())
-            .then(data => {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> กำลังเตรียมไฟล์...';
+
+            try {
+                let readyFilename = null;
+
+                if (file) {
+                    // 1. Determine safe filename and remote path
+                    const year = document.getElementById('seplan_year').value;
+                    const term = document.getElementById('seplan_term').value;
+                    const typePlan = document.getElementById('seplan_typeplan').value;
+                    const courseCode = document.getElementById('seplan_coursecode').value;
+                    const personId = '<?= esc($person_id) ?>';
+                    
+                    // Note: We need the Subject Name, but it's not in the hidden fields. 
+                    // Let's get it from the parent card's title.
+                    const card = document.querySelector(`[data-course-code="${courseCode}"]`);
+                    const subjectName = card ? card.querySelector('h5').innerText.trim() : 'Unknown';
+                    
+                    const remotePath = `academic/teacher/course/plan/${year}/${term}/${subjectName}`;
+                    const fileExt = file.name.split('.').pop();
+                    const originalName = `${subjectName}_${typePlan}_${personId}_${Date.now()}.${fileExt}`;
+
+                    // 2. Upload in chunks
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> กำลังอัปโหลด...';
+                    await uploadFileInChunks(file, remotePath, originalName);
+                    readyFilename = originalName;
+                }
+
+                // 3. Finalize update with database
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> กำลังบันทึกข้อมูล...';
+                const finalFormData = new FormData(this);
+                if (readyFilename) {
+                    finalFormData.append('seplan_file_name_ready', readyFilename);
+                }
+
+                const response = await fetch('<?= site_url('curriculum/update-plan') ?>', {
+                    method: 'POST',
+                    body: finalFormData
+                });
+
+                const data = await response.json();
                 modalUpdatePlan.hide();
+
                 if (data.status === 'success') {
-                    Swal.fire({ icon: 'success', title: 'อัปโหลดสำเร็จ', text: data.message, timer: 1500 }).then(() => location.reload());
+                    Swal.fire({ icon: 'success', title: 'สำเร็จ', text: data.message, timer: 1500 }).then(() => location.reload());
                 } else {
                     Swal.fire('ผิดพลาด', data.message, 'error');
                 }
-            })
-            .catch(() => Swal.fire('ผิดพลาด', 'เกิดเหตุขัดข้องทางเทคนิค', 'error'))
-            .finally(() => { btn.disabled = false; btn.innerHTML = originalHtml; });
+
+            } catch (error) {
+                console.error(error);
+                Swal.fire('ผิดพลาด', error.message || 'เกิดเหตุขัดข้องทางเทคนิค', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
         });
     }
 });

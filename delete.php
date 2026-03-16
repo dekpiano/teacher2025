@@ -19,7 +19,7 @@
 
       if (isset($data['files']) && is_array($data['files']) && isset($data['path'])) {
           // *IMPORTANT*: Set your base upload directory (must match upload.php)
-          $baseDir = '/var/www/html/uploads/'; // ตรวจสอบให้แน่ใจว่า Path นี้ถูกต้องบน Server ของคุณ
+          $baseDir = __DIR__ . '/uploads/'; // ตรวจสอบให้แน่ใจว่า Path นี้ถูกต้องบน Server ของคุณ
           $subDir = trim($data['path'], '/');
           $targetDir = $baseDir . $subDir;
 
