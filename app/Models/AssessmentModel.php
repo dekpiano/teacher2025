@@ -128,9 +128,9 @@ class AssessmentModel extends Model
                       ->orderBy('tb_students.StudentNumber', 'ASC');
 
         if ($room != 'all') {
-            $sub_checkroom = explode('-', $room);
-            $sub_room = $sub_checkroom[0].'/'.$sub_checkroom[1];
-            $builder->where('tb_students.StudentClass', 'ม.'.$sub_room);
+            $sub_checkroom = explode('-', $room ?? '');
+            $room_val = $sub_checkroom[1] ?? ($sub_checkroom[0] ?? '');
+            $builder->where('tb_students.StudentClass', 'ม.'.$room_val);
         }
 
         return $builder->get()->getResult();

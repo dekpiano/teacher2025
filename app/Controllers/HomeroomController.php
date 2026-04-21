@@ -13,8 +13,11 @@ class HomeroomController extends BaseController
         $session = session();
 
         $schoolYearResult = $db->table('tb_schoolyear')->select('schyear_year')->where('schyear_id', 1)->get()->getRow();
-        $yearParts = explode('/', $schoolYearResult->schyear_year);
-        $currentYear = $yearParts[1];
+        $currentYear = '';
+        if ($schoolYearResult && !empty($schoolYearResult->schyear_year)) {
+            $yearParts = explode('/', $schoolYearResult->schyear_year);
+            $currentYear = $yearParts[1] ?? ($yearParts[0] ?? '');
+        }
 
         $teacherInfo = $db->table('tb_regclass')
                           ->select('skjacth_personnel.tb_personnel.pers_prefix, skjacth_personnel.tb_personnel.pers_firstname, skjacth_personnel.tb_personnel.pers_lastname, skjacth_personnel.tb_personnel.pers_id, skjacth_academic.tb_regclass.Reg_Year, skjacth_academic.tb_regclass.Reg_Class')

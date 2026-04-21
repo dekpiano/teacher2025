@@ -34,8 +34,10 @@ class ControllerSaveScore extends BaseController
                 $partsB = explode('/', $b['schyear_year']);
                 if (count($partsA) < 2 || count($partsB) < 2) return 0;
                 
-                list($termA, $yearA) = $partsA;
-                list($termB, $yearB) = $partsB;
+                $termA = $partsA[0] ?? '';
+                $yearA = $partsA[1] ?? '';
+                $termB = $partsB[0] ?? '';
+                $yearB = $partsB[1] ?? '';
                 
                 if ($yearB != $yearA) {
                     return $yearB <=> $yearA;
@@ -123,14 +125,24 @@ class ControllerSaveScore extends BaseController
             ->where('tb_register.SubjectID', $subject);
 
         if ($room != "all") {
-            $sub_checkroom = explode('-', $room);
-            $sub_room_class = 'ม.' . $sub_checkroom[0] . '/' . $sub_checkroom[1];
+            $sub_checkroom = explode('-', $room ?? '');
+            $room_val = $sub_checkroom[1] ?? ($sub_checkroom[0] ?? '');
+            $sub_room_class = 'ม.' . ($sub_checkroom[0] ?? '') . '/' . ($sub_checkroom[1] ?? '');
             $query->where('tb_students.StudentClass', $sub_room_class);
         }
 
         $data['check_student'] = $query->orderBy('tb_students.StudentClass', 'ASC')
                                      ->orderBy('tb_students.StudentNumber', 'ASC')
                                      ->get()->getResult();
+
+        // Safe Fallback: If check_student is empty, try to get subject info separately for the header
+        if (empty($data['check_student'])) {
+            $data['subject_info'] = $this->db->table('tb_subjects')
+                                           ->where('SubjectID', $subject)
+                                           ->get()
+                                           ->getRow();
+            $data['register_year'] = $RegisterYear;
+        }
 
         $check_idSubject = $this->db->table('tb_subjects')->where('SubjectID', $subject)->where('SubjectYear', $RegisterYear)->get()->getRow();
         if($check_idSubject){
@@ -143,7 +155,7 @@ class ControllerSaveScore extends BaseController
         $data['uri'] = service('uri');
         $data['Room'] = $room;
 
-        return view('teacher/register/SaveScore/SaveScoreAdd', @$data);
+        return view('teacher/register/SaveScore/SaveScoreAdd', $data);
     }
 
     // AJAX Methods ported from ConTeacherRegister
@@ -357,15 +369,26 @@ class ControllerSaveScore extends BaseController
     public function ReportLearnNormal()
     {
     
-       if (file_exists(SHARED_LIB_PATH . '/mpdf/vendor/autoload.php')) {
-            require SHARED_LIB_PATH . '/mpdf/vendor/autoload.php';
-        } else {
-            $path = dirname(dirname(dirname(dirname(dirname(dirname(__FILE__))))));
-            require $path . '/librarie_skj/mpdf/vendor/autoload.php';
-        }
-		//require SHARED_LIB_PATH . '/mpdf/vendor/autoload.php';
-        // The manual require is removed. Composer handles autoloading.
+        // mPDF is now loaded via Composer autoloader
+        $defaultConfig = (new \Mpdf\Config\ConfigVariables())->getDefaults();
+        $fontDirs = $defaultConfig['fontDir'];
+
+        $defaultFontConfig = (new \Mpdf\Config\FontVariables())->getDefaults();
+        $fontData = $defaultFontConfig['fontdata'];
+
         $mpdf = new \Mpdf\Mpdf([
+            'tempDir' => WRITEPATH . 'cache',
+            'fontDir' => array_merge($fontDirs, [
+                ROOTPATH . 'vendor/mpdf/mpdf/ttfonts',
+            ]),
+            'fontdata' => $fontData + [
+                'thsarabun' => [
+                    'R' => 'THSarabunNew.ttf',
+                    'B' => 'THSarabunNew Bold.ttf',
+                    'I' => 'THSarabunNew Italic.ttf',
+                    'BI' => 'THSarabunNew BoldItalic.ttf',
+                ]
+            ],
             'mode' => 'utf-8',
             'format' => 'A4',
             'default_font_size' => 16,
@@ -393,11 +416,31 @@ class ControllerSaveScore extends BaseController
             ->where('regscore_subjectID', $subject->SubjectID)
             ->get()->getResult();
 
+        // ดึงข้อมูลครูประจำวิชาจาก tb_register
+        $mainTeacher = $this->db->table('tb_register')
+            ->select('TeacherID')
+            ->where('SubjectID', $reportSubjectID)
+            ->where('RegisterYear', $reportRegisterYear)
+            ->where('TeacherID !=', '')
+            ->limit(1)
+            ->get()->getRow();
+
+        $displayTeacherId = ($mainTeacher && !empty($mainTeacher->TeacherID)) ? $mainTeacher->TeacherID : $loginId;
+
         // Fetch teacher data for report
         $data['teacher_data'] = $this->personnelDb->table('tb_personnel')
             ->select('pers_prefix, pers_firstname, pers_lastname')
-            ->where('pers_id', $loginId)
+            ->where('pers_id', $displayTeacherId)
             ->get()->getRow();
+
+        // Check if teacher_data is still null (fallback to empty object to prevent view errors)
+        if (!$data['teacher_data']) {
+            $data['teacher_data'] = (object)[
+                'pers_prefix' => '',
+                'pers_firstname' => 'ไม่พบข้อมูลครู',
+                'pers_lastname' => ''
+            ];
+        }
 
         // Base query for student data
         $baseStudentQuery = function ($class = null) use ($loginId, $reportRegisterYear, $reportSubjectID) {
@@ -467,9 +510,13 @@ class ControllerSaveScore extends BaseController
             $data['CheckPrint'] = "single"; // Mark as single room for logic if needed
             $data['re_room'] = $selectPrint;
 
-            $sub_Year = explode("/", $reportRegisterYear);
-            $sub_room = explode(".", $selectPrint);
-            if (isset($sub_Year[1]) && isset($sub_room[1])) {
+            $sub_Year = explode("/", $reportRegisterYear ?? '');
+            $year_for_db = $sub_Year[1] ?? ($sub_Year[0] ?? '');
+            
+            $sub_room = explode(".", $selectPrint ?? '');
+            $room_for_db = $sub_room[1] ?? ($sub_room[0] ?? '');
+
+            if ($year_for_db != '' && $room_for_db != '') {
                  $data['re_teacher'] = $this->db->table('tb_regclass')
                     ->select('
                         skjacth_personnel.tb_personnel.pers_id,
@@ -480,8 +527,8 @@ class ControllerSaveScore extends BaseController
                         skjacth_personnel.tb_personnel.pers_lastname
                     ')
                     ->join('skjacth_personnel.tb_personnel', 'skjacth_personnel.tb_personnel.pers_id = tb_regclass.class_teacher', 'left')
-                    ->where('Reg_Year', $sub_Year[1])
-                    ->where('Reg_Class', $sub_room[1])
+                    ->where('Reg_Year', $year_for_db)
+                    ->where('Reg_Class', $room_for_db)
                     ->get()->getResult();
             } else {
                 $data['re_teacher'] = [];

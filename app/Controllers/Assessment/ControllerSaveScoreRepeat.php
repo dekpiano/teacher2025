@@ -324,13 +324,18 @@ class ControllerSaveScoreRepeat extends BaseController
          $CheckRepeat = $this->db->table('tb_register_onoff')->select('onoff_detail,onoff_year')->where('onoff_id',7)->get()->getResult();
         $studentIDs = $this->request->getPost('StudentID');
         $timeNum = $this->request->getPost('TimeNum');
+        $study_times = $this->request->getPost('study_time');
         $registerYears = $this->request->getPost('RegisterYear');
         $subjectID = $this->request->getPost('SubjectID');
 
+        if (empty($studentIDs) || !is_array($studentIDs)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'ไม่พบข้อมูลนักเรียน']);
+        }
+
         foreach ($studentIDs as $num => $studentID) {
             $scores = $this->request->getPost($studentID); // Array of scores for this student
-            $study_time = $study_times[$num];
-            $registerYear = $registerYears[$num];
+            $study_time = $study_times[$num] ?? 0;
+            $registerYear = $registerYears[$num] ?? '';
             $grade = '';
             $RepeatStatus = ''; 
             $Grade_Type = ''; 
@@ -338,15 +343,15 @@ class ControllerSaveScoreRepeat extends BaseController
 
             if ((($timeNum * 80) / 100) > $study_time) {
                 $grade = "มส";
-                $Grade_Type = $CheckRepeat[0]->onoff_detail;
+                $Grade_Type = $CheckRepeat[0]->onoff_detail ?? '';
                 $RepeatStatus = "ไม่ผ่าน";
-                $RepeatYear = $CheckRepeat[0]->onoff_year;
+                $RepeatYear = $CheckRepeat[0]->onoff_year ?? '';
             } else {
                 if (is_array($scores) && in_array("ร", $scores)) {
                     $grade = "ร";
-                    $Grade_Type = $CheckRepeat[0]->onoff_detail;
+                    $Grade_Type = $CheckRepeat[0]->onoff_detail ?? '';
                     $RepeatStatus = "ไม่ผ่าน";
-                    $RepeatYear = $CheckRepeat[0]->onoff_year;
+                    $RepeatYear = $CheckRepeat[0]->onoff_year ?? '';
                 } else {
                     $grade = $this->check_grade(array_sum($scores));
                     if ($grade > 0) {
@@ -354,8 +359,8 @@ class ControllerSaveScoreRepeat extends BaseController
                     } else {
                         $RepeatStatus = "ไม่ผ่าน";
                     }
-                    $Grade_Type = $CheckRepeat[0]->onoff_detail;
-                    $RepeatYear = $CheckRepeat[0]->onoff_year;
+                    $Grade_Type = $CheckRepeat[0]->onoff_detail ?? '';
+                    $RepeatYear = $CheckRepeat[0]->onoff_year ?? '';
                 }
             }
 
@@ -417,26 +422,26 @@ class ControllerSaveScoreRepeat extends BaseController
 
         if ((($timeNum * 80) / 100) > $study_time) {
             $grade = "มส";
-            $Grade_Type = $CheckRepeat[0]->onoff_detail; // Set Grade_Type for "มส"
+            $Grade_Type = $CheckRepeat[0]->onoff_detail ?? ''; // Set Grade_Type for "มส"
             $RepeatStatus = "ไม่ผ่าน"; // Set RepeatStatus for "มส"
-            $RepeatYear = $CheckRepeat[0]->onoff_year; // Set RepeatYear for "มส"
+            $RepeatYear = $CheckRepeat[0]->onoff_year ?? ''; // Set RepeatYear for "มส"
         } else {
             if (is_array($scores) && in_array("ร", $scores)) {
                 $grade = "ร";
-                $Grade_Type = $CheckRepeat[0]->onoff_detail; // Set Grade_Type for "ร"
+                $Grade_Type = $CheckRepeat[0]->onoff_detail ?? ''; // Set Grade_Type for "ร"
                 $RepeatStatus = "ไม่ผ่าน"; // Set RepeatStatus for "ร"
-                $RepeatYear = $CheckRepeat[0]->onoff_year; // Set RepeatYear for "ร"
+                $RepeatYear = $CheckRepeat[0]->onoff_year ?? ''; // Set RepeatYear for "ร"
             } else {
                 $numeric_scores = array_filter($scores, 'is_numeric');
                 $grade = $this->check_grade(array_sum($numeric_scores));
                 if($grade > 0){
                         $RepeatStatus = "ผ่าน";
-                        $Grade_Type = $CheckRepeat[0]->onoff_detail;
-                        $RepeatYear = $CheckRepeat[0]->onoff_year;
+                        $Grade_Type = $CheckRepeat[0]->onoff_detail ?? '';
+                        $RepeatYear = $CheckRepeat[0]->onoff_year ?? '';
                     }else{
-                        $Grade_Type = $CheckRepeat[0]->onoff_detail;
+                        $Grade_Type = $CheckRepeat[0]->onoff_detail ?? '';
                         $RepeatStatus = "ไม่ผ่าน";
-                        $RepeatYear = $CheckRepeat[0]->onoff_year;
+                        $RepeatYear = $CheckRepeat[0]->onoff_year ?? '';
                         
                     }
             }
@@ -503,16 +508,26 @@ class ControllerSaveScoreRepeat extends BaseController
     public function ReportLearnRepeat()
     {
     
-        if (file_exists(SHARED_LIB_PATH . '/mpdf/vendor/autoload.php')) {
-            require SHARED_LIB_PATH . '/mpdf/vendor/autoload.php';
-        } else {
-            $path = dirname(dirname(dirname(dirname(dirname(dirname(__FILE__))))));
-            require $path . '/librarie_skj/mpdf/vendor/autoload.php';
-        }
-       // require SHARED_LIB_PATH . '/mpdf/vendor/autoload.php';
-		
-        // The manual require is removed. Composer handles autoloading.
+        // mPDF is now loaded via Composer autoloader
+        $defaultConfig = (new \Mpdf\Config\ConfigVariables())->getDefaults();
+        $fontDirs = $defaultConfig['fontDir'];
+
+        $defaultFontConfig = (new \Mpdf\Config\FontVariables())->getDefaults();
+        $fontData = $defaultFontConfig['fontdata'];
+
         $mpdf = new \Mpdf\Mpdf([
+            'tempDir' => WRITEPATH . 'cache',
+            'fontDir' => array_merge($fontDirs, [
+                ROOTPATH . 'vendor/mpdf/mpdf/ttfonts',
+            ]),
+            'fontdata' => $fontData + [
+                'thsarabun' => [
+                    'R' => 'THSarabunNew.ttf',
+                    'B' => 'THSarabunNew Bold.ttf',
+                    'I' => 'THSarabunNew Italic.ttf',
+                    'BI' => 'THSarabunNew BoldItalic.ttf',
+                ]
+            ],
             'mode' => 'utf-8',
             'format' => 'A4',
             'default_font_size' => 16,
@@ -560,11 +575,27 @@ class ControllerSaveScoreRepeat extends BaseController
             ->where('pers_id', $displayTeacherId)
             ->get()->getRow();
 
+        if (!$data['teacher_data']) {
+            $data['teacher_data'] = (object)[
+                'pers_prefix' => '',
+                'pers_firstname' => 'ไม่พบข้อมูลครู',
+                'pers_lastname' => ''
+            ];
+        }
+
         // Fetch repeat teacher data (current user who is handling the repeat registration)
         $data['teacher_repeat'] = $this->personnelDb->table('tb_personnel')
             ->select('pers_prefix, pers_firstname, pers_lastname')
             ->where('pers_id', $loginId)
             ->get()->getRow();
+
+        if (!$data['teacher_repeat']) {
+            $data['teacher_repeat'] = (object)[
+                'pers_prefix' => '',
+                'pers_firstname' => 'ไม่พบข้อมูลครู',
+                'pers_lastname' => ''
+            ];
+        }
 
         // ดึงข้อมูล onoff สำหรับกรอง (RepeatYear และ Grade_Type)
         $checkRepeat = $this->db->table('tb_register_onoff')->select('onoff_year, onoff_detail')->where('onoff_id', 7)->get()->getRow();
@@ -630,8 +661,8 @@ class ControllerSaveScoreRepeat extends BaseController
             $data['CheckPrint'] = "";
             $data['re_room'] = $selectPrint;
 
-            $sub_Year = explode("/", $reportRegisterYear);
-            $sub_room = explode(".", $selectPrint);
+            $sub_Year = explode("/", $reportRegisterYear ?? '');
+            $sub_room = explode(".", $selectPrint ?? '');
             if (isset($sub_Year[1]) && isset($sub_room[1])) {
                  $data['re_teacher'] = $this->db->table('skjacth_academic.tb_regclass')
                     ->select('

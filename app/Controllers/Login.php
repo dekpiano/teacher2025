@@ -3,29 +3,11 @@
 namespace App\Controllers;
 
 use App\Models\LoginModel;
-use Google\Client;
-use Google\Service\Oauth2;
 
 class Login extends BaseController
 {
-    protected $googleClient;
-
     public function __construct()
     {
-        //$path = (dirname(dirname(dirname(dirname((dirname(__FILE__)))))));
-		//require SHARED_LIB_PATH.'/google_sheet/vendor/autoload.php';
-
-        // $path = (dirname(dirname(dirname(dirname((dirname(__FILE__)))))));
-		// require $path . '/librarie_skj/google_sheet/vendor/autoload.php';
-        // require SHARED_LIB_PATH . '/google_sheet/vendor/autoload.php';
-        require SHARED_LIB_PATH . '/google_sheet/vendor/autoload.php';
-
-        $this->googleClient = new Client();
-        $this->googleClient->setClientId(getenv('GOOGLE_CLIENT_ID'));
-        $this->googleClient->setClientSecret(getenv('GOOGLE_CLIENT_SECRET'));
-        $this->googleClient->setRedirectUri(getenv('GOOGLE_REDIRECT_URI'));
-        $this->googleClient->addScope('email');
-        $this->googleClient->addScope('profile');
     }
 
     public function index()
@@ -34,7 +16,18 @@ class Login extends BaseController
         if (session()->get('isLoggedIn')) {
             return redirect()->to('home');
         }
-        $data['google_login_url'] = $this->googleClient->createAuthUrl();
+
+        $config = config('Google');
+        $params = [
+            'client_id'     => $config->clientId,
+            'redirect_uri'  => base_url('login/googleCallback'),
+            'response_type' => 'code',
+            'scope'         => 'email profile openid',
+            'access_type'   => 'online',
+            'prompt'        => 'select_account'
+        ];
+        $data['google_login_url'] = 'https://accounts.google.com/o/oauth2/v2/auth?' . http_build_query($params);
+
         return view('login/index', $data);
     }
 
@@ -71,57 +64,92 @@ class Login extends BaseController
 
     public function googleLogin()
     {
-        return redirect()->to($this->googleClient->createAuthUrl());
+        $config = config('Google');
+        $params = [
+            'client_id'     => $config->clientId,
+            'redirect_uri'  => base_url('login/googleCallback'),
+            'response_type' => 'code',
+            'scope'         => 'email profile openid',
+            'access_type'   => 'online',
+            'prompt'        => 'select_account'
+        ];
+        return redirect()->to('https://accounts.google.com/o/oauth2/v2/auth?' . http_build_query($params));
     }
 
     public function googleCallback()
     {
         $session = session();
         $model = new LoginModel();
-
-        if (isset($_GET['code'])) {
-            $token = $this->googleClient->fetchAccessTokenWithAuthCode($_GET['code']);
-
-            if (!isset($token['error'])) {
-                $this->googleClient->setAccessToken($token['access_token']);
-                $googleService = new Oauth2($this->googleClient);
-                $userData = $googleService->userinfo->get();
-
-                $email = $userData['email'];
-
-                // Check if user exists in database
-                $user = $model->checkGoogleLogin($email);
-
-                
-                if ($user) {
-                    // Update user's OAuth UID and last updated time
-                    $model->updateGoogleUserData($email, $userData['id']);
-
-                    $ses_data = [
-                        'person_id'      => $user['pers_id'],
-                        'gmail_account'  => $user['pers_username'],
-                        'fullname'       => $user['fullname'],
-                        'person_img'     => $user['pers_img'],
-                        'pers_groupleade' => $user['pers_groupleade'],
-                        'pers_learning' => $user['pers_learning'],
-                        'isLoggedIn'     => TRUE
-                    ];
-                    $session->set($ses_data);
-
-                    return redirect()->to('home');
-                } else {
-                    // User not found or not allowed
-                    $session->setFlashdata('msg', 'ระบบนี้ใช้ได้แค่อีเมลโรงเรียน @skj.ac.th ที่ลงทะเบียนเท่านั้น กรุณาติดต่อเจ้าหน้าที่คอม');
-                    return redirect()->to('login');
-                }
-            } else {
-                // Error fetching access token
-                $session->setFlashdata('msg', 'เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย Google');
-                return redirect()->to('login');
-            }
-        } else {
-            // No code received
+        
+        $code = $this->request->getVar('code');
+        if (!$code) {
             $session->setFlashdata('msg', 'ไม่ได้รับรหัสการอนุญาตจาก Google');
+            return redirect()->to('login');
+        }
+
+        $config = config('Google');
+        $curl = \Config\Services::curlrequest();
+
+        try {
+            // 1. Exchange code for access_token and id_token
+            $response = $curl->post('https://oauth2.googleapis.com/token', [
+                'form_params' => [
+                    'code'          => $code,
+                    'client_id'     => $config->clientId,
+                    'client_secret' => $config->clientSecret,
+                    'redirect_uri'  => base_url('login/googleCallback'),
+                    'grant_type'    => 'authorization_code',
+                ],
+            ]);
+            $tokens = json_decode($response->getBody(), true);
+
+            if (isset($tokens['error']) || !isset($tokens['access_token'])) {
+                 $session->setFlashdata('msg', 'Google Token Error: ' . ($tokens['error_description'] ?? $tokens['error'] ?? 'ไม่ได้รับ access_token'));
+                 return redirect()->to('login');
+            }
+
+            // 2. Get user profile using access_token
+            $response = $curl->get('https://www.googleapis.com/oauth2/v3/userinfo', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $tokens['access_token'],
+                ],
+            ]);
+            $userData = json_decode($response->getBody(), true);
+
+        } catch (\Exception $e) {
+            $session->setFlashdata('msg', 'การเชื่อมต่อกับ Google ล้มเหลว: ' . $e->getMessage());
+            return redirect()->to('login');
+        }
+
+        if (!$userData || !isset($userData['email'])) {
+            $session->setFlashdata('msg', 'ไม่สามารถดึงข้อมูลอีเมลจาก Google ได้');
+            return redirect()->to('login');
+        }
+
+        $email = $userData['email'];
+
+        // Check if user exists in database
+        $user = $model->checkGoogleLogin($email);
+
+        if ($user) {
+            // Update user's OAuth UID and last updated time
+            $model->updateGoogleUserData($email, $userData['sub']);
+
+            $ses_data = [
+                'person_id'      => $user['pers_id'],
+                'gmail_account'  => $user['pers_username'],
+                'fullname'       => $user['fullname'],
+                'person_img'     => $user['pers_img'],
+                'pers_groupleade' => $user['pers_groupleade'],
+                'pers_learning' => $user['pers_learning'],
+                'isLoggedIn'     => TRUE
+            ];
+            $session->set($ses_data);
+
+            return redirect()->to('home');
+        } else {
+            // User not found or not allowed
+            $session->setFlashdata('msg', "ไม่พบอีเมล $email ในระบบ หรือคุณไม่มีสิทธิ์เข้าใช้งาน กรุณาติดต่อเจ้หน้าที่คอม");
             return redirect()->to('login');
         }
     }

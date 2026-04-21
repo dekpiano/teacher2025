@@ -31,11 +31,11 @@ td {
 }
 </style>
 <div class="text-center b" style="padding-top: -50px;">
-    <div>รายวิชา <?=$re_subjuct[0]->SubjectCode?> <?=$re_subjuct[0]->SubjectName?> ครูประจำวิชา
+    <div>รายวิชา <?=$re_subjuct[0]->SubjectCode ?? ''?> <?=$re_subjuct[0]->SubjectName ?? ''?> ครูประจำวิชา
         <?= session('fullname'); ?></div>
-    <div>ชั้นมัธยมศึกษาปีที่ <?php $sub_room = explode(".",$re_room); echo $sub_room[1];?>
-        <?php $sub_year = explode("/",$re_subjuct[0]->SubjectYear);?>
-        ภาคเรียนที่ <?=$sub_year[0];?> ปีการศึกษา <?=$sub_year[1];?></div>
+    <div>ชั้นมัธยมศึกษาปีที่ <?php $sub_room = explode(".", $re_room ?? ''); echo $sub_room[1] ?? ($sub_room[0] ?? ''); ?>
+        <?php $sub_year = explode("/", $re_subjuct[0]->SubjectYear ?? ''); ?>
+        ภาคเรียนที่ <?= $sub_year[0] ?? ''; ?> ปีการศึกษา <?= $sub_year[1] ?? ''; ?></div>
     <div>อำเภอเมืองนครสวรรค์ จังหวัดนครสวรรค์ สังกัดองค์การบริหารส่วนจังหวัดนครสวรรค์</div>
 </div>
 
@@ -49,7 +49,7 @@ td {
             <th rowspan="2" style="width: 5%">เลขที่</th>
             <th rowspan="2" style="width: 4%">เลขประจำตัวนักเรียน</th>
             <th rowspan="2" style="width: 30%">ชื่อ - นามสกุล</th>
-            <th rowspan="2" style="width: 8%">เวลาเรียน (<?=$re_subjuct[0]->SubjectHour?>)</th>
+            <th rowspan="2" style="width: 8%">เวลาเรียน (<?=$re_subjuct[0]->SubjectHour ?? 0?>)</th>
             <?php 
                 $sum_scoer = 0;
                 foreach ($set_score as $key => $v_set_score): 
@@ -76,7 +76,7 @@ td {
             <th class="h6"><?=$sum_scoer?></th>
         </tr>
     </thead>
-    <?php if($CheckPrint == ''): ?>
+    <?php if(($CheckPrint ?? '') == ''): ?>
     <tbody>
         <?php foreach ($check_student as $key => $v_check_student) : ?>
             <?php if($v_check_student->Grade_Type != ""): ?>
@@ -118,7 +118,7 @@ td {
                 <?php endforeach; ?>
                 <td class="center"><?=@array_sum($s)?></td>
                 <td class="center">
-                    <?php if((80*intVal($v_check_student->StudyTime))/100 >= $re_subjuct[0]->SubjectHour || $v_check_student->StudyTime == ""): ?>
+                    <?php if((80*intVal($v_check_student->StudyTime ?? 0))/100 >= ($re_subjuct[0]->SubjectHour ?? 0) || ($v_check_student->StudyTime ?? '') == ""): ?>
                     มส
                     <?php else: ?>
                     <?=$v_check_student->Grade?>
@@ -171,7 +171,7 @@ td {
             <?php endforeach; ?>
             <td class="center"><?=@array_sum($s)?></td>
             <td class="center">
-                <?php if((80*intVal($v_check_student->StudyTime))/100 >= $re_subjuct[0]->SubjectHour || $v_check_student->StudyTime == ""): ?>
+                <?php if((80*intVal($v_check_student->StudyTime ?? 0))/100 >= ($re_subjuct[0]->SubjectHour ?? 0) || ($v_check_student->StudyTime ?? '') == ""): ?>
                 มส
                 <?php else: ?>
                 <?=$v_check_student->Grade?>

@@ -43,8 +43,8 @@ td {
             echo isset($sub_room[1]) ? $sub_room[1] : $sub_room[0];
         }
     ?>
-        <?php $sub_year = explode("/",$CheckRepeat[0]->onoff_year);?>
-        ภาคเรียนที่ <?=$sub_year[0];?> ปีการศึกษา <?=$sub_year[1];?></div>
+        <?php $sub_year = explode("/", $CheckRepeat[0]->onoff_year ?? ''); ?>
+        ภาคเรียนที่ <?= $sub_year[0] ?? ''; ?> ปีการศึกษา <?= $sub_year[1] ?? ''; ?></div>
     <div>อำเภอเมืองนครสวรรค์ จังหวัดนครสวรรค์ สังกัดองค์การบริหารส่วนจังหวัดนครสวรรค์</div>
 </div>
 
@@ -94,7 +94,7 @@ td {
         ?>
         <tr>
             <td class="center"><?=$v_check_student->StudentClass?></td>
-            <td class="center"><?= str_replace('เรียนซ้ำ', '', $v_check_student->Grade_Type ?: $CheckRepeat[0]->onoff_detail) ?></td>
+            <td class="center"><?= str_replace('เรียนซ้ำ', '', $v_check_student->Grade_Type ?: ($CheckRepeat[0]->onoff_detail ?? '')) ?></td>
             <td class="center"><?=$v_check_student->StudentNumber?></td>
             <td class="center"><?=$v_check_student->StudentCode?></td>
             <td><?=$v_check_student->StudentPrefix?><?=$v_check_student->StudentFirstName?>
@@ -103,10 +103,10 @@ td {
             <td class="center"><?=$v_check_student->StudyTime?></td>
             <?php 
             foreach ($set_score as $key => $v_set_score): 
-            $s = explode("|",$v_check_student->Score100);
+            $s = !empty($v_check_student->Score100) ? explode("|", $v_check_student->Score100) : [];
             ?>
             <td class="center">
-                <?=$v_check_student->Score100 == "" ?"0":$s[$key]?>
+                <?= empty($s) ? "0" : ($s[$key] ?? '0') ?>
             </td>
             <?php endforeach; ?>
             <td class="center"><?=@array_sum($s)?></td>

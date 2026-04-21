@@ -36,16 +36,16 @@
 <table class="b" style="width: 100%;margin-top: 10px;">
     <tbody>
         <tr>
-            <?php $sub_year = explode("/",$re_subjuct[0]->SubjectYear);?>
-            <td style="width: 50%;text-align: right;padding-right: 10px;">ภาคเรียนที่ <?=$sub_year[0];?></td>
-            <td style="padding-left: 10px;">ปีการศึกษา <?=$sub_year[1];?></td>
+            <?php $sub_year = explode("/", $re_subjuct[0]->SubjectYear ?? ''); ?>
+            <td style="width: 50%;text-align: right;padding-right: 10px;">ภาคเรียนที่ <?= $sub_year[0] ?? ''; ?></td>
+            <td style="padding-left: 10px;">ปีการศึกษา <?= $sub_year[1] ?? ''; ?></td>
         </tr>
         <tr>
             <td style="width: 50%;text-align: right;padding-right: 10px;">ชั้นมัธยมศึกษาปีที่
                 <?php 
                 $room_display = $re_room;
                 if ($CheckPrint == 'all' && $room_display == "ทุกห้อง") {
-                    $room_display = str_replace("ม.", "", $re_subjuct[0]->SubjectClass);
+                    $room_display = str_replace("ม.", "", $re_subjuct[0]->SubjectClass ?? '');
                 } else {
                     $room_display = str_replace("ม.", "", $re_room);
                 }
@@ -55,7 +55,7 @@
                 $tub = explode('/', $room_part);
                 
                 if ($CheckPrint == 'all') {
-                    echo $tub[0];
+                    echo $tub[0] ?? '';
                 } else {
                     echo $room_part;
                 }
@@ -63,7 +63,7 @@
             </td>
             <td style="padding-left: 10px;">
                 ระดับมัธยมศึกษา<?php 
-            echo intval($tub[0]) >= 4 ? "ตอนปลาย" : "ตอนต้น";
+            echo intval($tub[0] ?? 0) >= 4 ? "ตอนปลาย" : "ตอนต้น";
             ?>
             </td>
         </tr>
@@ -73,18 +73,18 @@
 <table class="b" style="width: 100%;margin-top: 30px;">
     <tbody>
         <tr>
-            <td>กลุ่มสาระการเรียนรู้ <?php $FirstGroup = explode("/",$re_subjuct[0]->FirstGroup); echo $FirstGroup[1];?>
+            <td>กลุ่มสาระการเรียนรู้ <?php $FirstGroup = explode("/", $re_subjuct[0]->FirstGroup ?? ''); echo $FirstGroup[1] ?? ($FirstGroup[0] ?? ''); ?>
             </td>
-            <td>สาระการเรียนรู้<?php $SubjectType = explode("/",$re_subjuct[0]->SubjectType); echo $SubjectType[1];?>
+            <td>สาระการเรียนรู้<?php $SubjectType = explode("/", $re_subjuct[0]->SubjectType ?? ''); echo $SubjectType[1] ?? ($SubjectType[0] ?? ''); ?>
             </td>
         </tr>
         <tr>
-            <td>รายวิชา <?=$re_subjuct[0]->SubjectName?></td>
-            <td>รหัสวิชา <?=$re_subjuct[0]->SubjectCode?></td>
+            <td>รายวิชา <?=$re_subjuct[0]->SubjectName ?? ''?></td>
+            <td>รหัสวิชา <?=$re_subjuct[0]->SubjectCode ?? ''?></td>
         </tr>
         <tr>
-            <td>เวลาเรียน <?=$re_subjuct[0]->SubjectHour?> ชั่วโมงต่อภาคเรียน</td>
-            <td>เวลาเรียน <?=($re_subjuct[0]->SubjectHour)/20?> ชั่วโมงต่อสัปดาห์</td>
+            <td>เวลาเรียน <?=$re_subjuct[0]->SubjectHour ?? 0?> ชั่วโมงต่อภาคเรียน</td>
+            <td>เวลาเรียน <?=($re_subjuct[0]->SubjectHour ?? 0)/20?> ชั่วโมงต่อสัปดาห์</td>
         </tr>
     </tbody>
 </table>
@@ -100,9 +100,9 @@
             <td> </td>
             <td>ครูที่ปรึกษา</td>
             <td>
-                <?php if($re_teacher != ""):
+                <?php if(!empty($re_teacher) && is_array($re_teacher)):
                 foreach ($re_teacher as $key => $v_re_teacher): 
-                    echo $v_re_teacher->pers_prefix.$v_re_teacher->pers_firstname.' '.$v_re_teacher->pers_lastname?>
+                    echo ($v_re_teacher->pers_prefix ?? '').($v_re_teacher->pers_firstname ?? '').' '.($v_re_teacher->pers_lastname ?? '')?>
                 &nbsp;&nbsp;
                 <?php endforeach; endif; ?>
             </td>

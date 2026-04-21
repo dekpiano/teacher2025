@@ -24,8 +24,14 @@ class Home extends BaseController
         $allEntries = $db->table('tb_schoolyear')->select('schyear_year')->get()->getResultArray();
         if (!empty($allEntries)) {
             usort($allEntries, function($a, $b) {
-                list($termA, $yearA) = explode('/', $a['schyear_year']);
-                list($termB, $yearB) = explode('/', $b['schyear_year']);
+                $partsA = explode('/', $a['schyear_year'] ?? '');
+                $partsB = explode('/', $b['schyear_year'] ?? '');
+                
+                $termA = $partsA[0] ?? '';
+                $yearA = $partsA[1] ?? '';
+                $termB = $partsB[0] ?? '';
+                $yearB = $partsB[1] ?? '';
+
                 if ($yearB != $yearA) {
                     return $yearB <=> $yearA;
                 }

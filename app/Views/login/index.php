@@ -351,5 +351,30 @@
     <!-- Core JS -->
     <script src="<?= base_url('public/assets/sneat/vendor/libs/jquery/jquery.js') ?>"></script>
     <script src="<?= base_url('public/assets/sneat/vendor/js/bootstrap.js') ?>"></script>
+
+    <script>
+        $(function() {
+            // Loading for Google Login Link
+            $('.btn-google-login').on('click', function(e) {
+                const $btn = $(this);
+                if ($btn.hasClass('disabled')) return;
+                
+                $btn.addClass('disabled');
+                $btn.css('min-width', $btn.outerWidth() + 'px');
+                $btn.html('<span class="spinner-border spinner-border-sm me-2" role="status"></span> กำลังนำคุณไปยังหน้าเข้าสู่ระบบ...');
+            });
+
+            // Global Form Submit (if any)
+            $(document).on('submit', 'form', function() {
+                const $btn = $(this).find('button[type="submit"], input[type="submit"]').not(':disabled');
+                $btn.each(function() {
+                    const $b = $(this);
+                    $b.prop('disabled', true);
+                    $b.css('min-width', $b.outerWidth() + 'px');
+                    $b.html('<span class="spinner-border spinner-border-sm me-2" role="status"></span> กำลังดำเนินการ...');
+                });
+            });
+        });
+    </script>
 </body>
 </html>

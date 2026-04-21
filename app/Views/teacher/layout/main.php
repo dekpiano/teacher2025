@@ -64,6 +64,31 @@
             background-repeat: no-repeat;
             background-size: 100%; /* Adjusted size */
         }
+
+        /* ─── Premium Loading State Styling ─── */
+        .btn-loading {
+            position: relative;
+            transition: all 0.3s ease !important;
+            pointer-events: none;
+            opacity: 0.8;
+            box-shadow: none !important;
+        }
+        
+        .btn-loading .spinner-border {
+            width: 1.1rem;
+            height: 1.1rem;
+            border-width: 0.15em;
+        }
+
+        @keyframes btn-pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.98); opacity: 0.9; }
+            100% { transform: scale(1); }
+        }
+
+        .btn-loading:not(.disabled) {
+            animation: btn-pulse 1.5s infinite ease-in-out;
+        }
     </style>
 
     <!-- SweetAlert2 CSS -->
@@ -451,25 +476,101 @@
     <?= $this->renderSection('scripts') ?>
 
     <script>
-        $(function() {
-            // Global Form Submission Loading State
+            // ─── Global Submit & Search Button Loading System ───
+            
+            // Function to apply loading state to a button
+            function applyLoading($btn, text = 'กำลังดำเนินการ...') {
+                if ($btn.hasClass('btn-loading') || $btn.hasClass('no-loader')) return;
+                
+                $btn.data('original-text', $btn.html());
+                $btn.data('original-width', $btn.outerWidth());
+                $btn.css('min-width', $btn.outerWidth() + 'px');
+                
+                const isLink = $btn.is('a');
+                if (isLink) {
+                    $btn.addClass('btn-loading disabled');
+                } else {
+                    $btn.prop('disabled', true).addClass('btn-loading');
+                }
+                
+                $btn.html(`<span class="spinner-border spinner-border-sm me-2" role="status"></span> ${text}`);
+            }
+
+            // 1) Form Submit
             $(document).on('submit', 'form', function(e) {
                 const $form = $(this);
-                // Don't apply to AJAX forms that handle their own loading (if they have a specific class)
                 if ($form.hasClass('no-loader')) return;
 
-                const $submitBtn = $form.find('button[type="submit"], input[type="submit"]');
-                if ($submitBtn.length > 0) {
-                    // Store original content to restore if needed (though usually we redirect)
-                    const originalWidth = $submitBtn.outerWidth();
-                    $submitBtn.css('min-width', originalWidth + 'px');
-                    
-                    const originalText = $submitBtn.html();
-                    $submitBtn.data('original-text', originalText);
-                    
-                    $submitBtn.prop('disabled', true);
-                    $submitBtn.html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> กำลังบันทึก...');
+                const $submitBtn = $form.find('button[type="submit"], input[type="submit"]').not(':disabled');
+                $submitBtn.each(function() {
+                    applyLoading($(this), 'กำลังบันทึก...');
+                });
+            });
+
+            // 2) General Search Buttons (Detected by ID, text, or icon)
+            $(document).on('click', 'button, .btn', function(e) {
+                const $btn = $(this);
+                const text = $btn.text().trim();
+                const id = $btn.attr('id') || '';
+                const hasSearchIcon = $btn.find('.bi-search, .bx-search, .bi-person-search').length > 0;
+                
+                // Target search buttons
+                if (id.toLowerCase().includes('search') || text.includes('ค้นหา') || hasSearchIcon) {
+                    // Check if it's meant to trigger something (not just a toggle)
+                    if (!$btn.attr('data-bs-toggle') && !$btn.hasClass('no-loader')) {
+                        // For non-submit buttons, we only show loading if it's likely to cause a page change or heavy AJAX
+                        // If it's type="submit", it's already handled by the form submit handler
+                        if ($btn.attr('type') !== 'submit') {
+                            applyLoading($btn, 'กำลังค้นหา...');
+                        }
+                    }
                 }
+            });
+
+            // 3) Link Buttons & Navigation
+            $(document).on('click', 'a.btn[href]', function(e) {
+                const $btn = $(this);
+                const href = $btn.attr('href');
+
+                if (!href || href === '#' || href.startsWith('javascript:') 
+                    || $btn.hasClass('disabled') || $btn.hasClass('no-loader')
+                    || $btn.attr('target') === '_blank'
+                    || $btn.attr('data-bs-toggle')) return;
+
+                applyLoading($btn, 'กำลังโหลด...');
+            });
+
+            // 4) AJAX Global Handler
+            $(document).ajaxSend(function(event, jqxhr, settings) {
+                const $activeBtn = $(document.activeElement);
+                if (($activeBtn.is('button') || $activeBtn.hasClass('btn')) && !$activeBtn.hasClass('no-loader') && !$activeBtn.data('ajax-loading')) {
+                    applyLoading($activeBtn, 'กำลังประมวลผล...');
+                    $activeBtn.data('ajax-loading', true);
+                    jqxhr._loadingBtn = $activeBtn;
+                }
+            });
+
+            $(document).ajaxComplete(function(event, jqxhr) {
+                if (jqxhr._loadingBtn) {
+                    const $btn = jqxhr._loadingBtn;
+                    $btn.prop('disabled', false).removeClass('btn-loading disabled');
+                    $btn.html($btn.data('original-text'));
+                    $btn.removeData('ajax-loading');
+                    $btn.css('min-width', '');
+                }
+            });
+
+            // 5) Safety: Restore buttons on pageshow
+            $(window).on('pageshow', function() {
+                $('.btn-loading').each(function() {
+                    const $btn = $(this);
+                    const originalText = $btn.data('original-text');
+                    if (originalText) {
+                        $btn.prop('disabled', false).removeClass('btn-loading disabled');
+                        $btn.html(originalText);
+                        $btn.css('min-width', '');
+                    }
+                });
             });
 
             <?php if (session()->getFlashdata('success')) : ?>

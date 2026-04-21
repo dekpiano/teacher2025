@@ -11,15 +11,26 @@ class GenerateLeaveFormController extends BaseController
 {
     public function index()
     {
-        // Load mPDF
-        if (file_exists(SHARED_LIB_PATH . '/mpdf/vendor/autoload.php')) {
-            require_once SHARED_LIB_PATH . '/mpdf/vendor/autoload.php';
-        } else {
-            $path = dirname(dirname(dirname(dirname(dirname(dirname(__FILE__))))));
-            require_once $path . '/librarie_skj/mpdf/vendor/autoload.php';
-        }
+        // mPDF is now loaded via Composer autoloader
+        $defaultConfig = (new \Mpdf\Config\ConfigVariables())->getDefaults();
+        $fontDirs = $defaultConfig['fontDir'];
+
+        $defaultFontConfig = (new \Mpdf\Config\FontVariables())->getDefaults();
+        $fontData = $defaultFontConfig['fontdata'];
 
         $mpdf = new \Mpdf\Mpdf([
+            'tempDir' => WRITEPATH . 'cache',
+            'fontDir' => array_merge($fontDirs, [
+                ROOTPATH . 'vendor/mpdf/mpdf/ttfonts',
+            ]),
+            'fontdata' => $fontData + [
+                'thsarabun' => [
+                    'R' => 'THSarabunNew.ttf',
+                    'B' => 'THSarabunNew Bold.ttf',
+                    'I' => 'THSarabunNew Italic.ttf',
+                    'BI' => 'THSarabunNew BoldItalic.ttf',
+                ]
+            ],
             'mode' => 'utf-8',
             'format' => 'A4',
             'default_font_size' => 16,
@@ -55,15 +66,26 @@ class GenerateLeaveFormController extends BaseController
      */
     public function preview()
     {
-        // Load mPDF
-        if (file_exists(SHARED_LIB_PATH . '/mpdf/vendor/autoload.php')) {
-            require_once SHARED_LIB_PATH . '/mpdf/vendor/autoload.php';
-        } else {
-            $path = dirname(dirname(dirname(dirname(dirname(dirname(__FILE__))))));
-            require_once $path . '/librarie_skj/mpdf/vendor/autoload.php';
-        }
+        // mPDF is now loaded via Composer autoloader
+        $defaultConfig = (new \Mpdf\Config\ConfigVariables())->getDefaults();
+        $fontDirs = $defaultConfig['fontDir'];
+
+        $defaultFontConfig = (new \Mpdf\Config\FontVariables())->getDefaults();
+        $fontData = $defaultFontConfig['fontdata'];
 
         $mpdf = new \Mpdf\Mpdf([
+            'tempDir' => WRITEPATH . 'cache',
+            'fontDir' => array_merge($fontDirs, [
+                ROOTPATH . 'vendor/mpdf/mpdf/ttfonts',
+            ]),
+            'fontdata' => $fontData + [
+                'thsarabun' => [
+                    'R' => 'THSarabunNew.ttf',
+                    'B' => 'THSarabunNew Bold.ttf',
+                    'I' => 'THSarabunNew Italic.ttf',
+                    'BI' => 'THSarabunNew BoldItalic.ttf',
+                ]
+            ],
             'mode' => 'utf-8',
             'format' => 'A4',
             'default_font_size' => 16,

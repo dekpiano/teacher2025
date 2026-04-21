@@ -181,7 +181,7 @@
                                                         </div>
                                                     </td>
                                                     <?php
-                                                    $scores = explode("|", $v_check_student->Score100);
+                                                    $scores = explode("|", $v_check_student->Score100 ?? '');
                                                     foreach ($set_score as $key => $v_set_score) :
                                                         $onoff_status = 'on'; // default
                                                         foreach ($onoff_savescore as $o) {

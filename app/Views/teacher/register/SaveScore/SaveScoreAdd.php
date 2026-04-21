@@ -29,26 +29,26 @@
                     <div class="col-md-8 p-4 d-flex flex-column justify-content-center">
                         <div class="d-flex align-items-center mb-2">
                              <div class="badge bg-primary me-2 rounded-pill px-3 py-2">
-                                <i class="bi bi-book-half me-1"></i> <?= esc($check_student[0]->SubjectCode) ?>
+                                <i class="bi bi-book-half me-1"></i> <?= esc($check_student[0]->SubjectCode ?? ($subject_info->SubjectCode ?? '')) ?>
                             </div>
-                            <span class="text-muted">ปีการศึกษา <?= esc($check_student[0]->RegisterYear) ?></span>
+                            <span class="text-muted">ปีการศึกษา <?= esc($check_student[0]->RegisterYear ?? ($register_year ?? '')) ?></span>
                         </div>
-                        <h3 class="mb-2 text-primary fw-bold"><?= esc($check_student[0]->SubjectName) ?></h3>
+                        <h3 class="mb-2 text-primary fw-bold"><?= esc($check_student[0]->SubjectName ?? ($subject_info->SubjectName ?? '')) ?></h3>
                         <div class="d-flex flex-wrap gap-3 mt-2">
                             <div class="d-flex align-items-center">
                                 <i class="bi bi-award me-1 text-info"></i>
-                                <span>หน่วยกิต: <strong><?= $check_student[0]->SubjectUnit ?></strong></span>
+                                <span>หน่วยกิต: <strong><?= $check_student[0]->SubjectUnit ?? ($subject_info->SubjectUnit ?? '') ?></strong></span>
                             </div>
                             <div class="d-flex align-items-center">
                                 <i class="bi bi-clock me-1 text-warning"></i>
-                                <span>ชั่วโมง/สัปดาห์: <strong><?= $check_student[0]->SubjectHour ?></strong></span>
+                                <span>ชั่วโมง/สัปดาห์: <strong><?= $check_student[0]->SubjectHour ?? ($subject_info->SubjectHour ?? '') ?></strong></span>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-4 bg-primary d-flex align-items-center justify-content-center p-4 text-white">
                         <div class="text-center">
                             <?php if (!empty($set_score)) : ?>
-                                <button type="button" subject-id="<?= esc($check_student[0]->SubjectID) ?>" 
+                                <button type="button" subject-id="<?= esc($check_student[0]->SubjectID ?? ($subject_info->SubjectID ?? '')) ?>" 
                                         class="btn btn-white text-primary shadow-sm hover-elevate mb-2 btn-lg w-100 btn-check-score" 
                                         data-bs-toggle="modal" data-bs-target="#myModal">
                                     <i class="bi bi-gear-fill me-2"></i> ตั้งค่าคะแนนเก็บ
@@ -82,9 +82,13 @@
                             <option value="all" <?= ($Room == 'all' ? 'selected' : '') ?>>ทั้งหมด</option>
                             <?php
                             foreach ($check_room as $v_check_room) :
-                                $sub_doc = explode('.', $v_check_room->StudentClass);
-                                $sub_room = explode('/', $sub_doc[1]);
-                                $all_room = $sub_room[0] . '-' . $sub_room[1];
+                                $sub_doc = explode('.', $v_check_room->StudentClass ?? '');
+                                if (isset($sub_doc[1])) {
+                                    $sub_room = explode('/', $sub_doc[1]);
+                                    $all_room = isset($sub_room[0], $sub_room[1]) ? $sub_room[0] . '-' . $sub_room[1] : ($v_check_room->StudentClass ?? '');
+                                } else {
+                                    $all_room = $v_check_room->StudentClass ?? '';
+                                }
                             ?>
                                 <option <?= $Room == $all_room ? "selected" : "" ?> value="<?= $all_room; ?>"><?= esc($v_check_room->StudentClass); ?></option>
                             <?php endforeach; ?>
@@ -97,7 +101,8 @@
             <div class="card-body p-0">
                 <?php if (!empty($set_score)) : ?>
                     <?php
-                    $timeNum = match (floatval($check_student[0]->SubjectUnit)) {
+                    $unitVal = floatval($check_student[0]->SubjectUnit ?? ($subject_info->SubjectUnit ?? 0));
+                    $timeNum = match ($unitVal) {
                         0.5 => 20, 1.0 => 40, 1.5 => 60, 2.0 => 80,
                         2.5 => 100, 3.0 => 120, 3.5 => 140, 4.0 => 160,
                         4.5 => 180, 5.0 => 200, default => 0,
@@ -105,8 +110,8 @@
                     ?>
                     <form class="form_score">
                         <!-- Redundant data moved to top level of form -->
-                        <input type="hidden" name="SubjectID" value="<?= esc($check_student[0]->SubjectID) ?>">
-                        <input type="hidden" name="RegisterYear" value="<?= esc($check_student[0]->RegisterYear) ?>">
+                        <input type="hidden" name="SubjectID" value="<?= esc($check_student[0]->SubjectID ?? ($subject_info->SubjectID ?? '')) ?>">
+                        <input type="hidden" name="RegisterYear" value="<?= esc($check_student[0]->RegisterYear ?? ($register_year ?? '')) ?>">
                         <input type="hidden" name="TimeNum" value="<?= $timeNum ?>">
                         
                         <div class="table-container-fixed">
@@ -140,6 +145,16 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    <?php if (empty($check_student)) : ?>
+                                        <tr>
+                                            <td colspan="<?= count($set_score) + 8 ?>" class="text-center py-5">
+                                                <div class="text-muted">
+                                                    <i class="bi bi-search display-4 d-block mb-3 opacity-25"></i>
+                                                    ไม่พบรายชื่อนักเรียนในรายวิชานี้ หรือห้องเรียนนี้
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endif; ?>
                                     <?php foreach ($check_student as $v_check_student) : ?>
                                         <?php if ($v_check_student->Grade_Type != "") : ?>
                                             <tr class="bg-label-warning opacity-75 border-bottom">
@@ -173,7 +188,7 @@
                                                     </div>
                                                 </td>
                                                 <?php
-                                                $scores = explode("|", $v_check_student->Score100);
+                                                $scores = explode("|", $v_check_student->Score100 ?? '');
                                                 foreach ($set_score as $key => $v_set_score) :
                                                     $onoff_status = 'on'; // default
                                                     foreach ($onoff_savescore as $o) {
@@ -294,7 +309,7 @@
                             <div id="sum-error" class="text-danger small mt-2 d-none">* คะแนนรวมต้องมียอดรวมเท่ากับ 100 คะแนนเท่านั้น</div>
                         </div>
                     </div>
-                    <input id="regscore_subjectID" type="hidden" name="regscore_subjectID" value="<?= esc($check_student[0]->SubjectID); ?>">
+                    <input id="regscore_subjectID" type="hidden" name="regscore_subjectID" value="<?= esc($check_student[0]->SubjectID ?? ($subject_info->SubjectID ?? '')); ?>">
                 </div>
                 <div class="modal-footer border-0 p-4 pt-0">
                     <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">ยกเลิก</button>
