@@ -28,7 +28,7 @@ class Database extends Config
      */
     public array $default = [
         'DSN'          => '',
-        'hostname'     => 'db',
+        'hostname'     => 'skj2025_db',
         'username'     => 'root',
         'password'     => 'rootpassword',
         'database'     => 'skjacth_academic',
@@ -54,7 +54,7 @@ class Database extends Config
      */
     public array $personnel = [
         'DSN'          => '',
-        'hostname'     => 'db',
+        'hostname'     => 'skj2025_db',
         'username'     => 'root',
         'password'     => 'rootpassword',
         'database'     => 'skjacth_personnel',
@@ -80,7 +80,7 @@ class Database extends Config
      */
     public array $skj = [
         'DSN'          => '',
-        'hostname'     => 'db',
+        'hostname'     => 'skj2025_db',
         'username'     => 'root',
         'password'     => 'rootpassword',
         'database'     => 'skjacth_skj',
@@ -106,7 +106,7 @@ class Database extends Config
      */
     public array $affairs = [
         'DSN'          => '',
-        'hostname'     => 'db',
+        'hostname'     => 'skj2025_db',
         'username'     => 'root',
         'password'     => 'rootpassword',
         'database'     => 'skjacth_affairs',

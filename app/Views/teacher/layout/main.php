@@ -268,7 +268,7 @@
                         </ul>
                     </li>
 
-                    <li class="menu-item <?= is_open_segment([['leave'], ['evaluation'], ['generate-leave-form']], $segments) ?>">
+                    <li class="menu-item <?= is_open_segment([['leave'], ['evaluation'], ['generate-leave-form'], ['portfolio']], $segments) ?>">
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
                             <i class="menu-icon tf-icons bi-person-badge-fill"></i>
                             <div data-i18n="งานบุคลากร">งานบุคลากร</div>
@@ -284,6 +284,12 @@
                                 <a href="<?= base_url('evaluation') ?>" class="menu-link">
                                     <i class="bi bi-file-earmark-pdf me-2"></i>
                                     <div data-i18n="ประเมินผลการปฏิบัติงาน (PA)">ประเมินผลการปฏิบัติงาน (PA)</div>
+                                </a>
+                            </li>
+                            <li class="menu-item <?= is_active_segment(['portfolio'], $segments) ? 'active' : '' ?>">
+                                <a href="<?= base_url('portfolio') ?>" class="menu-link">
+                                    <i class="bi bi-person-workspace me-2"></i>
+                                    <div data-i18n="ประวัติการอบรมและผลงาน">ประวัติการอบรมและผลงาน</div>
                                 </a>
                             </li>
                         </ul>

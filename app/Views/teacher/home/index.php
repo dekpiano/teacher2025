@@ -378,6 +378,15 @@
                         </a>
                     </div>
                     <?php endif; ?>
+                    <div class="col-lg-4 col-md-6">
+                        <a href="<?= base_url('portfolio') ?>" class="luxe-card">
+                            <i class="bi bi-person-workspace card-icon text-primary"></i>
+                            <div class="card-text">
+                                <h6>ประวัติการอบรมและผลงาน</h6>
+                                <p>บันทึกประวัติการพัฒนาตนเองและผลงาน</p>
+                            </div>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

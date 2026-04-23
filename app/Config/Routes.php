@@ -212,3 +212,13 @@ $routes->get('login/googleCallback', 'Login::googleCallback');
         $routes->post('upload-chunk', 'PerformanceEvaluationController::uploadChunk');
         $routes->post('delete-item', 'PerformanceEvaluationController::deleteItem');
     });
+
+    // Portfolio Routes
+    $routes->group('portfolio', static function ($routes) {
+        $routes->get('', 'PortfolioController::index');
+        $routes->post('save-training', 'PortfolioController::saveTraining');
+        $routes->post('save-document', 'PortfolioController::saveDocument');
+        $routes->post('upload-chunk', 'PortfolioController::uploadChunk');
+        $routes->post('delete-training/(:num)', 'PortfolioController::deleteTraining/$1');
+        $routes->post('delete-document/(:num)', 'PortfolioController::deleteDocument/$1');
+    });
