@@ -358,7 +358,16 @@
                     <div class="menu-line"></div>
                 </div>
                 <div class="row g-4 mb-5">
-                    <div class="col-lg-4 col-md-6">
+                    <div class="col-lg-3 col-md-6">
+                        <a href="<?= base_url('attendance') ?>" class="luxe-card">
+                            <i class="bi bi-clock-history card-icon text-primary"></i>
+                            <div class="card-text">
+                                <h6>SKJ Check-In</h6>
+                                <p>เช็คชื่อเข้า-ออกงานออนไลน์ พร้อม GPS และ ถ่ายรูป</p>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
                         <a href="<?= base_url('leave') ?>" class="luxe-card">
                             <i class="bi bi-calendar-check card-icon"></i>
                             <div class="card-text">
@@ -368,7 +377,7 @@
                         </a>
                     </div>
                     <?php if ($isPAPermitted): ?>
-                    <div class="col-lg-4 col-md-6">
+                    <div class="col-lg-3 col-md-6">
                         <a href="<?= base_url('evaluation') ?>" class="luxe-card">
                             <i class="bi bi-file-earmark-pdf card-icon text-danger"></i>
                             <div class="card-text">
@@ -378,7 +387,7 @@
                         </a>
                     </div>
                     <?php endif; ?>
-                    <div class="col-lg-4 col-md-6">
+                    <div class="col-lg-3 col-md-6">
                         <a href="<?= base_url('portfolio') ?>" class="luxe-card">
                             <i class="bi bi-person-workspace card-icon text-primary"></i>
                             <div class="card-text">

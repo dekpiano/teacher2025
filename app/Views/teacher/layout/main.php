@@ -1,6 +1,6 @@
 <!doctype html>
 
-<html lang="en" class="layout-menu-fixed layout-compact">
+<html lang="en" class="light-style layout-menu-fixed layout-compact" dir="ltr" data-theme="theme-default" data-assets-path="<?= base_url('public/assets/sneat') ?>/" data-template="vertical-menu-template-free">
 
 <head>
     <meta charset="utf-8" />
@@ -18,6 +18,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=K2D:wght@400;500;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" crossorigin="anonymous" />
+    <!-- Boxicons (required for Sneat template menu icons) -->
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" />
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="<?= base_url('public/assets/sneat/vendor/css/core.css') ?>" />
+    <link rel="stylesheet" href="<?= base_url('public/assets/sneat/css/demo.css') ?>" />
+    <link rel="stylesheet" href="<?= base_url('public/assets/sneat/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') ?>" />
+    <link rel="stylesheet" href="<?= base_url('public/assets/sneat/vendor/libs/apex-charts/apex-charts.css') ?>" />
 
     <!-- Helpers -->
     <script src="<?= base_url('public/assets/sneat/vendor/js/helpers.js') ?>"></script>
@@ -25,12 +33,6 @@
     <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
     <script src="<?= base_url('public/assets/sneat/js/config.js') ?>"></script>
-
-    <!-- Core CSS -->
-    <link rel="stylesheet" href="<?= base_url('public/assets/sneat/vendor/css/core.css') ?>" />
-    <link rel="stylesheet" href="<?= base_url('public/assets/sneat/css/demo.css') ?>" />
-    <link rel="stylesheet" href="<?= base_url('public/assets/sneat/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') ?>" />
-    <link rel="stylesheet" href="<?= base_url('public/assets/sneat/vendor/libs/apex-charts/apex-charts.css') ?>" />
 
     <style>
         body,
@@ -58,11 +60,12 @@
             background-color: #696cff26 !important;
         }
         #layout-menu {
-            background-color: #696cff26 !important;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3e%3cpath fill='%23696cff' fill-opacity='0.3' d='M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,133.3C672,117,768,139,864,165.3C960,192,1056,224,1152,218.7C1248,213,1344,171,1392,149.3L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3e%3c/path%3e%3c/svg%3e");
+            background-color: #ffffff !important;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3e%3cpath fill='%23696cff' fill-opacity='0.08' d='M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,133.3C672,117,768,139,864,165.3C960,192,1056,224,1152,218.7C1248,213,1344,171,1392,149.3L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3e%3c/path%3e%3c/svg%3e");
             background-position: bottom;
             background-repeat: no-repeat;
-            background-size: 100%; /* Adjusted size */
+            background-size: 100%;
+            z-index: 1080;
         }
 
         /* ─── Premium Loading State Styling ─── */
@@ -89,6 +92,7 @@
         .btn-loading:not(.disabled) {
             animation: btn-pulse 1.5s infinite ease-in-out;
         }
+
     </style>
 
     <!-- SweetAlert2 CSS -->
@@ -268,12 +272,18 @@
                         </ul>
                     </li>
 
-                    <li class="menu-item <?= is_open_segment([['leave'], ['evaluation'], ['generate-leave-form'], ['portfolio']], $segments) ?>">
+                    <li class="menu-item <?= is_open_segment([['leave'], ['evaluation'], ['generate-leave-form'], ['portfolio'], ['attendance']], $segments) ?>">
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
                             <i class="menu-icon tf-icons bi-person-badge-fill"></i>
                             <div data-i18n="งานบุคลากร">งานบุคลากร</div>
                         </a>
                         <ul class="menu-sub">
+                            <li class="menu-item <?= is_active_segment(['attendance'], $segments) ?>">
+                                <a href="<?= base_url('attendance') ?>" class="menu-link">
+                                    <i class="bi bi-clock-history me-2"></i>
+                                    <div data-i18n="SKJ Check-In">SKJ Check-In</div>
+                                </a>
+                            </li>
                             <li class="menu-item <?= is_active_segment(['leave'], $segments) || is_active_segment(['generate-leave-form'], $segments) ? 'active' : '' ?>">
                                 <a href="<?= base_url('leave') ?>" class="menu-link">
                                     <i class="bi bi-calendar-check me-2"></i>
@@ -442,7 +452,7 @@
         </div>
 
         <!-- Overlay -->
-        <div class="layout-overlay layout-menu-toggle"></div>
+        <!-- <div class="layout-overlay layout-menu-toggle"></div> -->
     </div>
     <!-- / Layout wrapper -->
 
@@ -482,6 +492,7 @@
     <?= $this->renderSection('scripts') ?>
 
     <script>
+        $(function() {
             // ─── Global Submit & Search Button Loading System ───
             
             // Function to apply loading state to a button

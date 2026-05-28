@@ -26,11 +26,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Change parameter to true if you want scroll animation
           window.Helpers.scrollToActive((animate = false));
           window.Helpers.mainMenu = menu;
-    
-          const storedCollapsedState = localStorage.getItem('sidebarCollapsed');
-          if (storedCollapsedState !== null) {
-            window.Helpers.setCollapsed(storedCollapsedState === 'true', false);
-          }  });
+  });
 
   // Initialize menu togglers and bind click on each
   let menuToggler = document.querySelectorAll('.layout-menu-toggle');
@@ -38,8 +34,6 @@ document.addEventListener('DOMContentLoaded', function () {
     item.addEventListener('click', event => {
       event.preventDefault();
       window.Helpers.toggleCollapsed();
-      const isCollapsed = document.body.classList.contains('menu-collapsed');
-      localStorage.setItem('sidebarCollapsed', isCollapsed);
     });
   });
 

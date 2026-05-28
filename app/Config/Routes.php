@@ -16,6 +16,15 @@ $routes->get('login/googleCallback', 'Login::googleCallback');
 // Placeholder for the page after login. We will create this controller next.
     $routes->get('home', 'Home::index');
 
+    // Attendance Routes (เช็คชื่อเข้างานบุคลากร)
+    $routes->group('attendance', static function ($routes) {
+        $routes->get('', 'AttendanceController::index');
+        $routes->post('checkin', 'AttendanceController::checkInsert');
+        $routes->post('checkout', 'AttendanceController::checkOut');
+        $routes->get('history', 'AttendanceController::history');
+        $routes->get('report', 'AttendanceController::monthlyReport');
+    });
+
     // Leave Routes
     $routes->group('leave', static function ($routes) {
         $routes->get('', 'LeaveController::index');
