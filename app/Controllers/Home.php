@@ -133,6 +133,17 @@ class Home extends BaseController
             }
         }
 
+        // Fetch today's check-in record and system settings
+        $attendanceModel = new \App\Models\AttendanceModel();
+        $todayRecord = $attendanceModel->getTodayRecord($session->get('person_id'));
+        $attStatus = 'none'; // not checked-in yet
+        if ($todayRecord) {
+            $attStatus = $todayRecord['check_out'] ? 'completed' : 'checked_in';
+        }
+
+        $locationSettings = $attendanceModel->getLocationSettings();
+        $isSystemActive = $locationSettings ? (bool)$locationSettings->is_active : true;
+
         // Prepare data for the view
         $data = [
             'isPAPermitted'         => $isPAPermitted,
@@ -147,6 +158,9 @@ class Home extends BaseController
             'latestEntry'           => $latestEntry ?? ($latestYear),
             'learningGroupName'     => $learningGroupName,
             'recentPages'           => $recentPages,
+            'attStatus'             => $attStatus,
+            'todayRecord'           => $todayRecord,
+            'isSystemActive'        => $isSystemActive,
         ];
 
         // Load the view, which will in turn use the main layout

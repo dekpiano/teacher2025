@@ -15,20 +15,26 @@
         .dashboard-container {
             padding-top: 1rem;
         }
-        /* Welcome Card Refinement */
+        /* Welcome Card Refinement - Mobile-First Premium Redesign */
         .welcome-hero {
-            background-color: #fff;
+            background: linear-gradient(135deg, #696cff 0%, #3f42b5 100%);
             border: none;
             border-radius: 1.5rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+            box-shadow: 0 10px 30px rgba(105, 108, 255, 0.2);
             overflow: hidden;
             position: relative;
-            background: linear-gradient(to right, #ffffff, #f8f9ff);
+            transition: all 0.3s ease;
         }
         .welcome-hero .hero-content {
             padding: 2.5rem;
             z-index: 2;
             position: relative;
+            color: #ffffff;
+        }
+        @media (max-width: 576px) {
+            .welcome-hero .hero-content {
+                padding: 1.5rem 1.25rem;
+            }
         }
         .hero-bg-decoration {
             position: absolute;
@@ -36,17 +42,341 @@
             top: 0;
             height: 100%;
             width: 40%;
-            background: linear-gradient(135deg, rgba(105, 108, 255, 0.05) 0%, rgba(105, 108, 255, 0.2) 100%);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.12) 100%);
             clip-path: polygon(20% 0%, 100% 0%, 100% 100%, 0% 100%);
             z-index: 1;
+        }
+        @media (max-width: 768px) {
+            .hero-bg-decoration {
+                width: 100%;
+                clip-path: none;
+                background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.15) 0%, transparent 60%);
+            }
+        }
+        .avatar-container {
+            position: relative;
+            display: inline-block;
         }
         .teacher-avatar-luxe {
             width: 120px;
             height: 120px;
             border-radius: 2rem;
             object-fit: cover;
-            border: 5px solid #fff;
-            box-shadow: 0 15px 35px rgba(105, 108, 255, 0.2);
+            border: 4px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+        }
+        @media (max-width: 768px) {
+            .teacher-avatar-luxe {
+                width: 85px;
+                height: 85px;
+                border-radius: 1.5rem;
+                border-width: 3px;
+            }
+        }
+        .welcome-hero .welcome-title {
+            font-size: 2.25rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+        }
+        @media (max-width: 768px) {
+            .welcome-hero .welcome-title {
+                font-size: 1.6rem;
+            }
+        }
+        .welcome-hero .welcome-subtitle {
+            font-size: 1.05rem;
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 400;
+        }
+        @media (max-width: 768px) {
+            .welcome-hero .welcome-subtitle {
+                font-size: 0.9rem;
+                margin-bottom: 1.25rem !important;
+            }
+        }
+        
+        /* Floating Glass Capsules for metadata info */
+        .info-capsule {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 1.25rem;
+            padding: 0.6rem 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.3s ease;
+        }
+        .info-capsule:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        @media (max-width: 576px) {
+            .info-capsule {
+                padding: 0.5rem 0.9rem;
+                width: 100%;
+                border-radius: 1rem;
+            }
+        }
+        .info-capsule-icon {
+            width: 36px;
+            height: 36px;
+            background: #ffffff;
+            color: #696cff;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
+        }
+        @media (max-width: 576px) {
+            .info-capsule-icon {
+                width: 30px;
+                height: 30px;
+                border-radius: 0.5rem;
+                font-size: 0.95rem;
+            }
+        }
+        .info-capsule-content {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+        }
+        .info-capsule-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: rgba(255, 255, 255, 0.65);
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        .info-capsule-value {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.3;
+        }
+        @media (max-width: 576px) {
+            .info-capsule-value {
+                font-size: 0.85rem;
+            }
+        }
+
+        /* HOD Badge Customization */
+        .welcome-hero .hod-badge-luxe {
+            background: linear-gradient(135deg, #ffab00 0%, #ff3e1d 100%);
+            color: #ffffff;
+            padding: 0.4rem 0.85rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 4px 12px rgba(255, 171, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: pulse-badge 2s infinite;
+        }
+        @keyframes pulse-badge {
+            0% { box-shadow: 0 4px 12px rgba(255, 171, 0, 0.3); }
+            50% { box-shadow: 0 4px 20px rgba(255, 171, 0, 0.6); }
+            100% { box-shadow: 0 4px 12px rgba(255, 171, 0, 0.3); }
+        }
+
+        /* SKJ Check-In Banner Styles - Premium Redesign */
+        .checkin-banner-card {
+            border: none;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            position: relative;
+            z-index: 1;
+        }
+        .checkin-banner-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 1.5rem;
+            padding: 1.5px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.45), rgba(255,255,255,0.15));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            z-index: 2;
+        }
+        .checkin-banner-card:hover {
+            transform: translateY(-5px);
+        }
+        .checkin-banner-content {
+            padding: 1.75rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            position: relative;
+            z-index: 3;
+        }
+        @media (max-width: 768px) {
+            .checkin-banner-content {
+                padding: 1.5rem;
+                flex-direction: column;
+                text-align: center;
+                gap: 1.25rem;
+            }
+        }
+        .checkin-status-info {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+        @media (max-width: 768px) {
+            .checkin-status-info {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+        }
+        .checkin-pulse-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            position: relative;
+            flex-shrink: 0;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+        }
+        .checkin-pulse-icon::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: inherit;
+            animation: pulse-ring 2s infinite;
+            opacity: 0.25;
+            background-color: currentColor;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(1); opacity: 0.35; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+        .checkin-text-group {
+            text-align: left;
+        }
+        @media (max-width: 768px) {
+            .checkin-text-group {
+                text-align: center;
+            }
+        }
+        .checkin-action-btn {
+            padding: 0.75rem 1.8rem;
+            border-radius: 3rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            text-decoration: none;
+            border: none;
+            color: #ffffff !important;
+            font-size: 0.95rem;
+        }
+        .checkin-action-btn i {
+            font-size: 1.1rem;
+        }
+        .checkin-action-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Premium State Colors & Gradients */
+        .checkin-banner-card.checkin-none {
+            background: linear-gradient(135deg, #f0f3ff 0%, #e5ebff 100%);
+            box-shadow: 0 15px 35px rgba(105, 108, 255, 0.15), inset 0 -4px 10px rgba(105, 108, 255, 0.05);
+            border-left: 6px solid #696cff !important;
+        }
+        .checkin-none .checkin-pulse-icon {
+            color: #696cff !important;
+            background: rgba(105, 108, 255, 0.1);
+        }
+        .checkin-none .checkin-action-btn {
+            background: linear-gradient(135deg, #696cff 0%, #5f61e6 100%);
+            box-shadow: 0 8px 25px rgba(105, 108, 255, 0.35);
+        }
+        .checkin-none .checkin-action-btn:hover {
+            box-shadow: 0 12px 30px rgba(105, 108, 255, 0.5);
+        }
+
+        .checkin-banner-card.checkin-active {
+            background: linear-gradient(135deg, #fffcf0 0%, #fff7d6 100%);
+            box-shadow: 0 15px 35px rgba(255, 171, 0, 0.15), inset 0 -4px 10px rgba(255, 171, 0, 0.05);
+            border-left: 6px solid #ffab00 !important;
+        }
+        .checkin-active .checkin-pulse-icon {
+            color: #ffab00 !important;
+            background: rgba(255, 171, 0, 0.1);
+        }
+        .checkin-active .checkin-action-btn {
+            background: linear-gradient(135deg, #ffab00 0%, #e09600 100%);
+            box-shadow: 0 8px 25px rgba(255, 171, 0, 0.35);
+        }
+        .checkin-active .checkin-action-btn:hover {
+            box-shadow: 0 12px 30px rgba(255, 171, 0, 0.5);
+        }
+
+        .checkin-banner-card.checkin-done {
+            background: linear-gradient(135deg, #f2faf1 0%, #e3f5e1 100%);
+            box-shadow: 0 15px 35px rgba(113, 221, 55, 0.12), inset 0 -4px 10px rgba(113, 221, 55, 0.05);
+            border-left: 6px solid #71dd37 !important;
+        }
+        .checkin-done .checkin-pulse-icon {
+            color: #71dd37 !important;
+            background: rgba(113, 221, 55, 0.1);
+        }
+        .checkin-done .checkin-action-btn {
+            background: linear-gradient(135deg, #71dd37 0%, #60be2e 100%);
+            box-shadow: 0 8px 25px rgba(113, 221, 55, 0.3);
+        }
+        .checkin-done .checkin-action-btn:hover {
+            box-shadow: 0 12px 30px rgba(113, 221, 55, 0.45);
+        }
+
+        .live-pulse {
+            width: 10px;
+            height: 10px;
+            background-color: currentColor;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.6rem;
+            position: relative;
+            vertical-align: middle;
+            margin-top: -3px;
+        }
+        .live-pulse::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-color: inherit;
+            animation: pulse-dot 1.8s infinite;
+            left: 0;
+            top: 0;
+        }
+        @keyframes pulse-dot {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(3.5); opacity: 0; }
         }
 
         /* Stat Cards Styling */
@@ -159,29 +489,44 @@
                     <div class="hero-bg-decoration"></div>
                     <div class="hero-content">
                         <div class="row align-items-center">
-                            <div class="col-md-auto d-flex justify-content-center mb-4 mb-md-0">
-                                <img src="https://personnel.skj.ac.th/uploads/admin/Personnal/<?= esc($teacher[0]->pers_img ?? '') ?>" 
-                                     class="teacher-avatar-luxe"
-                                     onerror="this.onerror=null;this.src='https://placehold.co/200x200/696cff/ffffff?text=SKJ';">
+                            <div class="col-md-auto d-flex justify-content-center mb-3 mb-md-0">
+                                <div class="avatar-container">
+                                    <img src="https://personnel.skj.ac.th/uploads/admin/Personnal/<?= esc($teacher[0]->pers_img ?? '') ?>" 
+                                         class="teacher-avatar-luxe"
+                                         onerror="this.onerror=null;this.src='https://placehold.co/200x200/696cff/ffffff?text=SKJ';">
+                                </div>
                             </div>
                             <div class="col text-center text-md-start">
                                 <?php if (session()->get('pers_groupleade') !== null && session()->get('pers_groupleade') !== ''): ?>
-                                    <div class="hod-badge">
+                                    <div class="hod-badge-luxe">
                                         <i class="bi bi-shield-shaded"></i> หัวหน้ากลุ่มสาระการเรียนรู้
                                     </div>
                                 <?php endif; ?>
-                                <h1 class="display-6 fw-black text-dark mb-2">ยินดีต้อนรับ, <span class="text-primary"><?= session()->get('fullname') ?></span></h1>
-                                <p class="lead text-muted mb-4">โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์</p>
+                                <h1 class="welcome-title mb-2">
+                                    ยินดีต้อนรับ,<br class="d-md-none"> <span class="fw-black text-warning"><?= session()->get('fullname') ?></span>
+                                </h1>
+                                <p class="welcome-subtitle mb-4">
+                                    <i class="bi bi-geo-alt-fill me-1 text-danger"></i> โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์
+                                </p>
                                 
-                                <div class="d-flex flex-wrap justify-content-center justify-content-md-start gap-4 mt-2">
-                                    <div class="text-center text-md-start">
-                                        <div class="text-uppercase small fw-bold text-muted mb-1">กลุ่มสาระ</div>
-                                        <div class="fw-bold text-dark fs-5"><?= esc($learningGroupName) ?></div>
+                                <div class="d-flex flex-column flex-sm-row justify-content-center justify-content-md-start gap-3 mt-2">
+                                    <div class="info-capsule">
+                                        <div class="info-capsule-icon">
+                                            <i class="bi bi-book-half"></i>
+                                        </div>
+                                        <div class="info-capsule-content">
+                                            <span class="info-capsule-label">กลุ่มสาระการเรียนรู้</span>
+                                            <span class="info-capsule-value"><?= esc($learningGroupName) ?></span>
+                                        </div>
                                     </div>
-                                    <div class="vr mx-2 d-none d-md-block"></div>
-                                    <div class="text-center text-md-start">
-                                        <div class="text-uppercase small fw-bold text-muted mb-1">ปีการศึกษา</div>
-                                        <div class="fw-bold text-dark fs-5"><?= esc($latestEntry) ?></div>
+                                    <div class="info-capsule">
+                                        <div class="info-capsule-icon">
+                                            <i class="bi bi-calendar-event-fill"></i>
+                                        </div>
+                                        <div class="info-capsule-content">
+                                            <span class="info-capsule-label">ปีการศึกษา</span>
+                                            <span class="info-capsule-value"><?= esc($latestEntry) ?></span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -190,6 +535,80 @@
                 </div>
             </div>
         </div>
+
+        <!-- SKJ Check-In Quick Access Banner -->
+        <?php if ($isSystemActive): ?>
+        <div class="row mb-4">
+            <div class="col-12">
+                <?php if ($attStatus === 'none'): ?>
+                    <div class="card checkin-banner-card checkin-none">
+                        <div class="checkin-banner-content">
+                            <div class="checkin-status-info">
+                                <div class="checkin-pulse-icon">
+                                    <i class="bi bi-fingerprint"></i>
+                                </div>
+                                <div class="checkin-text-group">
+                                    <h5 class="fw-bold mb-1 text-primary">
+                                        <span class="live-pulse text-primary"></span> ยังไม่ได้ลงเวลาเข้างานวันนี้
+                                    </h5>
+                                    <p class="text-muted small mb-0">
+                                        ระบบออนไลน์พร้อมให้บริการแล้ว กรุณาลงเวลาเข้าปฏิบัติงานเพื่อบันทึกสถิติประจำวันของคุณ
+                                    </p>
+                                </div>
+                            </div>
+                            <a href="<?= base_url('attendance') ?>" class="checkin-action-btn">
+                                <i class="bi bi-fingerprint"></i> ลงเวลาเข้างานทันที <i class="bi bi-chevron-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                <?php elseif ($attStatus === 'checked_in'): ?>
+                    <div class="card checkin-banner-card checkin-active">
+                        <div class="checkin-banner-content">
+                            <div class="checkin-status-info">
+                                <div class="checkin-pulse-icon">
+                                    <i class="bi bi-clock-history"></i>
+                                </div>
+                                <div class="checkin-text-group">
+                                    <h5 class="fw-bold mb-1 text-warning">
+                                        <span class="live-pulse text-warning"></span> บันทึกเวลาเข้างานเรียบร้อยแล้ว (ยังไม่ได้ลงเวลาออก)
+                                    </h5>
+                                    <p class="text-muted small mb-0">
+                                        เข้าปฏิบัติงานเมื่อ: <strong class="text-dark"><?= date('H:i', strtotime($todayRecord['check_in'])) ?> น.</strong> 
+                                        | สถานะ: <span class="badge bg-label-warning px-2 py-0.5"><?= esc($todayRecord['status']) ?></span>
+                                    </p>
+                                </div>
+                            </div>
+                            <a href="<?= base_url('attendance') ?>" class="checkin-action-btn">
+                                <i class="bi bi-box-arrow-right"></i> ลงเวลาออกงานทันที <i class="bi bi-chevron-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                <?php elseif ($attStatus === 'completed'): ?>
+                    <div class="card checkin-banner-card checkin-done">
+                        <div class="checkin-banner-content">
+                            <div class="checkin-status-info">
+                                <div class="checkin-pulse-icon">
+                                    <i class="bi bi-patch-check-fill"></i>
+                                </div>
+                                <div class="checkin-text-group">
+                                    <h5 class="fw-bold mb-1 text-success">
+                                        <span class="live-pulse text-success" style="animation: none;"></span> บันทึกเวลาปฏิบัติงานเรียบร้อยแล้ววันนี้
+                                    </h5>
+                                    <p class="text-muted small mb-0">
+                                        เวลาเข้างาน: <strong class="text-dark"><?= date('H:i', strtotime($todayRecord['check_in'])) ?> น.</strong> | 
+                                        เวลาออกงาน: <strong class="text-dark"><?= date('H:i', strtotime($todayRecord['check_out'])) ?> น.</strong>
+                                    </p>
+                                </div>
+                            </div>
+                            <a href="<?= base_url('attendance') ?>" class="checkin-action-btn">
+                                <i class="bi bi-file-earmark-bar-graph"></i> ดูประวัติเวลางาน <i class="bi bi-chevron-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+        <?php endif; ?>
 
         <!-- Quick Stats Indicators -->
         <div class="row g-4 mb-2">
