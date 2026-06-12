@@ -134,7 +134,7 @@ class ClubController extends BaseController
             'club_faculty_advisor' => $teacherId,
             'club_year' => $this->currentAcademicYear,
             'club_trem' => $this->currentTerm,
-            'club_status' => $this->_getClubStatus(), // Determine status dynamically
+            'club_status' => 'open', // Default to open for new clubs
             'club_established_date' => date('Y-m-d'),
         ];
 
