@@ -157,6 +157,17 @@ class Database extends Config
     {
         parent::__construct();
 
+        // If personnel/skj/affairs are using default placeholder hostname/credentials, 
+        // override them with default group credentials to keep them in sync automatically.
+        foreach (['personnel', 'skj', 'affairs'] as $group) {
+            if (isset($this->{$group}) && $this->{$group}['hostname'] === 'skj2025_db' && $this->{$group}['password'] === 'rootpassword') {
+                $this->{$group}['hostname'] = $this->default['hostname'];
+                $this->{$group}['username'] = $this->default['username'];
+                $this->{$group}['password'] = $this->default['password'];
+                $this->{$group}['port']     = $this->default['port'];
+            }
+        }
+
         // Ensure that we always set the database group to 'tests' if
         // we are currently running an automated test suite, so that
         // we don't overwrite live data on accident.

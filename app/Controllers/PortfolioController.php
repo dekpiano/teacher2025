@@ -172,10 +172,20 @@ class PortfolioController extends BaseController
         }
 
         if (!empty($post['id'])) {
-            $this->trainingModel->update($post['id'], $data);
+            if ($this->trainingModel->update($post['id'], $data) === false) {
+                return $this->response->setJSON([
+                    'status' => 'error',
+                    'message' => 'ไม่สามารถแก้ไขข้อมูลการอบรมได้: ' . implode(', ', $this->trainingModel->errors() ?: ['เกิดข้อผิดพลาดของระบบ'])
+                ]);
+            }
             $msg = 'แก้ไขข้อมูลการอบรมสำเร็จ';
         } else {
-            $this->trainingModel->insert($data);
+            if ($this->trainingModel->insert($data) === false) {
+                return $this->response->setJSON([
+                    'status' => 'error',
+                    'message' => 'ไม่สามารถบันทึกข้อมูลการอบรมได้: ' . implode(', ', $this->trainingModel->errors() ?: ['เกิดข้อผิดพลาดของระบบ'])
+                ]);
+            }
             $msg = 'เพิ่มข้อมูลการอบรมสำเร็จ';
         }
 
@@ -223,10 +233,20 @@ class PortfolioController extends BaseController
         }
 
         if (!empty($post['id'])) {
-            $this->docModel->update($post['id'], $data);
+            if ($this->docModel->update($post['id'], $data) === false) {
+                return $this->response->setJSON([
+                    'status' => 'error',
+                    'message' => 'ไม่สามารถแก้ไขข้อมูลผลงานได้: ' . implode(', ', $this->docModel->errors() ?: ['เกิดข้อผิดพลาดของระบบ'])
+                ]);
+            }
             $msg = 'แก้ไขข้อมูลผลงานสำเร็จ';
         } else {
-            $this->docModel->insert($data);
+            if ($this->docModel->insert($data) === false) {
+                return $this->response->setJSON([
+                    'status' => 'error',
+                    'message' => 'ไม่สามารถบันทึกข้อมูลผลงานได้: ' . implode(', ', $this->docModel->errors() ?: ['เกิดข้อผิดพลาดของระบบ'])
+                ]);
+            }
             $msg = 'เพิ่มข้อมูลผลงานสำเร็จ';
         }
 
