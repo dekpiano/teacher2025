@@ -162,7 +162,7 @@
                                                 <i class="bi <?= $iconClass ?> file-icon-luxe"></i>
                                             </a>
                                         <?php else: ?>
-                                            <span class="badge bg-label-secondary opacity-50 small">N/A</span>
+                                            <a href="javascript:void(0);" class="no-file-alert badge bg-label-secondary opacity-50 small" title="ไม่มีไฟล์">N/A</a>
                                         <?php endif; ?>
                                     </td>
                                 <?php endforeach; ?>
@@ -207,6 +207,17 @@ $(document).ready(function() {
         }
         const [year, term] = yearTerm.split('/');
         window.location.href = `<?= site_url('curriculum/download-plan/') ?>${year}/${term}/${teacher}`;
+    });
+
+    $(document).on('click', '.no-file-alert', function(e) {
+        e.preventDefault();
+        Swal.fire({
+            icon: 'warning',
+            title: 'ไม่พบไฟล์',
+            text: 'คุณอาจไม่ได้บันทึกข้อมูลไฟล์เพราะไม่มีในระบบ',
+            confirmButtonColor: '#696cff',
+            confirmButtonText: 'ตกลง'
+        });
     });
 });
 </script>

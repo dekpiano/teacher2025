@@ -189,6 +189,15 @@ class ResearchController extends BaseController
      */
     public function uploadChunk()
     {
+        // Set CORS headers for AJAX requests
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: POST, OPTIONS');
+        header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+
+        if ($this->request->getMethod() === 'options') {
+            return $this->response->setStatusCode(200);
+        }
+
         $file = $this->request->getFile('file');
         $post = $this->request->getPost();
         
@@ -197,15 +206,20 @@ class ResearchController extends BaseController
 
         try {
             $postData = [
-                'path'     => $post['path'],
-                'filename' => $post['filename'],
-                'chunk'    => $post['chunk'],
-                'chunks'   => $post['chunks'],
-                'file'     => new \CURLFile($file->getTempName(), $file->getMimeType(), $post['filename'])
+                'path'         => $post['path'],
+                'filename'     => $post['filename'],
+                'chunk_index'  => $post['chunk'],
+                'total_chunks' => $post['chunks'],
+                'file'         => new \CURLFile($file->getTempName(), $file->getMimeType(), $post['filename'])
+            ];
+
+            $headers = [
+                'X-Auth-Token' => env('upload.server.token') ?: 'Dekpiano2025!!'
             ];
 
             $response = $client->post($uploadUrl, [
                 'multipart' => $postData,
+                'headers' => $headers,
                 'http_errors' => false
             ]);
 
@@ -407,8 +421,13 @@ class ResearchController extends BaseController
                 'file' => new \CURLFile($file->getTempName(), $file->getMimeType(), $originalName)
             ];
 
+            $headers = [
+                'X-Auth-Token' => env('upload.server.token') ?: 'Dekpiano2025!!'
+            ];
+
             $response = $client->post($uploadUrl, [
                 'multipart' => $postData,
+                'headers' => $headers,
                 'http_errors' => false // Prevent exceptions on 4xx/5xx
             ]);
 
@@ -457,8 +476,13 @@ class ResearchController extends BaseController
                 'files' => [$filename]
             ]);
 
+            $headers = [
+                'Content-Type' => 'application/json',
+                'X-Auth-Token' => env('upload.server.token') ?: 'Dekpiano2025!!'
+            ];
+
             $response = $client->setBody($jsonData)->post($deleteUrl, [
-                'headers' => ['Content-Type' => 'application/json'],
+                'headers' => $headers,
                 'http_errors' => false
             ]);
 

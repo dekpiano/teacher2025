@@ -320,6 +320,15 @@ class CurriculumController extends BaseController
      */
     public function uploadChunk()
     {
+        // Set CORS headers for AJAX requests
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: POST, OPTIONS');
+        header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+
+        if ($this->request->getMethod() === 'options') {
+            return $this->response->setStatusCode(200);
+        }
+
         $file = $this->request->getFile('file');
         $post = $this->request->getPost();
         
@@ -332,15 +341,20 @@ class CurriculumController extends BaseController
             $client = \Config\Services::curlrequest();
 
             $postData = [
-                'path'     => $post['path'],
-                'filename' => $post['filename'],
-                'chunk'    => $post['chunk'],
-                'chunks'   => $post['chunks'],
-                'file'     => new \CURLFile($file->getTempName(), $file->getMimeType(), $post['filename'])
+                'path'         => $post['path'],
+                'filename'     => $post['filename'],
+                'chunk_index'  => $post['chunk'],
+                'total_chunks' => $post['chunks'],
+                'file'         => new \CURLFile($file->getTempName(), $file->getMimeType(), $post['filename'])
+            ];
+
+            $headers = [
+                'X-Auth-Token' => env('upload.server.token') ?: 'Dekpiano2025!!'
             ];
 
             $response = $client->post($uploadUrl, [
                 'multipart' => $postData,
+                'headers' => $headers,
                 'http_errors' => false
             ]);
 
@@ -353,19 +367,22 @@ class CurriculumController extends BaseController
     public function downloadPlanFile($seplanID)
     {
         if (!$seplanID) {
-            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Invalid Plan ID.');
+            $this->session->setFlashdata('error', 'คุณอาจไม่ได้บันทึกข้อมูลไฟล์เพราะไม่มีในระบบ');
+            return redirect()->back();
         }
 
         $plan = $this->curriculumModel->find($seplanID);
 
         if (!$plan || empty($plan['seplan_file'])) {
-            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('File record not found or file not specified.');
+            $this->session->setFlashdata('error', 'คุณอาจไม่ได้บันทึกข้อมูลไฟล์เพราะไม่มีในระบบ');
+            return redirect()->back();
         }
 
         // Construct the full URL to the file.
         $baseFileUrl = env('upload.server.baseurl');
         if (!$baseFileUrl) {
-            throw new \RuntimeException('The upload.server.baseurl is not defined in the .env file.');
+            $this->session->setFlashdata('error', 'The upload.server.baseurl is not defined in the .env file.');
+            return redirect()->back();
         }
 
         $fileUrl = rtrim($baseFileUrl, '/') . '/' . $plan['seplan_year'] . '/' . $plan['seplan_term'] . '/' . rawurlencode($plan['seplan_namesubject']) . '/' . rawurlencode($plan['seplan_file']);
@@ -376,8 +393,8 @@ class CurriculumController extends BaseController
         $fileData = @file_get_contents($fileUrl);
 
         if ($fileData === false) {
-            // Throw a more informative error if the file could not be fetched.
-            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Could not retrieve file from URL: ' . esc($fileUrl));
+            $this->session->setFlashdata('error', 'คุณอาจไม่ได้บันทึกข้อมูลไฟล์เพราะไม่มีในระบบ');
+            return redirect()->back();
         }
 
         // Use the response->download() method to force download.
@@ -404,8 +421,13 @@ class CurriculumController extends BaseController
                 'file' => new \CURLFile($file->getTempName(), $file->getMimeType(), $originalName)
             ];
 
+            $headers = [
+                'X-Auth-Token' => env('upload.server.token') ?: 'Dekpiano2025!!'
+            ];
+
             $response = $client->post($uploadUrl, [
                 'multipart' => $postData,
+                'headers' => $headers,
                 'http_errors' => false // Prevent exceptions on 4xx/5xx
             ]);
 
@@ -456,8 +478,13 @@ class CurriculumController extends BaseController
                 'files' => [$filename]
             ]);
 
+            $headers = [
+                'Content-Type' => 'application/json',
+                'X-Auth-Token' => env('upload.server.token') ?: 'Dekpiano2025!!'
+            ];
+
             $response = $client->setBody($jsonData)->post($deleteUrl, [
-                'headers' => ['Content-Type' => 'application/json'],
+                'headers' => $headers,
                 'http_errors' => false
             ]);
 

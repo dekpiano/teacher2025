@@ -138,17 +138,27 @@
                                                     <!-- Content -->
                                                     <div class="card-body p-4 d-flex flex-column flex-grow-1">
                                                         <div class="d-flex justify-content-between align-items-start mb-2">
-                                                            <span class="badge bg-label-primary fs-tiny">
-                                                                <i class="bi bi-tag-fill me-1"></i> <?= esc($d['doc_category']) ?>
+                                                            <span class="badge <?= !empty($d['is_competition']) ? 'bg-label-warning' : 'bg-label-primary' ?> fs-tiny">
+                                                                <i class="bi <?= !empty($d['is_competition']) ? 'bi-trophy-fill' : 'bi-tag-fill' ?> me-1"></i> <?= esc($d['doc_category']) ?>
                                                             </span>
                                                             <div class="dropdown">
                                                                 <button class="btn p-0" type="button" data-bs-toggle="dropdown">
                                                                     <i class="bi bi-three-dots-vertical"></i>
                                                                 </button>
                                                                 <ul class="dropdown-menu dropdown-menu-end">
-                                                                    <li><a class="dropdown-item" href="<?= $remote_base_url ?>/<?= $d['file_path'] ?>" target="_blank"><i class="bi bi-eye me-2"></i>ดูผลงาน</a></li>
-                                                                    <li><hr class="dropdown-divider"></li>
-                                                                    <li><a class="dropdown-item text-danger delete-doc" href="javascript:void(0);" data-id="<?= $d['id'] ?>"><i class="bi bi-trash me-2"></i>ลบผลงาน</a></li>
+                                                                    <?php if (!empty($d['is_competition'])): ?>
+                                                                        <li><a class="dropdown-item view-comp-detail" href="javascript:void(0);" data-id="<?= $d['id'] ?>"><i class="bi bi-info-circle me-2"></i>ดูข้อมูลทั้งหมด</a></li>
+                                                                        <?php if (!empty($d['file_path'])): ?>
+                                                                            <li><a class="dropdown-item" href="<?= $d['file_path'] ?>" target="_blank"><i class="bi bi-eye me-2"></i>ดูไฟล์แนบ</a></li>
+                                                                        <?php else: ?>
+                                                                            <li><a class="dropdown-item disabled" href="javascript:void(0);"><i class="bi bi-eye me-2"></i>ไม่มีไฟล์แนบ</a></li>
+                                                                        <?php endif; ?>
+                                                                    <?php else: ?>
+                                                                        <li><a class="dropdown-item" href="<?= $remote_base_url ?>/<?= $d['file_path'] ?>" target="_blank"><i class="bi bi-eye me-2"></i>ดูผลงาน</a></li>
+                                                                        <li><a class="dropdown-item edit-doc" href="javascript:void(0);" data-id="<?= $d['id'] ?>" data-json='<?= json_encode($d) ?>'><i class="bi bi-pencil-square me-2"></i>แก้ไขผลงาน</a></li>
+                                                                        <li><hr class="dropdown-divider"></li>
+                                                                        <li><a class="dropdown-item text-danger delete-doc" href="javascript:void(0);" data-id="<?= $d['id'] ?>"><i class="bi bi-trash me-2"></i>ลบผลงาน</a></li>
+                                                                    <?php endif; ?>
                                                                 </ul>
                                                             </div>
                                                         </div>
@@ -166,8 +176,13 @@
                                                                 <span class="text-muted fs-tiny"><?= date('d M Y', strtotime($d['doc_date'])) ?></span>
                                                             </div>
                                                             <div class="d-flex align-items-center">
-                                                                <i class="bi bi-file-earmark-text text-muted me-1 fs-tiny"></i>
-                                                                <span class="text-muted fs-tiny fw-medium"><?= number_format(($d['file_size'] ?? 0) / 1024, 1) ?> KB</span>
+                                                                <?php if (!empty($d['is_competition'])): ?>
+                                                                    <i class="bi bi-trophy text-warning me-1 fs-tiny"></i>
+                                                                    <span class="text-muted fs-tiny fw-medium">รางวัลการแข่งขัน</span>
+                                                                <?php else: ?>
+                                                                    <i class="bi bi-file-earmark-text text-muted me-1 fs-tiny"></i>
+                                                                    <span class="text-muted fs-tiny fw-medium"><?= number_format(($d['file_size'] ?? 0) / 1024, 1) ?> KB</span>
+                                                                <?php endif; ?>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -258,11 +273,11 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-bold">วันที่เริ่ม</label>
-                        <input type="date" name="train_start_date" id="train_start_date" class="form-control" required>
+                        <input type="text" name="train_start_date" id="train_start_date" class="form-control flatpickr-date" placeholder="เลือกวันที่เริ่ม" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-bold">วันที่สิ้นสุด</label>
-                        <input type="date" name="train_end_date" id="train_end_date" class="form-control">
+                        <input type="text" name="train_end_date" id="train_end_date" class="form-control flatpickr-date" placeholder="เลือกวันที่สิ้นสุด">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-bold">จำนวนชั่วโมง</label>
@@ -288,10 +303,11 @@
     <div class="modal-dialog modal-dialog-centered">
         <form class="modal-content border-0 shadow-lg" action="<?= base_url('portfolio/save-document') ?>" method="POST" enctype="multipart/form-data" style="border-radius: 20px;">
             <div class="modal-header">
-                <h5 class="modal-title fw-bold">เพิ่มผลงาน / กิจกรรม</h5>
+                <h5 class="modal-title fw-bold" id="modalDocumentTitle">เพิ่มผลงาน / กิจกรรม</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                <input type="hidden" name="id" id="doc_id">
                 <div class="row g-3">
                     <div class="col-12">
                         <label class="form-label fw-bold">ประเภท</label>
@@ -306,7 +322,7 @@
                     </div>
                     <div class="col-12">
                         <label class="form-label fw-bold">วันที่</label>
-                        <input type="date" name="doc_date" class="form-control" required>
+                        <input type="text" name="doc_date" id="doc_date" class="form-control flatpickr-date" placeholder="เลือกวันที่" required>
                     </div>
                     <div class="col-12">
                         <label class="form-label fw-bold">รายละเอียด / หมายเหตุ</label>
@@ -326,11 +342,204 @@
     </div>
 </div>
 
+<!-- Modal Competition Detail -->
+<div class="modal fade" id="modalCompDetail" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header bg-primary py-3">
+                <h5 class="modal-title fw-bold text-white" id="modalCompDetailTitle">
+                    <i class="bi bi-trophy-fill me-2"></i>รายละเอียดข้อมูลการแข่งขัน (งานวิชาการ)
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <!-- Info Section -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-12">
+                        <div class="p-3 bg-light rounded-3 border-start border-4 border-primary">
+                            <h5 class="fw-bold mb-1 text-primary" id="comp_name_display">-</h5>
+                            <p class="mb-0 text-muted" id="comp_activity_display">-</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-4">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar bg-soft-primary rounded p-2 me-3 text-primary d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
+                                <i class="bi bi-calendar-event fs-4"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block">วันที่จัดงาน</small>
+                                <span class="fw-bold text-dark" id="comp_date_display">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-4">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar bg-soft-primary rounded p-2 me-3 text-primary d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
+                                <i class="bi bi-award fs-4"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block">ระดับการแข่งขัน</small>
+                                <span class="fw-bold text-dark" id="comp_level_display">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-md-4">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar bg-soft-primary rounded p-2 me-3 text-primary d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
+                                <i class="bi bi-geo-alt fs-4"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block">สถานที่</small>
+                                <span class="fw-bold text-dark text-truncate-2" id="comp_location_display">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4 opacity-50">
+
+                <div class="row g-4">
+                    <!-- Column Left: Awards & People -->
+                    <div class="col-md-6">
+                        <!-- Awards Section -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-primary mb-3"><i class="bi bi-award-fill me-2"></i>รางวัลที่ได้รับ</h6>
+                            <div id="comp_awards_list" class="d-flex flex-wrap gap-2">
+                                <!-- Dynamic Awards badges -->
+                            </div>
+                        </div>
+
+                        <!-- Students Section -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-primary mb-3"><i class="bi bi-people-fill me-2"></i>นักเรียนที่เข้าร่วมการแข่งขัน</h6>
+                            <div class="list-group list-group-flush border rounded-3 p-2 bg-white shadow-sm" id="comp_students_list" style="max-height: 250px; overflow-y: auto;">
+                                <!-- Dynamic Students list -->
+                            </div>
+                        </div>
+
+                        <!-- Teachers/Coaches Section -->
+                        <div>
+                            <h6 class="fw-bold text-primary mb-3"><i class="bi bi-person-badge-fill me-2"></i>ครูผู้ฝึกซ้อม / ผู้ควบคุม</h6>
+                            <div class="list-group list-group-flush border rounded-3 p-2 bg-white shadow-sm" id="comp_teachers_list" style="max-height: 250px; overflow-y: auto;">
+                                <!-- Dynamic Teachers list -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Column Right: Certificates & Photos -->
+                    <div class="col-md-6">
+                        <!-- Certificates Section -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-primary mb-3"><i class="bi bi-file-earmark-check-fill me-2"></i>เกียรติบัตร</h6>
+                            <div class="list-group list-group-flush border rounded-3 p-2 bg-white shadow-sm" id="comp_certs_list" style="max-height: 180px; overflow-y: auto;">
+                                <!-- Dynamic Certificates list -->
+                            </div>
+                        </div>
+
+                        <!-- Photos Section -->
+                        <div>
+                            <h6 class="fw-bold text-primary mb-3"><i class="bi bi-images me-2"></i>ภาพกิจกรรม</h6>
+                            <div class="row g-2" id="comp_images_grid">
+                                <!-- Dynamic images grid -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-label-secondary rounded-pill" data-bs-dismiss="modal">ปิดหน้าต่าง</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
+<!-- Flatpickr CSS & JS (with Thai locale) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/th.js"></script>
 <script>
 $(document).ready(function() {
+    // เรียกใช้งาน Flatpickr สไตล์ Sneat (แสดงผลปี พ.ศ.)
+    if (typeof flatpickr !== 'undefined') {
+        flatpickr(".flatpickr-date", {
+            disableMobile: true,
+            dateFormat: "Y-m-d", // บันทึกเป็น ค.ศ. (ISO) ไปยังฐานข้อมูล
+            altInput: true,      // เปิดการแสดงผลแบบทางเลือก
+            altFormat: "d/m/Y",  // รูปแบบ วัน/เดือน/ปีพ.ศ.
+            locale: "th",
+            allowInput: true,
+            monthSelectorType: "static",
+            onOpen: function(selectedDates, dateStr, instance) {
+                updateCalendarToBE(instance);
+            },
+            onMonthChange: function(selectedDates, dateStr, instance) {
+                setTimeout(() => updateCalendarToBE(instance), 0);
+            },
+            onYearChange: function(selectedDates, dateStr, instance) {
+                setTimeout(() => updateCalendarToBE(instance), 0);
+            },
+            formatDate: function(date, format, locale) {
+                if (format === "d/m/Y") {
+                    const d = date.getDate().toString().padStart(2, '0');
+                    const m = (date.getMonth() + 1).toString().padStart(2, '0');
+                    const y = date.getFullYear() + 543; // แปลงเป็น พ.ศ.
+                    return `${d}/${m}/${y}`;
+                }
+                return flatpickr.formatDate(date, format, locale);
+            },
+            parseDate: function(dateStr, format) {
+                if (dateStr && dateStr.includes('/')) {
+                    const parts = dateStr.split('/');
+                    if (parts.length === 3) {
+                        const d = parseInt(parts[0], 10);
+                        const m = parseInt(parts[1], 10) - 1;
+                        const y = parseInt(parts[2], 10) - 543; // แปลงกลับเป็น ค.ศ.
+                        return new Date(y, m, d);
+                    }
+                }
+                return flatpickr.parseDate(dateStr, format);
+            }
+        });
+
+        // ฟังก์ชันช่วยเปลี่ยนตัวเลขปีในหัวปฏิทิน Flatpickr ให้เป็น พ.ศ.
+        function updateCalendarToBE(instance) {
+            setTimeout(() => {
+                const yearDisplay = instance.calendarContainer.querySelector(".flatpickr-current-month .cur-year");
+                if (yearDisplay) {
+                    const year = parseInt(instance.currentYear);
+                    if (year < 2400) {
+                        if (yearDisplay.tagName === "INPUT") {
+                            yearDisplay.value = year + 543;
+                        } else {
+                            yearDisplay.textContent = year + 543;
+                        }
+                    }
+                }
+                const yearInput = instance.calendarContainer.querySelector(".numInput.cur-year");
+                if (yearInput) {
+                    const year = parseInt(instance.currentYear);
+                    if (year < 2400) {
+                        yearInput.value = year + 543;
+                    }
+                }
+            }, 5);
+        }
+    }
+
+    // Helper to set dates inside Flatpickr instances dynamically
+    function setFlatpickrDate(selector, val) {
+        const el = $(selector)[0];
+        if (el && el._flatpickr) {
+            if (val) {
+                el._flatpickr.setDate(val.split(' ')[0]);
+            } else {
+                el._flatpickr.clear();
+            }
+        }
+    }
     // Helper for Chunked Upload
     async function uploadFileInChunks(file, uploadPath, fileName) {
         const chunkSize = 512 * 1024; // 512KB chunks
@@ -409,8 +618,8 @@ $(document).ready(function() {
         $('#train_id').val(data.id);
         $('#train_name').val(data.train_name);
         $('#train_location').val(data.train_location);
-        $('#train_start_date').val(data.train_start_date ? data.train_start_date.split(' ')[0] : '');
-        $('#train_end_date').val(data.train_end_date ? data.train_end_date.split(' ')[0] : '');
+        setFlatpickrDate('#train_start_date', data.train_start_date);
+        setFlatpickrDate('#train_end_date', data.train_end_date);
         $('#train_hours').val(data.train_hours);
         $('#modalTrainingTitle').text('แก้ไขข้อมูลการอบรม');
         $('#modalTraining').modal('show');
@@ -420,7 +629,34 @@ $(document).ready(function() {
     $('#modalTraining').on('hidden.bs.modal', function() {
         $(this).find('form')[0].reset();
         $('#train_id').val('');
+        setFlatpickrDate('#train_start_date', null);
+        setFlatpickrDate('#train_end_date', null);
         $('#modalTrainingTitle').text('เพิ่มข้อมูลการอบรม');
+    });
+
+    // Edit Document
+    $('.edit-doc').on('click', function() {
+        const data = $(this).data('json');
+        $('#doc_id').val(data.id);
+        $('#modalDocument select[name="doc_category"]').val(data.doc_category);
+        $('#modalDocument input[name="doc_title"]').val(data.doc_title);
+        setFlatpickrDate('#doc_date', data.doc_date);
+        $('#modalDocument textarea[name="doc_note"]').val(data.doc_note);
+        
+        // Remove required from file field during edit
+        $('#modalDocument input[name="portfolio_file"]').removeAttr('required');
+        
+        $('#modalDocumentTitle').text('แก้ไขผลงาน / กิจกรรม');
+        $('#modalDocument').modal('show');
+    });
+
+    // Reset Document Modal on hide
+    $('#modalDocument').on('hidden.bs.modal', function() {
+        $(this).find('form')[0].reset();
+        $('#doc_id').val('');
+        setFlatpickrDate('#doc_date', null);
+        $('#modalDocument input[name="portfolio_file"]').attr('required', 'required');
+        $('#modalDocumentTitle').text('เพิ่มผลงาน / กิจกรรม');
     });
 
     // Handle Training Form Submit
@@ -450,6 +686,7 @@ $(document).ready(function() {
                 const uploadedFileName = await uploadFileInChunks(file, uploadPath, fileName);
                 if (uploadedFileName) {
                     formData.set('file_name_ready', uploadedFileName);
+                    formData.delete('train_certificate');
                 }
             }
 
@@ -507,6 +744,7 @@ $(document).ready(function() {
                     formData.set('file_name_ready', uploadedFileName);
                     formData.set('file_type', file.type);
                     formData.set('file_size', file.size);
+                    formData.delete('portfolio_file');
                 }
             }
 
@@ -590,6 +828,136 @@ $(document).ready(function() {
                     }
                 });
             }
+        });
+    });
+
+    // View Competition Details in Modal
+    $('.view-comp-detail').on('click', function() {
+        const id = $(this).data('id');
+        
+        Swal.fire({
+            title: 'กำลังดึงข้อมูล...',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        $.get('<?= base_url('portfolio/competition-detail') ?>/' + id, function(res) {
+            Swal.close();
+            if (res.status === 'success') {
+                const comp = res.comp;
+                
+                // Set text info
+                $('#comp_name_display').text(comp.comp_name || '-');
+                $('#comp_activity_display').text(comp.comp_activity || '-');
+                $('#comp_date_display').text(res.thaiDate || '-');
+                $('#comp_level_display').text(comp.comp_level || '-');
+                $('#comp_location_display').text(comp.comp_location || '-');
+
+                // Render Awards
+                let awardsHtml = '';
+                if (res.awards && res.awards.length > 0) {
+                    res.awards.forEach(function(award) {
+                        awardsHtml += `<span class="badge bg-label-warning text-dark fs-6 py-2 px-3 me-2 mb-2"><i class="bi bi-trophy me-1"></i> ${award}</span>`;
+                    });
+                } else {
+                    awardsHtml = '<span class="text-muted small">ไม่มีการระบุรางวัล</span>';
+                }
+                $('#comp_awards_list').html(awardsHtml);
+
+                // Render Students
+                let studentsHtml = '';
+                if (res.students && res.students.length > 0) {
+                    res.students.forEach(function(s) {
+                        studentsHtml += `
+                            <div class="list-group-item d-flex align-items-center py-2 border-0 border-bottom bg-transparent">
+                                <div class="avatar avatar-sm bg-label-primary me-3 d-flex align-items-center justify-content-center rounded-circle" style="width: 32px; height: 32px;">
+                                    <i class="bi bi-person"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <span class="fw-bold text-dark small">${s.StudentPrefix || ''}${s.StudentFirstName || ''} ${s.StudentLastName || ''}</span>
+                                    <small class="text-muted d-block" style="font-size: 0.75rem;">รหัส: ${s.StudentCode || '-'} | ชั้น: ม.${s.StudentClass || '-'} เลขที่ ${s.StudentNumber || '-'}</small>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    studentsHtml = '<div class="list-group-item border-0 py-3 text-center text-muted small">ไม่มีข้อมูลนักเรียนที่ลงทะเบียน</div>';
+                }
+                $('#comp_students_list').html(studentsHtml);
+
+                // Render Teachers
+                let teachersHtml = '';
+                if (res.teachers && res.teachers.length > 0) {
+                    res.teachers.forEach(function(t) {
+                        const imgUrl = t.pers_img ? `https://personnel.skj.ac.th/uploads/admin/Personnal/${t.pers_img}` : 'https://skj.nsnpao.go.th/uploads/academic/competitions/images/default-avatar.png';
+                        teachersHtml += `
+                            <div class="list-group-item d-flex align-items-center py-2 border-0 border-bottom bg-transparent">
+                                <img src="${imgUrl}" 
+                                     class="rounded-circle me-3" 
+                                     style="width: 32px; height: 32px; object-fit: cover;" 
+                                     onerror="this.src='https://skj.nsnpao.go.th/uploads/academic/competitions/images/default-avatar.png';">
+                                <div class="flex-grow-1">
+                                    <span class="fw-bold text-dark small">${t.pers_prefix || ''}${t.pers_firstname || ''} ${t.pers_lastname || ''}</span>
+                                    <small class="text-muted d-block" style="font-size: 0.75rem;">รหัสบุคลากร: ${t.pers_id || '-'}</small>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    teachersHtml = '<div class="list-group-item border-0 py-3 text-center text-muted small">ไม่มีข้อมูลครูฝึกซ้อม</div>';
+                }
+                $('#comp_teachers_list').html(teachersHtml);
+
+                // Render Certificates
+                let certsHtml = '';
+                if (res.certs && res.certs.length > 0) {
+                    res.certs.forEach(function(cert) {
+                        certsHtml += `
+                            <a href="https://skj.nsnpao.go.th/uploads/academic/competitions/certificates/${cert}" 
+                               target="_blank" 
+                               class="list-group-item list-group-item-action d-flex align-items-center py-2 border-0 border-bottom bg-transparent">
+                                <i class="bi bi-file-earmark-pdf-fill text-danger me-3 fs-4"></i>
+                                <div class="flex-grow-1 text-truncate">
+                                    <span class="fw-bold text-dark small text-truncate d-block" style="max-width: 250px;">${cert}</span>
+                                    <small class="text-muted d-block" style="font-size: 0.7rem;">คลิกเพื่อดูเกียรติบัตร</small>
+                                </div>
+                                <i class="bi bi-chevron-right text-muted ms-auto fs-tiny"></i>
+                            </a>
+                        `;
+                    });
+                } else {
+                    certsHtml = '<div class="list-group-item border-0 py-3 text-center text-muted small">ไม่มีไฟล์เกียรติบัตร</div>';
+                }
+                $('#comp_certs_list').html(certsHtml);
+
+                // Render Images
+                let imagesHtml = '';
+                if (res.images && res.images.length > 0) {
+                    res.images.forEach(function(img) {
+                        imagesHtml += `
+                            <div class="col-4 mb-2">
+                                <a href="https://skj.nsnpao.go.th/uploads/academic/competitions/images/${img}" target="_blank">
+                                    <img src="https://skj.nsnpao.go.th/uploads/academic/competitions/images/${img}" 
+                                         class="img-fluid rounded-3 border shadow-xs" 
+                                         style="height: 80px; width: 100%; object-fit: cover;" 
+                                         alt="ภาพกิจกรรม"
+                                         onerror="this.style.display='none';">
+                                </a>
+                            </div>
+                        `;
+                    });
+                } else {
+                    imagesHtml = '<div class="col-12 text-center text-muted small py-3">ไม่มีภาพกิจกรรม</div>';
+                }
+                $('#comp_images_grid').html(imagesHtml);
+
+                // Open modal
+                $('#modalCompDetail').modal('show');
+            } else {
+                Swal.fire('ผิดพลาด', res.message || 'ไม่สามารถดึงข้อมูลได้', 'error');
+            }
+        }).fail(function(xhr) {
+            Swal.fire('ผิดพลาด', 'เกิดข้อผิดพลาดในการดึงข้อมูลจากระบบ', 'error');
         });
     });
 });

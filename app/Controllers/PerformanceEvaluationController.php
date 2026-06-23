@@ -222,6 +222,15 @@ class PerformanceEvaluationController extends BaseController
      */
     public function uploadChunk()
     {
+        // Set CORS headers for AJAX requests
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: POST, OPTIONS');
+        header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+
+        if ($this->request->getMethod() === 'options') {
+            return $this->response->setStatusCode(200);
+        }
+
         $file = $this->request->getFile('file');
         $post = $this->request->getPost();
         
@@ -230,15 +239,20 @@ class PerformanceEvaluationController extends BaseController
 
         try {
             $postData = [
-                'path'     => $post['path'],
-                'filename' => $post['filename'],
-                'chunk'    => $post['chunk'],
-                'chunks'   => $post['chunks'],
-                'file'     => new \CURLFile($file->getTempName(), $file->getMimeType(), $post['filename'])
+                'path'         => $post['path'],
+                'filename'     => $post['filename'],
+                'chunk_index'  => $post['chunk'],
+                'total_chunks' => $post['chunks'],
+                'file'         => new \CURLFile($file->getTempName(), $file->getMimeType(), $post['filename'])
+            ];
+
+            $headers = [
+                'X-Auth-Token' => env('upload.server.token') ?: 'Dekpiano2025!!'
             ];
 
             $response = $client->post($uploadUrl, [
                 'multipart' => $postData,
+                'headers' => $headers,
                 'http_errors' => false
             ]);
 
@@ -367,8 +381,13 @@ class PerformanceEvaluationController extends BaseController
                 'file' => new \CURLFile($file->getTempName(), $file->getMimeType(), $originalName)
             ];
 
+            $headers = [
+                'X-Auth-Token' => env('upload.server.token') ?: 'Dekpiano2025!!'
+            ];
+
             $response = $client->post($uploadUrl, [
                 'multipart' => $postData,
+                'headers' => $headers,
                 'http_errors' => false
             ]);
 
@@ -402,8 +421,14 @@ class PerformanceEvaluationController extends BaseController
                 'path' => dirname($remoteFilePath),
                 'files' => [basename($remoteFilePath)]
             ]);
+
+            $headers = [
+                'Content-Type' => 'application/json',
+                'X-Auth-Token' => env('upload.server.token') ?: 'Dekpiano2025!!'
+            ];
+
             $client->setBody($jsonData)->post($deleteUrl, [
-                'headers' => ['Content-Type' => 'application/json'],
+                'headers' => $headers,
                 'http_errors' => false
             ]);
             return true;

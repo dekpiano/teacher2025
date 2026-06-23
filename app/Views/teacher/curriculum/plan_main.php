@@ -365,12 +365,7 @@
                         <i class="bi bi-journal-x display-1 text-muted opacity-25"></i>
                     </div>
                     <h3 class="fw-bold">ยังไม่ได้ลงทะเบียนรายวิชาสอน</h3>
-                    <p class="text-muted mb-4">เริ่มต้นด้วยการลงทะเบียนรายวิชาที่คุณรับผิดชอบในภาคเรียนนี้ เพื่อทำการส่งแผนการสอน</p>
-                    <div class="d-flex justify-content-center">
-                        <a href="<?= base_url('curriculum/send-plan') ?>" class="btn btn-primary btn-lg rounded-pill px-5 shadow">
-                            <i class="bi bi-journal-plus me-2"></i> ลงทะเบียนวิชาสอนแรกของคุณ
-                        </a>
-                    </div>
+                    <p class="text-muted mb-0">กรุณาติดต่อฝ่ายวิชาการเพื่อลงทะเบียนรายวิชาสอนประจำภาคเรียนนี้</p>
                 </div>
             </div>
         <?php endif; ?>

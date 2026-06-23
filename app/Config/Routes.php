@@ -230,4 +230,5 @@ $routes->get('login/googleCallback', 'Login::googleCallback');
         $routes->post('upload-chunk', 'PortfolioController::uploadChunk');
         $routes->post('delete-training/(:num)', 'PortfolioController::deleteTraining/$1');
         $routes->post('delete-document/(:num)', 'PortfolioController::deleteDocument/$1');
+        $routes->get('competition-detail/(:num)', 'PortfolioController::getCompetitionDetail/$1');
     });

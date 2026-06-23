@@ -71,11 +71,18 @@ class PortfolioController extends BaseController
         $trainingDates = $this->trainingModel->select('train_start_date as d')->where('pers_id', $person_id)->findAll();
         $docDates = $this->docModel->select('doc_date as d')->where('pers_id', $person_id)->findAll();
         
+        $db_academic = db_connect();
+        $compDates = $db_academic->table('tb_competitions')
+            ->select('comp_date as d')
+            ->where('comp_status', 'อนุมัติแล้ว')
+            ->where("comp_teacher_ids LIKE '%\"{$person_id}\"%'")
+            ->get()->getResultArray();
+        
         $uniqueRounds = [];
         // Add current FY-Round by default
         $uniqueRounds[$defaultFilter] = true;
         
-        foreach (array_merge($trainingDates, $docDates) as $row) {
+        foreach (array_merge($trainingDates, $docDates, $compDates) as $row) {
             $d = $row['d'] ?? null;
             if (!$d) continue;
             
@@ -113,13 +120,70 @@ class PortfolioController extends BaseController
             ->findAll();
             
         // Fetch Academic Work & Images (Filtered)
-        $data['documents'] = $this->docModel
+        $documentsList = $this->docModel
             ->where('pers_id', $person_id)
             ->whereIn('doc_category', ['ผลงานวิชาการ', 'รูปภาพกิจกรรม'])
             ->where('doc_date >=', $startDate)
             ->where('doc_date <=', $endDate)
             ->orderBy('doc_date', 'DESC')
             ->findAll();
+
+        $documentsMapped = [];
+        foreach ($documentsList as $doc) {
+            $documentsMapped[] = [
+                'id'             => $doc['id'],
+                'doc_category'   => $doc['doc_category'],
+                'doc_title'      => $doc['doc_title'],
+                'doc_date'       => $doc['doc_date'],
+                'doc_note'       => $doc['doc_note'],
+                'file_name'      => $doc['file_name'],
+                'file_path'      => $doc['file_path'],
+                'file_size'      => $doc['file_size'],
+                'is_competition' => false
+            ];
+        }
+
+        // Fetch competitions from skjacth_academic.tb_competitions where teacher ID is present
+        $compList = $db_academic->table('tb_competitions')
+            ->where('comp_date >=', $startDate)
+            ->where('comp_date <=', $endDate)
+            ->where('comp_status', 'อนุมัติแล้ว')
+            ->where("comp_teacher_ids LIKE '%\"{$person_id}\"%'")
+            ->orderBy('comp_date', 'DESC')
+            ->get()->getResult();
+
+        foreach ($compList as $comp) {
+            $certs = json_decode($comp->comp_certificate_files, true) ?: [];
+            $imgs = json_decode($comp->comp_images, true) ?: [];
+            $filePath = '';
+            if (!empty($certs)) {
+                $filePath = "https://skj.nsnpao.go.th/uploads/academic/competitions/certificates/" . $certs[0];
+            } elseif (!empty($imgs)) {
+                $filePath = "https://skj.nsnpao.go.th/uploads/academic/competitions/images/" . $imgs[0];
+            }
+
+            $awards = json_decode($comp->comp_awards, true) ?: [];
+            $awardText = !empty($awards) ? implode(', ', $awards) : 'ไม่มีการระบุรางวัล';
+
+            $documentsMapped[] = [
+                'id'             => $comp->comp_id,
+                'doc_category'   => 'ผลงานการแข่งขัน (งานวิชาการ)',
+                'doc_title'      => $comp->comp_name . ' - ' . $comp->comp_activity,
+                'doc_date'       => $comp->comp_date,
+                'doc_note'       => "รางวัล: " . $awardText . "\nระดับ: " . $comp->comp_level . "\nสถานที่: " . ($comp->comp_location ?: '-'),
+                'file_name'      => basename($filePath),
+                'file_path'      => $filePath,
+                'file_size'      => 0,
+                'is_competition' => true
+            ];
+        }
+
+        // Sort merged array by date in descending order
+        usort($documentsMapped, function($a, $b) {
+            return strtotime($b['doc_date']) - strtotime($a['doc_date']);
+        });
+
+        $data['documents'] = $documentsMapped;
 
         $db_skj = db_connect('skj');
         
@@ -172,6 +236,11 @@ class PortfolioController extends BaseController
         }
 
         if (!empty($post['id'])) {
+            $oldTraining = $this->trainingModel->find($post['id']);
+            if ($oldTraining && !empty($oldTraining['train_certificate']) && !empty($data['train_certificate']) && $oldTraining['train_certificate'] !== $data['train_certificate']) {
+                $remotePath = "personnel/teacher/training/{$oldTraining['pers_id']}/{$oldTraining['train_certificate']}";
+                $this->_deleteFileFromServer($remotePath);
+            }
             if ($this->trainingModel->update($post['id'], $data) === false) {
                 return $this->response->setJSON([
                     'status' => 'error',
@@ -233,6 +302,10 @@ class PortfolioController extends BaseController
         }
 
         if (!empty($post['id'])) {
+            $oldDoc = $this->docModel->find($post['id']);
+            if ($oldDoc && !empty($oldDoc['file_name']) && !empty($data['file_name']) && $oldDoc['file_name'] !== $data['file_name']) {
+                $this->_deleteFileFromServer($oldDoc['file_path']);
+            }
             if ($this->docModel->update($post['id'], $data) === false) {
                 return $this->response->setJSON([
                     'status' => 'error',
@@ -251,6 +324,59 @@ class PortfolioController extends BaseController
         }
 
         return $this->response->setJSON(['status' => 'success', 'message' => $msg]);
+    }
+
+    public function getCompetitionDetail($id)
+    {
+        $db_academic = db_connect();
+        $comp = $db_academic->table('tb_competitions')->where('comp_id', $id)->get()->getRow();
+        if (!$comp) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'ไม่พบข้อมูล'], 404);
+        }
+
+        // Fetch students
+        $students = [];
+        $studentIds = json_decode($comp->comp_student_ids, true) ?: [];
+        if (!empty($studentIds)) {
+            $students = $db_academic->table('tb_students')
+                ->select('StudentID, StudentCode, StudentPrefix, StudentFirstName, StudentLastName, StudentClass, StudentNumber')
+                ->whereIn('StudentID', $studentIds)
+                ->get()
+                ->getResult();
+        }
+
+        // Fetch teachers
+        $teachers = [];
+        $teacherIds = json_decode($comp->comp_teacher_ids, true) ?: [];
+        if (!empty($teacherIds)) {
+            $teachers = $this->db_personnel->table('tb_personnel')
+                ->select('pers_id, pers_prefix, pers_firstname, pers_lastname, pers_img')
+                ->whereIn('pers_id', $teacherIds)
+                ->get()
+                ->getResult();
+        }
+
+        // Translate date to Thai format
+        $thaiDate = '';
+        if ($comp->comp_date) {
+            $date = strtotime($comp->comp_date);
+            $day = date('j', $date);
+            $months = ["", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+            $month = $months[date('n', $date)];
+            $year = date('Y', $date) + 543;
+            $thaiDate = "$day $month $year";
+        }
+
+        return $this->response->setJSON([
+            'status'    => 'success',
+            'comp'      => $comp,
+            'thaiDate'  => $thaiDate,
+            'students'  => $students,
+            'teachers'  => $teachers,
+            'awards'    => json_decode($comp->comp_awards) ?: [],
+            'certs'     => json_decode($comp->comp_certificate_files) ?: [],
+            'images'    => json_decode($comp->comp_images) ?: []
+        ]);
     }
 
     public function deleteTraining($id)
@@ -299,15 +425,20 @@ class PortfolioController extends BaseController
 
         try {
             $postData = [
-                'path'     => $post['path'],
-                'filename' => $post['filename'],
-                'chunk'    => $post['chunk'],
-                'chunks'   => $post['chunks'],
-                'file'     => new \CURLFile($file->getTempName(), $file->getMimeType(), $post['filename'])
+                'path'         => $post['path'],
+                'filename'     => $post['filename'],
+                'chunk_index'  => $post['chunk'],
+                'total_chunks' => $post['chunks'],
+                'file'         => new \CURLFile($file->getTempName(), $file->getMimeType(), $post['filename'])
+            ];
+
+            $headers = [
+                'X-Auth-Token' => env('upload.server.token') ?: 'Dekpiano2025!!'
             ];
 
             $response = $client->post($uploadUrl, [
                 'multipart' => $postData,
+                'headers' => $headers,
                 'http_errors' => false
             ]);
 
@@ -338,8 +469,13 @@ class PortfolioController extends BaseController
                 'file' => new \CURLFile($file->getTempName(), $file->getMimeType(), $originalName)
             ];
             
+            $headers = [
+                'X-Auth-Token' => env('upload.server.token') ?: 'Dekpiano2025!!'
+            ];
+
             $response = $client->post($uploadUrl, [
                 'multipart' => $postData, 
+                'headers' => $headers,
                 'http_errors' => false
             ]);
             
@@ -368,7 +504,14 @@ class PortfolioController extends BaseController
         try {
             $client = \Config\Services::curlrequest();
             $jsonData = json_encode(['path' => dirname($remoteFilePath), 'files' => [basename($remoteFilePath)]]);
-            $client->setBody($jsonData)->post($deleteUrl, ['headers' => ['Content-Type' => 'application/json'], 'http_errors' => false]);
+            $headers = [
+                'Content-Type' => 'application/json',
+                'X-Auth-Token' => env('upload.server.token') ?: 'Dekpiano2025!!'
+            ];
+            $client->setBody($jsonData)->post($deleteUrl, [
+                'headers' => $headers,
+                'http_errors' => false
+            ]);
             return true;
         } catch (\Exception $e) {
             return false;
