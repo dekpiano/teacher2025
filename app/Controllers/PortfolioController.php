@@ -258,7 +258,8 @@ class PortfolioController extends BaseController
             $msg = 'เพิ่มข้อมูลการอบรมสำเร็จ';
         }
 
-        return $this->response->setJSON(['status' => 'success', 'message' => $msg]);
+        $filter = $this->_calculateFilter($data['train_start_date']);
+        return $this->response->setJSON(['status' => 'success', 'message' => $msg, 'filter' => $filter]);
     }
 
     public function saveDocument()
@@ -323,7 +324,8 @@ class PortfolioController extends BaseController
             $msg = 'เพิ่มข้อมูลผลงานสำเร็จ';
         }
 
-        return $this->response->setJSON(['status' => 'success', 'message' => $msg]);
+        $filter = $this->_calculateFilter($data['doc_date']);
+        return $this->response->setJSON(['status' => 'success', 'message' => $msg, 'filter' => $filter]);
     }
 
     public function getCompetitionDetail($id)
@@ -516,5 +518,19 @@ class PortfolioController extends BaseController
         } catch (\Exception $e) {
             return false;
         }
+    }
+
+    private function _calculateFilter($dateStr)
+    {
+        if (empty($dateStr)) return null;
+        $time = strtotime($dateStr);
+        if ($time === false) return null;
+        
+        $y = (int)date('Y', $time) + 543;
+        $m = (int)date('n', $time);
+        
+        $fy = ($m >= 10) ? $y + 1 : $y;
+        $rnd = ($m >= 10 || $m <= 3) ? 1 : 2;
+        return "{$fy}-{$rnd}";
     }
 }

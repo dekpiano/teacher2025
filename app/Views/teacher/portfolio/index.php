@@ -706,7 +706,13 @@ $(document).ready(function() {
                     text: res.message,
                     timer: 1500,
                     showConfirmButton: false
-                }).then(() => { location.reload(); });
+                }).then(() => {
+                    if (res.filter) {
+                        window.location.href = '<?= base_url('portfolio') ?>?filter=' + res.filter;
+                    } else {
+                        location.reload();
+                    }
+                });
             } else {
                 Swal.fire('ผิดพลาด', res.message, 'error');
             }
@@ -764,7 +770,13 @@ $(document).ready(function() {
                     text: res.message,
                     timer: 1500,
                     showConfirmButton: false
-                }).then(() => { location.reload(); });
+                }).then(() => {
+                    if (res.filter) {
+                        window.location.href = '<?= base_url('portfolio') ?>?filter=' + res.filter;
+                    } else {
+                        location.reload();
+                    }
+                });
             } else {
                 Swal.fire('ผิดพลาด', res.message, 'error');
             }
