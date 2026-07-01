@@ -82,8 +82,8 @@
                                         </td>
                                         <td>
                                             <?php if ($found_plan && $found_plan->seplan_file): ?>
-                                                <a href="<?= env('upload.server.baseurl') . esc($found_plan->seplan_year) . '/' . esc($found_plan->seplan_term) . '/' . rawurlencode($found_plan->seplan_namesubject) . '/' . rawurlencode($found_plan->seplan_file) ?>"
-                                                    target="_blank" class="btn btn-sm btn-info">
+                                                <a href="<?= site_url('curriculum/download-plan-file/' . esc($found_plan->seplan_ID)) ?>"
+                                                    class="btn btn-sm btn-info">
                                                     <i class="bi bi-eye-fill"></i> ดูไฟล์
                                                 </a>
                                             <?php else: ?>

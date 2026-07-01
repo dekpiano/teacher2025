@@ -175,6 +175,7 @@ $routes->get('login/googleCallback', 'Login::googleCallback');
         $routes->post('set-main-subject', 'CurriculumController::setMainSubject');
         $routes->get('delete-plan/(:num)', 'CurriculumController::deletePlan/$1');
         $routes->get('download-plan-file/(:num)', 'CurriculumController::downloadPlanFile/$1');
+        $routes->get('check-file-exists/(:num)', 'CurriculumController::checkFileExists/$1');
         $routes->get('download-plan', 'CurriculumController::loadPlan');
         $routes->get('download-plan/(:num)/(:num)/(:any)', 'CurriculumController::loadPlan/$1/$2/$3');
         $routes->get('download-plan-zip/(:any)', 'CurriculumController::downloadPlanZip/$1');

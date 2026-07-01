@@ -248,8 +248,8 @@ class CurriculumController extends BaseController
             'seplan_sendcomment' => $textToStore,
         ];
 
-        $folderYear = $this->setup->seplanset_year ?? date('Y') + 543;
-        $folderTerm = $this->setup->seplanset_term ?? 1;
+        $folderYear = $plan['seplan_year'];
+        $folderTerm = $plan['seplan_term'];
         $uploadBasePath = 'academic/teacher/course/plan';
         $remoteUploadPath = "{$uploadBasePath}/{$folderYear}/{$folderTerm}/{$plan['seplan_namesubject']}";
 
@@ -367,14 +367,14 @@ class CurriculumController extends BaseController
     public function downloadPlanFile($seplanID)
     {
         if (!$seplanID) {
-            $this->session->setFlashdata('error', 'คุณอาจไม่ได้บันทึกข้อมูลไฟล์เพราะไม่มีในระบบ');
+            $this->session->setFlashdata('error', 'ไม่พบไฟล์ในระบบ หรือครูอาจจะไม่ได้อัปโหลดไฟล์เข้ามา');
             return redirect()->back();
         }
 
         $plan = $this->curriculumModel->find($seplanID);
 
         if (!$plan || empty($plan['seplan_file'])) {
-            $this->session->setFlashdata('error', 'คุณอาจไม่ได้บันทึกข้อมูลไฟล์เพราะไม่มีในระบบ');
+            $this->session->setFlashdata('error', 'ไม่พบไฟล์ในระบบ หรือครูอาจจะไม่ได้อัปโหลดไฟล์เข้ามา');
             return redirect()->back();
         }
 
@@ -385,7 +385,7 @@ class CurriculumController extends BaseController
             return redirect()->back();
         }
 
-        $fileUrl = rtrim($baseFileUrl, '/') . '/' . $plan['seplan_year'] . '/' . $plan['seplan_term'] . '/' . rawurlencode($plan['seplan_namesubject']) . '/' . rawurlencode($plan['seplan_file']);
+        $fileUrl = rtrim($baseFileUrl, '/') . '/' . $plan['seplan_year'] . '/' . $plan['seplan_term'] . '/' . str_replace('%2F', '/', rawurlencode($plan['seplan_namesubject'])) . '/' . rawurlencode($plan['seplan_file']);
 
 
         // Fetch the file content from the URL.
@@ -393,14 +393,54 @@ class CurriculumController extends BaseController
         $fileData = @file_get_contents($fileUrl);
 
         if ($fileData === false) {
-            $this->session->setFlashdata('error', 'คุณอาจไม่ได้บันทึกข้อมูลไฟล์เพราะไม่มีในระบบ');
+            $this->session->setFlashdata('error', 'ไม่พบไฟล์ในระบบ หรือครูอาจจะไม่ได้อัปโหลดไฟล์เข้ามา');
             return redirect()->back();
         }
 
-        // Use the response->download() method to force download.
-        // The first parameter is the desired filename for the user.
-        // The second parameter is the file data.
-        return $this->response->download($plan['seplan_file'], $fileData);
+        $fileExtension = strtolower(pathinfo($plan['seplan_file'], PATHINFO_EXTENSION));
+        
+        if (in_array($fileExtension, ['doc', 'docx'])) {
+            $viewerUrl = 'https://view.officeapps.live.com/op/view.aspx?src=' . urlencode($fileUrl);
+            return redirect()->to($viewerUrl);
+        }
+
+        $contentType = 'application/octet-stream';
+        if ($fileExtension === 'pdf') {
+            $contentType = 'application/pdf';
+        }
+
+        return $this->response
+                    ->setHeader('Content-Type', $contentType)
+                    ->setHeader('Content-Disposition', 'inline; filename="' . basename($plan['seplan_file']) . '"')
+                    ->setBody($fileData);
+    }
+
+    public function checkFileExists($seplanID)
+    {
+        if (!$seplanID) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'ไม่พบไฟล์ในระบบ หรือครูอาจจะไม่ได้อัปโหลดไฟล์เข้ามา']);
+        }
+
+        $plan = $this->curriculumModel->find($seplanID);
+
+        if (!$plan || empty($plan['seplan_file'])) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'ไม่พบไฟล์ในระบบ หรือครูอาจจะไม่ได้อัปโหลดไฟล์เข้ามา']);
+        }
+
+        $baseFileUrl = env('upload.server.baseurl');
+        if (!$baseFileUrl) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'The upload.server.baseurl is not defined in the .env file.']);
+        }
+
+        $fileUrl = rtrim($baseFileUrl, '/') . '/' . $plan['seplan_year'] . '/' . $plan['seplan_term'] . '/' . str_replace('%2F', '/', rawurlencode($plan['seplan_namesubject'])) . '/' . rawurlencode($plan['seplan_file']);
+
+        // Check if file exists using HTTP headers (faster and lighter)
+        $headers = @get_headers($fileUrl);
+        if ($headers && strpos($headers[0], '200') !== false) {
+            return $this->response->setJSON(['status' => 'success']);
+        }
+
+        return $this->response->setJSON(['status' => 'error', 'message' => 'ไม่พบไฟล์ในระบบ หรือครูอาจจะไม่ได้อัปโหลดไฟล์เข้ามา']);
     }
 
     /**
@@ -674,7 +714,7 @@ class CurriculumController extends BaseController
 
         $hasFiles = false;
         foreach ($dataFiles as $fileRecord) {
-            $fileUrl = rtrim($baseFileUrl, '/') . '/' . $fileRecord->seplan_year . '/' . $fileRecord->seplan_term . '/' . rawurlencode($fileRecord->seplan_namesubject) . '/' . rawurlencode($fileRecord->seplan_file);
+            $fileUrl = rtrim($baseFileUrl, '/') . '/' . $fileRecord->seplan_year . '/' . $fileRecord->seplan_term . '/' . str_replace('%2F', '/', rawurlencode($fileRecord->seplan_namesubject)) . '/' . rawurlencode($fileRecord->seplan_file);
 
             $fileData = @file_get_contents($fileUrl);
 

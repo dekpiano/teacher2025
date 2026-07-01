@@ -183,8 +183,7 @@
                                             $style_class = ($file_ext == 'pdf') ? 'btn-label-danger' : 'btn-label-primary';
                                             $file_icon = ($file_ext == 'pdf') ? 'bi-file-earmark-pdf' : 'bi-file-earmark-word';
                                             ?>
-                                            <a target="_blank" 
-                                               href="<?= rtrim($upload_base_url, '/') .'/'. esc($v_plan->seplan_year) . '/' . esc($v_plan->seplan_term) . '/' . rawurlencode(esc($v_plan->seplan_namesubject)) . '/' . rawurlencode(esc($v_plan->seplan_file)) ?>"
+                                            <a href="<?= site_url('curriculum/download-plan-file/' . esc($v_plan->seplan_ID)) ?>"
                                                class="btn btn-sm <?= $style_class ?> file-link">
                                                 <i class="bi <?= $file_icon ?> me-1"></i> ดูไฟล์
                                             </a>

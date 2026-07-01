@@ -493,6 +493,50 @@
 
     <script>
         $(function() {
+            // Global file availability check for curriculum downloads/views
+            $(document).on('click', 'a[href*="download-plan-file"]', function(e) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                const $link = $(this);
+                const href = $link.attr('href');
+                if (!href || href === '#' || href.startsWith('javascript:')) return;
+
+                // Extract ID from URL
+                const id = href.substring(href.lastIndexOf('/') + 1);
+                
+                Swal.fire({
+                    title: 'กำลังตรวจสอบไฟล์...',
+                    text: 'กรุณารอสักครู่',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                $.ajax({
+                    url: `<?= site_url('curriculum/check-file-exists/') ?>${id}`,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        Swal.close();
+                        if (response.status === 'success') {
+                            window.open(href, '_blank');
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'ไม่พบไฟล์',
+                                text: response.message || 'ไม่พบไฟล์ในระบบ หรือครูอาจจะไม่ได้อัปโหลดไฟล์เข้ามา',
+                                confirmButtonColor: '#696cff'
+                            });
+                        }
+                    },
+                    error: function() {
+                        Swal.close();
+                        Swal.fire('ผิดพลาด', 'ไม่สามารถเชื่อมต่อระบบตรวจสอบไฟล์ได้', 'error');
+                    }
+                });
+            });
+
             // ─── Global Submit & Search Button Loading System ───
             
             // Function to apply loading state to a button

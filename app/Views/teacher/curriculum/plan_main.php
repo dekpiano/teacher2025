@@ -323,7 +323,7 @@
                                                     if ($file_ext == 'pdf') $file_icon = 'bi-file-earmark-pdf-fill text-danger';
                                                     elseif (in_array($file_ext, ['doc', 'docx'])) $file_icon = 'bi-file-earmark-word-fill text-primary';
                                                     ?>
-                                                    <a target="_blank" href="<?= env('upload.server.baseurl') . $v_plan->seplan_year . '/' . $v_plan->seplan_term . '/' . rawurlencode($v_plan->seplan_namesubject) . '/' . rawurlencode($v_plan->seplan_file) ?>" 
+                                                     <a href="<?= site_url('curriculum/download-plan-file/' . esc($v_plan->seplan_ID)) ?>" 
                                                        class="btn btn-sm btn-outline-secondary" title="ดูไฟล์">
                                                         <i class="bi <?= esc($file_icon) ?>"></i>
                                                     </a>
@@ -336,6 +336,8 @@
                                                         data-seplan-id="<?= esc($v_plan->seplan_ID ?? '') ?>"
                                                         data-seplan-coursecode="<?= esc($v_planNew->seplan_coursecode) ?>"
                                                         data-seplan-typeplan="<?= esc($planTypeName) ?>"
+                                                        data-seplan-year="<?= esc($v_plan->seplan_year ?? $year) ?>"
+                                                        data-seplan-term="<?= esc($v_plan->seplan_term ?? $term) ?>"
                                                         data-seplan-sendcomment="<?= esc($v_plan->seplan_sendcomment ?? '') ?>">
                                                         <i class="bi <?= $v_plan && $v_plan->seplan_file ? 'bi-pencil-square' : 'bi-cloud-upload' ?> me-1"></i> 
                                                         <?= $v_plan && $v_plan->seplan_file ? 'แก้ไขไฟล์' : 'อัปโหลด' ?>
@@ -631,6 +633,8 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('seplan_ID').value = this.dataset.seplanId;
             document.getElementById('seplan_typeplan').value = this.dataset.seplanTypeplan;
             document.getElementById('seplan_coursecode').value = this.dataset.seplanCoursecode;
+            document.getElementById('seplan_year').value = this.dataset.seplanYear;
+            document.getElementById('seplan_term').value = this.dataset.seplanTerm;
             document.getElementById('seplan_sendcomment').value = this.dataset.seplanSendcomment;
             
             // Reset Progress Bar
