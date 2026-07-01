@@ -360,16 +360,28 @@
                 };
 
                 try {
+                    let uploadedFileName = finalFileName;
                     // Upload all chunks sequentially
                     for (let i = 0; i < totalChunks; i++) {
-                        await uploadSingleChunk(i);
+                        const response = await uploadSingleChunk(i);
+                        if (i === totalChunks - 1) {
+                            let res = response;
+                            if (typeof response === 'string') {
+                                try { res = JSON.parse(response); } catch(e) {}
+                            }
+                            if (res.status === 'success') {
+                                uploadedFileName = res.filename;
+                            } else {
+                                throw new Error(res.message || 'เกิดความผิดพลาดในการรวมไฟล์');
+                            }
+                        }
                         const percent = Math.round(((i + 1) / totalChunks) * 100);
                         Swal.update({ html: `กำลังอัปโหลดส่วนประกอบของไฟล์ (${percent}%)` });
                     }
 
                     // Chunks uploaded, now save record
                     const formData = new FormData($('#uploadForm')[0]);
-                    formData.set('eva_file_name_ready', finalFileName);
+                    formData.set('eva_file_name_ready', uploadedFileName);
                     formData.delete('eva_file'); // Remove original file blob
 
                     $.ajax({

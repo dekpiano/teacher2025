@@ -203,18 +203,30 @@ $(document).ready(function() {
 
             const runProcess = async () => {
                 try {
+                    let uploadedFileName = finalFileName;
                     for (let i = 0; i < totalChunks; i++) {
-                        await uploadChunk(i);
+                        const response = await uploadChunk(i);
+                        if (i === totalChunks - 1) {
+                            let res = response;
+                            if (typeof response === 'string') {
+                                try { res = JSON.parse(response); } catch(e) {}
+                            }
+                            if (res.status === 'success') {
+                                uploadedFileName = res.filename;
+                            } else {
+                                throw new Error(res.message || 'เกิดความผิดพลาดในการรวมไฟล์');
+                            }
+                        }
                         const percent = Math.round(((i + 1) / totalChunks) * 100);
                         Swal.update({ html: `กำลังอัปโหลดส่วนประกอบของไฟล์ (${percent}%)` });
                     }
 
                     // Done uploading chunks, now update DB
-                    saveMetadata(finalFileName);
+                    saveMetadata(uploadedFileName);
 
                 } catch (err) {
                     console.error(err);
-                    Swal.fire({ icon: 'error', title: 'อัปโหลดล้มเหลว', text: 'ไม่สามารถส่งไฟล์ได้' });
+                    Swal.fire({ icon: 'error', title: 'อัปโหลดล้มเหลว', text: err.message || 'ไม่สามารถส่งไฟล์ได้' });
                     submitButton.prop('disabled', false);
                 }
             };

@@ -239,9 +239,21 @@ $(document).ready(function() {
 
         const executeUploadProcess = async () => {
             try {
+                let uploadedFileName = finalFileName;
                 // Upload all chunks sequentially
                 for (let i = 0; i < totalChunks; i++) {
-                    await uploadSingleChunk(i);
+                    const response = await uploadSingleChunk(i);
+                    if (i === totalChunks - 1) {
+                        let res = response;
+                        if (typeof response === 'string') {
+                            try { res = JSON.parse(response); } catch(e) {}
+                        }
+                        if (res.status === 'success') {
+                            uploadedFileName = res.filename;
+                        } else {
+                            throw new Error(res.message || 'เกิดความผิดพลาดในการรวมไฟล์');
+                        }
+                    }
                     const percent = Math.round(((i + 1) / totalChunks) * 100);
                     Swal.update({ html: `กำลังอัปโหลดส่วนประกอบของไฟล์ (${percent}%)` });
                 }
@@ -249,7 +261,7 @@ $(document).ready(function() {
                 // Chunks uploaded, now save research record
                 const mainForm = $('#form_insert_research')[0];
                 const finalData = new FormData(mainForm);
-                finalData.set('seres_file_name_ready', finalFileName); // Pass the filename that was just uploaded
+                finalData.set('seres_file_name_ready', uploadedFileName); // Pass the filename that was just uploaded
                 finalData.delete('seres_file'); // Remove original file blob to keep request small
 
                 $.ajax({

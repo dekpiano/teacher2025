@@ -256,7 +256,7 @@ class PerformanceEvaluationController extends BaseController
                 'http_errors' => false
             ]);
 
-            return $this->response->setStatusCode($response->getStatusCode())->setBody($response->getBody());
+            return $this->response->setContentType('application/json')->setStatusCode($response->getStatusCode())->setBody($response->getBody());
         } catch (\Exception $e) {
             return $this->response->setJSON(['status' => 'error', 'message' => $e->getMessage()]);
         }

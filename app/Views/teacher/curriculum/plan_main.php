@@ -654,6 +654,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const totalChunks = Math.ceil(file.size / chunkSize);
         
         uploadProgressContainer.style.display = 'block';
+        let serverFilename = null;
 
         for (let i = 0; i < totalChunks; i++) {
             const start = i * chunkSize;
@@ -686,12 +687,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(errorMsg);
             }
 
+            const data = await response.json();
+            if (i === totalChunks - 1) {
+                if (data.status === 'success') {
+                    serverFilename = data.filename;
+                } else {
+                    throw new Error(data.message || 'เกิดความผิดพลาดในการรวมไฟล์');
+                }
+            }
+
             const percentComplete = Math.round(((i + 1) / totalChunks) * 100);
             uploadProgressBar.style.width = percentComplete + '%';
             uploadPercentage.innerText = percentComplete + '%';
         }
 
-        return true; 
+        return serverFilename; 
     }
 
     // Submission
@@ -729,8 +739,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     // 2. Upload in chunks
                     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> กำลังอัปโหลด...';
-                    await uploadFileInChunks(file, remotePath, originalName);
-                    readyFilename = originalName;
+                    const uploadedName = await uploadFileInChunks(file, remotePath, originalName);
+                    if (!uploadedName) {
+                        throw new Error('ไม่สามารถอัปโหลดไฟล์ได้: เซิร์ฟเวอร์ไม่ส่งชื่อไฟล์กลับมา');
+                    }
+                    readyFilename = uploadedName;
                 }
 
                 // 3. Finalize update with database
