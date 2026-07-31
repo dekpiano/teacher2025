@@ -47,6 +47,7 @@ class Login extends BaseController
                 'gmail_account'  => $user['pers_username'],
                 'fullname'       => $user['fullname'],
                 'person_img'     => $user['pers_img'],
+                'position'       => $user['position'] ?? 'ครูผู้สอน',
                 'isLoggedIn'     => TRUE
             ];
             $session->set($ses_data);
@@ -136,13 +137,14 @@ class Login extends BaseController
             $model->updateGoogleUserData($email, $userData['sub']);
 
             $ses_data = [
-                'person_id'      => $user['pers_id'],
-                'gmail_account'  => $user['pers_username'],
-                'fullname'       => $user['fullname'],
-                'person_img'     => $user['pers_img'],
+                'person_id'       => $user['pers_id'],
+                'gmail_account'   => $user['pers_username'],
+                'fullname'        => $user['fullname'],
+                'person_img'      => $user['pers_img'],
+                'position'        => $user['position'] ?? 'ครูผู้สอน',
                 'pers_groupleade' => $user['pers_groupleade'],
-                'pers_learning' => $user['pers_learning'],
-                'isLoggedIn'     => TRUE
+                'pers_learning'   => $user['pers_learning'],
+                'isLoggedIn'      => TRUE
             ];
             $session->set($ses_data);
 

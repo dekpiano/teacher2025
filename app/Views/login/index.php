@@ -1,8 +1,10 @@
 <!doctype html>
 <html lang="th" class="light-style customizer-hide" dir="ltr" data-theme="theme-default">
+
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
     <title>เข้าสู่ระบบ | ระบบบริหารจัดการงานครู สกจ.9</title>
 
     <!-- Favicon -->
@@ -17,7 +19,7 @@
     <!-- Core CSS -->
     <link rel="stylesheet" href="<?= base_url('public/assets/sneat/vendor/css/core.css') ?>" />
     <link rel="stylesheet" href="<?= base_url('public/assets/sneat/vendor/css/theme-default.css') ?>" />
-    
+
     <style>
         :root {
             --primary-color: #696cff;
@@ -49,7 +51,7 @@
             z-index: 0;
             pointer-events: none;
         }
-        
+
         .bg-glow-bubble-2 {
             position: absolute;
             width: 600px;
@@ -73,7 +75,13 @@
         /* Left Side: Branding & Features */
         .info-panel {
             flex: 1.2;
-            background: linear-gradient(135deg, rgba(105, 108, 255, 0.96) 0%, rgba(63, 66, 181, 0.96) 100%);
+            background-color: #696cff;
+            background-image: 
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23ffffff' fill-opacity='0.05' d='M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,250.7C672,235,768,181,864,181.3C960,181,1056,235,1152,234.7C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3Cpath fill='%23ffffff' fill-opacity='0.08' d='M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,165.3C1248,171,1344,149,1392,138.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E"),
+                linear-gradient(135deg, rgba(105, 108, 255, 0.92) 0%, rgba(63, 66, 181, 0.96) 100%);
+            background-size: cover, cover;
+            background-position: bottom, center;
+            background-repeat: no-repeat;
             color: white;
             padding: 5rem 4rem;
             display: flex;
@@ -118,7 +126,7 @@
         .school-logo {
             height: 105px;
             margin-bottom: 2rem;
-            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.15));
+            filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.15));
             animation: fadeInDown 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
@@ -149,6 +157,7 @@
             gap: 1.5rem;
             animation: fadeInUp 1.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
+
         @media (max-width: 1200px) {
             .feature-list {
                 grid-template-columns: 1fr;
@@ -185,7 +194,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
             flex-shrink: 0;
         }
 
@@ -222,13 +231,13 @@
             -webkit-backdrop-filter: blur(20px);
             border-radius: 2rem;
             padding: 3.5rem 3rem;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.06), 0 0 0 1px var(--glass-border);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.06), 0 0 0 1px var(--glass-border);
             animation: zoomIn 0.7s cubic-bezier(0.16, 1, 0.3, 1);
             transition: all 0.3s ease;
         }
-        
+
         .login-card:hover {
-            box-shadow: 0 35px 70px rgba(0,0,0,0.08), 0 0 0 1px rgba(255, 255, 255, 0.6);
+            box-shadow: 0 35px 70px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.6);
         }
 
         .login-header-logo {
@@ -236,10 +245,10 @@
         }
 
         .btn-google-login {
-            background: #ffffff;
-            color: #3c4043;
-            border: 1px solid #dadce0;
-            padding: 14px 24px;
+            background: linear-gradient(135deg, #696cff 0%, #3f4191 100%);
+            color: #ffffff;
+            border: none;
+            padding: 16px 24px;
             border-radius: 3rem;
             font-weight: 700;
             display: flex;
@@ -247,22 +256,39 @@
             justify-content: center;
             width: 100%;
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            box-shadow: 0 10px 20px rgba(105, 108, 255, 0.4);
             text-decoration: none;
-            font-size: 0.95rem;
+            font-size: 1.1rem;
+            animation: pulse-login 2s infinite;
         }
 
         .btn-google-login:hover {
-            background-color: #f7fafe;
-            border-color: #d2e3fc;
-            color: #1a73e8 !important;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(26, 115, 232, 0.15);
+            background: linear-gradient(135deg, #3f4191 0%, #696cff 100%);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 25px rgba(105, 108, 255, 0.5);
+            color: #ffffff !important;
         }
 
         .btn-google-login img {
-            height: 22px;
+            height: 24px;
             margin-right: 12px;
+            background: white;
+            border-radius: 50%;
+            padding: 2px;
+        }
+
+        @keyframes pulse-login {
+            0% {
+                box-shadow: 0 0 0 0 rgba(105, 108, 255, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 15px rgba(105, 108, 255, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(105, 108, 255, 0);
+            }
         }
 
         .login-divider {
@@ -277,7 +303,8 @@
             font-weight: 600;
         }
 
-        .login-divider::before, .login-divider::after {
+        .login-divider::before,
+        .login-divider::after {
             content: '';
             flex: 1;
             border-bottom: 1.5px solid rgba(0, 0, 0, 0.06);
@@ -306,20 +333,100 @@
 
         /* Animations */
         @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-40px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(-40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
+
         @keyframes fadeInLeft {
-            from { opacity: 0; transform: translateX(-40px); }
-            to { opacity: 1; transform: translateX(0); }
+            from {
+                opacity: 0;
+                transform: translateX(-40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
+
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(40px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
+
         @keyframes zoomIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes float-3d-1 {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        @keyframes float-3d-2 {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(-5deg); }
+        }
+        @keyframes float-3d-3 {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-25px) scale(1.05); }
+        }
+
+        .floating-academic-1 {
+            position: absolute;
+            top: 10%;
+            right: 5%;
+            width: 140px;
+            opacity: 0.85;
+            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.2));
+            animation: float-3d-1 6s ease-in-out infinite;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .floating-academic-2 {
+            position: absolute;
+            bottom: 12%;
+            left: 5%;
+            width: 120px;
+            opacity: 0.7;
+            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.2));
+            animation: float-3d-2 7s ease-in-out infinite;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .floating-academic-3 {
+            position: absolute;
+            bottom: 25%;
+            right: 15%;
+            width: 100px;
+            opacity: 0.6;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.15));
+            animation: float-3d-3 5s ease-in-out infinite;
+            z-index: 1;
+            pointer-events: none;
         }
 
         @media (max-width: 992px) {
@@ -327,153 +434,208 @@
                 overflow-y: auto;
                 height: auto;
             }
-            .login-wrapper { 
-                flex-direction: column-reverse; 
+
+            .login-wrapper {
+                flex-direction: column-reverse;
                 height: auto;
                 min-height: 100vh;
             }
-            .info-panel { 
-                padding: 4rem 2rem; 
+
+            .info-panel {
+                padding: 3rem 1.5rem;
                 flex: none;
                 box-shadow: none;
+                text-align: center;
             }
-            .login-panel { 
-                flex: none; 
-                padding: 3rem 1.5rem; 
+
+            .info-content {
+                text-align: left;
+            }
+
+            .login-panel {
+                flex: none;
+                padding: 2rem 1rem;
                 background: transparent;
-                min-height: 90vh;
+                min-height: auto;
+                display: flex;
+                align-items: center;
             }
+
             .login-card {
-                padding: 3.5rem 2rem;
-                border-radius: 1.75rem;
-                background: rgba(255, 255, 255, 0.9);
+                padding: 2.5rem 1.5rem;
+                border-radius: 1.5rem;
+                background: rgba(255, 255, 255, 0.95);
+                width: 100%;
+                margin-top: 1rem;
             }
-            .system-title { font-size: 2.25rem; }
-            .system-subtitle { font-size: 1.1rem; margin-bottom: 2.5rem; }
+
+            .system-title {
+                font-size: 1.8rem;
+                text-align: center;
+            }
+
+            .system-subtitle {
+                font-size: 1rem;
+                margin-bottom: 2rem;
+                text-align: center;
+            }
+
+            .school-logo {
+                display: block;
+                margin: 0 auto 1.5rem auto;
+            }
+
             .login-header-logo {
                 display: block;
-                height: 75px;
-                margin: 0 auto 1.5rem auto;
-                filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+                height: 65px;
+                margin: 0 auto 1rem auto;
+                filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+            }
+
+            /* Adjust floating academic images for mobile */
+            .floating-academic-1 {
+                width: 80px;
+                top: 5%;
+                right: 2%;
+            }
+
+            .floating-academic-2 {
+                width: 70px;
+                bottom: 2%;
+                left: 2%;
+            }
+
+            .floating-academic-3 {
+                width: 60px;
+                bottom: 10%;
+                right: 5%;
             }
         }
     </style>
 </head>
 
-    <!-- Floating Background Bubbles -->
-    <div class="bg-glow-bubble-1"></div>
-    <div class="bg-glow-bubble-2"></div>
+<!-- Floating Background Bubbles -->
+<div class="bg-glow-bubble-1"></div>
+<div class="bg-glow-bubble-2"></div>
 
-    <div class="login-wrapper">
-        <!-- Left Panel -->
-        <div class="info-panel">
-            <div class="info-content">
-                <img src="https://skj.ac.th/uploads/logoSchool/LogoSKJ_4.png" alt="SKJ Logo" class="school-logo">
-                <h1 class="system-title">Teacher SKJ Online</h1>
-                <p class="system-subtitle">ระบบบริหารจัดการสารสนเทศและงานวิชาการสำหรับครู</p>
+<div class="login-wrapper">
+    <!-- Left Panel -->
+    <div class="info-panel">
+        <!-- 3D Academic Decorative Elements -->
+        <img src="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/1f393.svg" alt="Graduation Cap" class="floating-academic-1">
+        <img src="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/1f4da.svg" alt="Books" class="floating-academic-2">
+        <img src="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/1f52c.svg" alt="Microscope" class="floating-academic-3">
 
-                <ul class="feature-list">
-                    <li class="feature-item">
-                        <div class="feature-icon"><i class="bi bi-journal-check"></i></div>
-                        <div class="feature-text">
-                            <h6>บันทึกผลการเรียน</h6>
-                            <p>จัดการคะแนนและเกรดนักเรียน ทั้งรายวิชาปกติและเรียนซ้ำ</p>
-                        </div>
-                    </li>
-                    <li class="feature-item">
-                        <div class="feature-icon"><i class="bi bi-file-earmark-pdf"></i></div>
-                        <div class="feature-text">
-                            <h6>งานหลักสูตรและแผนการสอน</h6>
-                            <p>ส่งแผนการจัดการเรียนรู้ และงานวิจัยในชั้นเรียนออนไลน์</p>
-                        </div>
-                    </li>
-                    <li class="feature-item">
-                        <div class="feature-icon"><i class="bi bi-person-check"></i></div>
-                        <div class="feature-text">
-                            <h6>ประเมินผลนักเรียน</h6>
-                            <p>บันทึกอ่านคิดวิเคราะห์ และคุณลักษณะอันพึงประสงค์</p>
-                        </div>
-                    </li>
-                    <li class="feature-item">
-                        <div class="feature-icon"><i class="bi bi-people"></i></div>
-                        <div class="feature-text">
-                            <h6>กิจกรรมพัฒนาผู้เรียน</h6>
-                            <p>เช็คชื่อและประเมินผลกิจกรรมชุมนุมประจำสัปดาห์</p>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-        </div>
+        <div class="info-content">
+            <img src="https://skj.ac.th/uploads/logoSchool/LogoSKJ_4.png" alt="SKJ Logo" class="school-logo">
+            <h1 class="system-title">Teacher SKJ Online</h1>
+            <p class="system-subtitle">ระบบบริหารจัดการสารสนเทศและงานวิชาการสำหรับครู</p>
 
-        <!-- Right Panel -->
-        <div class="login-panel">
-            <div class="login-card">
-                <div class="text-center mb-4">
-                    <img src="https://skj.ac.th/uploads/logoSchool/LogoSKJ_4.png" alt="SKJ Logo" class="login-header-logo">
-                    <h3 class="fw-black text-primary mb-2" style="letter-spacing: -0.02em;">ลงชื่อเข้าใช้งาน</h3>
-                    <p class="text-muted small mb-0">ระบบสารสนเทศและบริหารงานวิชาการครู สกจ.</p>
-                </div>
-
-                <?php if (session()->getFlashdata('msg')) : ?>
-                    <div class="alert alert-danger mb-4 shadow-sm border-0 d-flex align-items-center" role="alert">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                        <div><?= session()->getFlashdata('msg') ?></div>
+            <ul class="feature-list">
+                <li class="feature-item">
+                    <div class="feature-icon"><i class="bi bi-clipboard-data"></i></div>
+                    <div class="feature-text">
+                        <h6>งานวัดผลและวิชาการ</h6>
+                        <p>บันทึกคะแนน, เรียนซ้ำ, ประเมินการอ่านคิดวิเคราะห์ และคุณลักษณะฯ</p>
                     </div>
-                <?php endif; ?>
-
-                <a href="<?= $google_login_url ?>" class="btn-google-login">
-                    <img src="https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png" alt="Google Logo">
-                    <span>ด้วยอีเมลองค์กร @skj.ac.th</span>
-                </a>
-
-                <div class="login-divider">
-                    <span>Academic Information Management</span>
-                </div>
-
-                <div class="info-note">
-                    <div class="d-flex align-items-start">
-                        <i class="bi bi-info-circle-fill me-2 mt-1" style="font-size: 1.15rem; flex-shrink: 0;"></i>
-                        <div>
-                            <strong>หมายเหตุ:</strong> หากไม่สามารถเข้าสู่ระบบได้ กรุณาตรวจสอบว่าใช้บัญชีอีเมลโรงเรียน (@skj.ac.th) หรือติดต่อผู้ดูแลระบบสารสนเทศ
-                        </div>
+                </li>
+                <li class="feature-item">
+                    <div class="feature-icon"><i class="bi bi-file-earmark-text"></i></div>
+                    <div class="feature-text">
+                        <h6>งานหลักสูตรและพัฒนาครู</h6>
+                        <p>จัดการแผนการจัดการเรียนรู้ และงานวิจัยในชั้นเรียน</p>
                     </div>
-                </div>
-
-                <div class="login-footer">
-                    <p class="mb-0">© <?= date('Y') ?> สวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์</p>
-                    <small>Version 2.0 Agentic Edition</small>
-                </div>
-            </div>
+                </li>
+                <li class="feature-item">
+                    <div class="feature-icon"><i class="bi bi-people"></i></div>
+                    <div class="feature-text">
+                        <h6>กิจกรรมพัฒนาผู้เรียน</h6>
+                        <p>บันทึกเวลาเรียนและประเมินผลกิจกรรมชุมนุม</p>
+                    </div>
+                </li>
+                <li class="feature-item">
+                    <div class="feature-icon"><i class="bi bi-person-badge"></i></div>
+                    <div class="feature-text">
+                        <h6>งานบุคลากร</h6>
+                        <p>SKJ Check-In เข้า-ออกงาน และระบบการลาออนไลน์</p>
+                    </div>
+                </li>
+            </ul>
         </div>
     </div>
 
-    <!-- Core JS -->
-    <script src="<?= base_url('public/assets/sneat/vendor/libs/jquery/jquery.js') ?>"></script>
-    <script src="<?= base_url('public/assets/sneat/vendor/js/bootstrap.js') ?>"></script>
+    <!-- Right Panel -->
+    <div class="login-panel">
+        <div class="login-card">
+            <div class="text-center mb-4">
+                <img src="https://skj.ac.th/uploads/logoSchool/LogoSKJ_4.png" alt="SKJ Logo" class="login-header-logo">
+                <h3 class="fw-black text-primary mb-2" style="letter-spacing: -0.02em;">ลงชื่อเข้าใช้งาน</h3>
+                <p class="text-muted small mb-0">ระบบสารสนเทศและบริหารงานวิชาการครู สกจ.</p>
+            </div>
 
-    <script>
-        $(function() {
-            // Loading for Google Login Link
-            $('.btn-google-login').on('click', function(e) {
-                const $btn = $(this);
-                if ($btn.hasClass('disabled')) return;
-                
-                $btn.addClass('disabled');
-                $btn.css('min-width', $btn.outerWidth() + 'px');
-                $btn.html('<span class="spinner-border spinner-border-sm me-2" role="status"></span> กำลังนำคุณไปยังหน้าเข้าสู่ระบบ...');
-            });
+            <?php if (session()->getFlashdata('msg')): ?>
+                <div class="alert alert-danger mb-4 shadow-sm border-0 d-flex align-items-center" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <div><?= session()->getFlashdata('msg') ?></div>
+                </div>
+            <?php endif; ?>
 
-            // Global Form Submit (if any)
-            $(document).on('submit', 'form', function() {
-                const $btn = $(this).find('button[type="submit"], input[type="submit"]').not(':disabled');
-                $btn.each(function() {
-                    const $b = $(this);
-                    $b.prop('disabled', true);
-                    $b.css('min-width', $b.outerWidth() + 'px');
-                    $b.html('<span class="spinner-border spinner-border-sm me-2" role="status"></span> กำลังดำเนินการ...');
-                });
+
+            <a href="<?= $google_login_url ?>" class="btn-google-login">
+                <img src="https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png" alt="Google Logo">
+                <span>เข้าสู่ระบบด้วย @skj.ac.th</span>
+            </a>
+
+            <div class="login-divider">
+                <span>Academic Information Management</span>
+            </div>
+
+            <div class="info-note">
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-info-circle-fill me-2 mt-1" style="font-size: 1.15rem; flex-shrink: 0;"></i>
+                    <div>
+                        <strong>หมายเหตุ:</strong> หากไม่สามารถเข้าสู่ระบบได้ กรุณาตรวจสอบว่าใช้บัญชีอีเมลโรงเรียน
+                        (@skj.ac.th) หรือติดต่อผู้ดูแลระบบสารสนเทศ
+                    </div>
+                </div>
+            </div>
+
+            <div class="login-footer">
+                <p class="mb-0">© <?= date('Y') ?> สวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์</p>
+                <small>Version 2.0 Agentic Edition</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Core JS -->
+<script src="<?= base_url('public/assets/sneat/vendor/libs/jquery/jquery.js') ?>"></script>
+<script src="<?= base_url('public/assets/sneat/vendor/js/bootstrap.js') ?>"></script>
+
+<script>
+    $(function () {
+        // Loading for Google Login Link
+        $('.btn-google-login').on('click', function (e) {
+            const $btn = $(this);
+            if ($btn.hasClass('disabled')) return;
+
+            $btn.addClass('disabled');
+            $btn.css('min-width', $btn.outerWidth() + 'px');
+            $btn.html('<span class="spinner-border spinner-border-sm me-2" role="status"></span> กำลังนำคุณไปยังหน้าเข้าสู่ระบบ...');
+        });
+
+        // Global Form Submit (if any)
+        $(document).on('submit', 'form', function () {
+            const $btn = $(this).find('button[type="submit"], input[type="submit"]').not(':disabled');
+            $btn.each(function () {
+                const $b = $(this);
+                $b.prop('disabled', true);
+                $b.css('min-width', $b.outerWidth() + 'px');
+                $b.html('<span class="spinner-border spinner-border-sm me-2" role="status"></span> กำลังดำเนินการ...');
             });
         });
-    </script>
+    });
+</script>
 </body>
+
 </html>

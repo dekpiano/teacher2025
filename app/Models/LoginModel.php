@@ -13,17 +13,19 @@ class LoginModel extends Model
 
     public function checkLogin($username, $password)
     {
-        return $this->select('pers_id, pers_username, CONCAT(pers_firstname, " ", pers_lastname) as fullname, pers_img')
-                     ->where('pers_username', $username)
-                     ->where('pers_password', $password)
-                     ->where('pers_status', 'กำลังใช้งาน')
+        return $this->select('tb_personnel.pers_id, tb_personnel.pers_username, CONCAT(tb_personnel.pers_prefix, tb_personnel.pers_firstname, " ", tb_personnel.pers_lastname) as fullname, tb_personnel.pers_img, tb_position.posi_name as position')
+                     ->join('tb_position', 'tb_position.posi_id = tb_personnel.pers_position', 'left')
+                     ->where('tb_personnel.pers_username', $username)
+                     ->where('tb_personnel.pers_password', $password)
+                     ->where('tb_personnel.pers_status', 'กำลังใช้งาน')
                      ->first();
     }
 
     public function checkGoogleLogin($email)
     {
-        return $this->select('pers_id, pers_username, CONCAT(pers_firstname, " ", pers_lastname) as fullname, pers_img,pers_groupleade,pers_learning')
-                     ->where('pers_username', $email)
+        return $this->select('tb_personnel.pers_id, tb_personnel.pers_username, CONCAT(tb_personnel.pers_prefix, tb_personnel.pers_firstname, " ", tb_personnel.pers_lastname) as fullname, tb_personnel.pers_img, tb_personnel.pers_groupleade, tb_personnel.pers_learning, tb_position.posi_name as position')
+                     ->join('tb_position', 'tb_position.posi_id = tb_personnel.pers_position', 'left')
+                     ->where('tb_personnel.pers_username', $email)
                      //->where('pers_status', 'กำลังใช้งาน')
                      ->first();
     }

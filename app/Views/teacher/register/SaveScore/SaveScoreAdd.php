@@ -234,12 +234,13 @@
                             </table>
                         </div>
                         
-                        <!-- Floating Action Bar -->
+                        <!-- Floating Action Bar (ซ่อนไว้ชั่วคราวตามคำขอ)
                         <div class="sticky-bottom bg-white border-top p-3 shadow-lg d-flex justify-content-center">
                             <button type="submit" class="btn btn-primary btn-lg px-5 shadow hover-elevate">
                                 <i class="bi bi-save-fill me-2"></i> บันทึกข้อมูลและยืนยันคะแนน
                             </button>
                         </div>
+                        -->
                     </form>
                 <?php else : ?>
                     <div class="text-center py-5">
@@ -399,32 +400,37 @@
         border-radius: 20px;
     }
 
-    /* Theme Custom Styles */
-    .sticky-top { 
-        top: 0 !important; 
-        background-color: #fff !important;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        z-index: 1020;
-    }
+    /* Sticky Table Header Styles */
     .table-container-fixed {
-        overflow-x: auto;
-        overflow-y: hidden;
+        overflow: auto;
+        max-height: 80vh;
         width: 100%;
         position: relative;
+    }
+    #tb_score thead th {
+        position: sticky;
+        top: 0;
+        background-color: #f8f9fa !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        z-index: 10;
+    }
+    #tb_score thead tr:nth-child(2) th {
+        top: 60px; /* Offset for second header row */
+        z-index: 9;
     }
     .fs-tiny { font-size: 0.65rem; }
     
     .score-input-wrapper {
         position: relative;
         width: 100%;
-        max-width: 80px;
+        max-width: 85px;
         margin: 0 auto;
     }
     
     .check_score, .study_time {
         height: 45px;
         font-size: 1.1rem;
-        transition: all 0.2s;
+        transition: all 0.3s ease;
         border: 2px solid transparent;
         background-color: #f8f9fa;
         border-radius: 8px;
@@ -436,6 +442,55 @@
         background-color: #fff !important;
         border-color: #696cff !important;
         box-shadow: 0 0.125rem 0.25rem rgba(105, 108, 255, 0.4) !important;
+    }
+
+    /* States for Inline Auto-save feedback */
+    .input-saving {
+        border-color: #ffab00 !important;
+        background-color: #fff9e6 !important;
+    }
+
+    .input-saved-success {
+        border-color: #71dd37 !important;
+        background-color: #e8fadf !important;
+        box-shadow: 0 0 8px rgba(113, 221, 55, 0.5) !important;
+    }
+
+    .input-save-error {
+        border-color: #ff3e1d !important;
+        background-color: #ffe5e5 !important;
+    }
+
+    .save-status-text {
+        position: absolute;
+        bottom: -14px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.55rem;
+        white-space: nowrap;
+        pointer-events: none;
+        opacity: 0;
+        transition: all 0.25s ease;
+        padding: 0 4px;
+        border-radius: 3px;
+        z-index: 5;
+        font-weight: 500;
+        line-height: 1.2;
+    }
+    .save-status-text.status-saving {
+        opacity: 1;
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    .save-status-text.status-saved {
+        opacity: 1;
+        background-color: #d4edda;
+        color: #155724;
+    }
+    .save-status-text.status-error {
+        opacity: 1;
+        background-color: #f8d7da;
+        color: #721c24;
     }
     
     #tb_score thead th {
@@ -607,8 +662,13 @@
                         Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: data.message });
                     }
                 },
-                error: function() {
-                    Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้' });
+                error: function(xhr) {
+                    var errMsg = 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้';
+                    if (xhr.status) errMsg += ' (HTTP ' + xhr.status + ')';
+                    if (xhr.responseText) {
+                        try { var j = JSON.parse(xhr.responseText); if (j.message) errMsg = j.message; } catch(e) {}
+                    }
+                    Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: errMsg });
                 },
                 complete: function() {
                     submitButton.prop('disabled', false).html(originalButtonText);
@@ -768,8 +828,13 @@
                         Swal.fire({ icon: 'error', title: 'ขออภัย', text: 'ไม่สามารถบันทึกข้อมูลได้' });
                     }
                 },
-                error: function() {
-                    Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้' });
+                error: function(xhr) {
+                    var errMsg = 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้';
+                    if (xhr.status) errMsg += ' (HTTP ' + xhr.status + ')';
+                    if (xhr.responseText) {
+                        try { var j = JSON.parse(xhr.responseText); if (j.message) errMsg = j.message; } catch(e) {}
+                    }
+                    Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: errMsg });
                 },
                 complete: function() {
                     submitButton.prop('disabled', false).html(originalButtonText);
@@ -777,10 +842,18 @@
             });
         });
 
-        const Toast = Swal.mixin({ toast: true, position: 'bottom-end', showConfirmButton: false, timer: 1500, timerProgressBar: true });
+        // Dynamic insertion of status text badge into input wrappers
+        $('.score-input-wrapper').each(function() {
+            if ($(this).find('.save-status-text').length === 0) {
+                $(this).append('<span class="save-status-text"></span>');
+            }
+        });
 
         $(document).on('input', '.check_score, .study_time', function() {
             var inputField = $(this);
+            var wrapper = inputField.closest('.score-input-wrapper');
+            var statusTag = wrapper.find('.save-status-text');
+
             var currentTimeout = inputField.data('autosaveTimeout');
             clearTimeout(currentTimeout);
             
@@ -788,13 +861,20 @@
             var maxValue = inputField.hasClass('check_score') ? parseInt(inputField.attr('check-score-key'), 10) : parseInt(inputField.attr('check-time'), 10);
 
             if (maxValue && !isNaN(enteredValue) && enteredValue > maxValue) {
-                Toast.fire({ icon: 'error', title: 'ค่าที่กรอกเกินกำหนด!' });
-                inputField.val('0').addClass('is-invalid');
-                setTimeout(() => { inputField.removeClass('is-invalid').focus().select(); }, 500);
+                inputField.removeClass('input-saving input-saved-success').addClass('input-save-error');
+                statusTag.removeClass('status-saving status-saved').addClass('status-error').text('เกินกำหนด!');
+                inputField.val('0');
+                setTimeout(() => { 
+                    inputField.removeClass('input-save-error').focus().select(); 
+                    statusTag.removeClass('status-error').text('');
+                }, 800);
                 return;
             }
 
-            Toast.fire({ icon: 'info', title: 'รอการบันทึกอัตโนมัติ...', timer: 1000 });
+            // State: Typing -> Show 'กำลังบันทึก...'
+            inputField.removeClass('input-saved-success input-save-error').addClass('input-saving');
+            statusTag.removeClass('status-saved status-error').addClass('status-saving').text('กำลังบันทึก...');
+
             var studentRow = inputField.closest('tr');
             var newTimeout = setTimeout(function() {
                 var studentID = studentRow.find('input[name="StudentID[]"]').val();
@@ -814,11 +894,26 @@
                     dataType: 'json',
                     success: function(response) {
                         if (response.status === 'success') {
-                            Toast.fire({ icon: 'success', title: 'บันทึกอัตโนมัติสำเร็จ' });
+                            // State: Saved -> Show 'บันทึกแล้ว'
+                            inputField.removeClass('input-saving input-save-error').addClass('input-saved-success');
+                            statusTag.removeClass('status-saving status-error').addClass('status-saved').text('✓ บันทึกแล้ว');
+
+                            // Hide text badge after 1.5 seconds
+                            setTimeout(function() {
+                                inputField.removeClass('input-saved-success');
+                                statusTag.removeClass('status-saved').text('');
+                            }, 1500);
+                        } else {
+                            inputField.removeClass('input-saving input-saved-success').addClass('input-save-error');
+                            statusTag.removeClass('status-saving status-saved').addClass('status-error').text('ผิดพลาด!');
                         }
+                    },
+                    error: function() {
+                        inputField.removeClass('input-saving input-saved-success').addClass('input-save-error');
+                        statusTag.removeClass('status-saving status-saved').addClass('status-error').text('ไม่สำเร็จ!');
                     }
                 });
-            }, 1000);
+            }, 800);
             inputField.data('autosaveTimeout', newTimeout);
         });
     });

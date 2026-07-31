@@ -367,33 +367,41 @@ class CurriculumController extends BaseController
     public function downloadPlanFile($seplanID)
     {
         if (!$seplanID) {
-            $this->session->setFlashdata('error', 'ไม่พบไฟล์ในระบบ หรือครูอาจจะไม่ได้อัปโหลดไฟล์เข้ามา');
+            $this->session->setFlashdata('error', 'ไม่พบรหัสแผน (Plan ID) ที่ระบุมา');
             return redirect()->back();
         }
 
         $plan = $this->curriculumModel->find($seplanID);
 
-        if (!$plan || empty($plan['seplan_file'])) {
-            $this->session->setFlashdata('error', 'ไม่พบไฟล์ในระบบ หรือครูอาจจะไม่ได้อัปโหลดไฟล์เข้ามา');
+        if (!$plan) {
+            $this->session->setFlashdata('error', "ไม่พบข้อมูลแผน ID: {$seplanID} ในฐานข้อมูล (อาจถูกลบไปแล้ว)");
+            return redirect()->back();
+        }
+
+        if (empty($plan['seplan_file'])) {
+            $this->session->setFlashdata('error', "แผน ID: {$seplanID} วิชา: {$plan['seplan_namesubject']} ({$plan['seplan_typeplan']}) — ครูยังไม่ได้อัปโหลดไฟล์เข้ามา (ฟิลด์ seplan_file ว่างเปล่า)");
             return redirect()->back();
         }
 
         // Construct the full URL to the file.
         $baseFileUrl = env('upload.server.baseurl');
         if (!$baseFileUrl) {
-            $this->session->setFlashdata('error', 'The upload.server.baseurl is not defined in the .env file.');
+            $this->session->setFlashdata('error', 'ระบบยังไม่ได้ตั้งค่า upload.server.baseurl ในไฟล์ .env — กรุณาแจ้งผู้ดูแลระบบ');
             return redirect()->back();
         }
 
         $fileUrl = rtrim($baseFileUrl, '/') . '/' . $plan['seplan_year'] . '/' . $plan['seplan_term'] . '/' . str_replace('%2F', '/', rawurlencode($plan['seplan_namesubject'])) . '/' . rawurlencode($plan['seplan_file']);
 
-
         // Fetch the file content from the URL.
-        // Use error suppression to handle potential 404s gracefully.
         $fileData = @file_get_contents($fileUrl);
 
         if ($fileData === false) {
-            $this->session->setFlashdata('error', 'ไม่พบไฟล์ในระบบ หรือครูอาจจะไม่ได้อัปโหลดไฟล์เข้ามา');
+            $httpStatus = '';
+            $headers = @get_headers($fileUrl);
+            if ($headers && isset($headers[0])) {
+                $httpStatus = $headers[0];
+            }
+            $this->session->setFlashdata('error', "ไฟล์ไม่อยู่บน Server — ชื่อไฟล์ใน DB: {$plan['seplan_file']} | HTTP: {$httpStatus} | URL: {$fileUrl}");
             return redirect()->back();
         }
 
@@ -418,18 +426,26 @@ class CurriculumController extends BaseController
     public function checkFileExists($seplanID)
     {
         if (!$seplanID) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'ไม่พบไฟล์ในระบบ หรือครูอาจจะไม่ได้อัปโหลดไฟล์เข้ามา']);
+            return $this->response->setJSON(['status' => 'error', 'message' => 'ไม่พบรหัสแผน (Plan ID) ที่ระบุมา', 'reason' => 'NO_ID']);
         }
 
         $plan = $this->curriculumModel->find($seplanID);
 
-        if (!$plan || empty($plan['seplan_file'])) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'ไม่พบไฟล์ในระบบ หรือครูอาจจะไม่ได้อัปโหลดไฟล์เข้ามา']);
+        if (!$plan) {
+            return $this->response->setJSON(['status' => 'error', 'message' => "ไม่พบข้อมูลแผน ID: {$seplanID} ในฐานข้อมูล (อาจถูกลบไปแล้ว)", 'reason' => 'NO_RECORD']);
+        }
+
+        if (empty($plan['seplan_file'])) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => "วิชา: {$plan['seplan_namesubject']} ({$plan['seplan_typeplan']}) — ครูยังไม่ได้อัปโหลดไฟล์เข้ามา",
+                'reason' => 'NO_FILE_UPLOADED'
+            ]);
         }
 
         $baseFileUrl = env('upload.server.baseurl');
         if (!$baseFileUrl) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'The upload.server.baseurl is not defined in the .env file.']);
+            return $this->response->setJSON(['status' => 'error', 'message' => 'ระบบยังไม่ได้ตั้งค่า upload.server.baseurl ในไฟล์ .env — กรุณาแจ้งผู้ดูแลระบบ', 'reason' => 'NO_CONFIG']);
         }
 
         $fileUrl = rtrim($baseFileUrl, '/') . '/' . $plan['seplan_year'] . '/' . $plan['seplan_term'] . '/' . str_replace('%2F', '/', rawurlencode($plan['seplan_namesubject'])) . '/' . rawurlencode($plan['seplan_file']);
@@ -440,7 +456,21 @@ class CurriculumController extends BaseController
             return $this->response->setJSON(['status' => 'success']);
         }
 
-        return $this->response->setJSON(['status' => 'error', 'message' => 'ไม่พบไฟล์ในระบบ หรือครูอาจจะไม่ได้อัปโหลดไฟล์เข้ามา']);
+        $httpStatus = ($headers && isset($headers[0])) ? $headers[0] : 'ไม่สามารถเชื่อมต่อ Server ได้';
+        return $this->response->setJSON([
+            'status' => 'error',
+            'message' => "ไฟล์ไม่อยู่บน Server\nชื่อไฟล์ใน DB: {$plan['seplan_file']}\nHTTP Status: {$httpStatus}",
+            'reason' => 'FILE_NOT_ON_SERVER',
+            'debug' => [
+                'seplan_ID' => $seplanID,
+                'seplan_file' => $plan['seplan_file'],
+                'seplan_namesubject' => $plan['seplan_namesubject'],
+                'seplan_typeplan' => $plan['seplan_typeplan'] ?? '',
+                'seplan_usersend' => $plan['seplan_usersend'],
+                'file_url' => $fileUrl,
+                'http_status' => $httpStatus
+            ]
+        ]);
     }
 
     /**

@@ -8,6 +8,7 @@ class ControllerSaveScoreRepeat extends BaseController
 {
     protected $db; // Declare the $db property
     protected $personnelDb;
+    protected $session; // Declare to avoid PHP 8.2+ dynamic property deprecation
 
     public function __construct()
     {
