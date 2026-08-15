@@ -590,12 +590,21 @@
                 <span>Academic Information Management</span>
             </div>
 
+            <!-- Forgot Password & Guide Buttons -->
+            <div class="d-flex flex-column gap-2 mb-3 text-center">
+                <a href="<?= base_url('guide') ?>" class="btn btn-outline-info w-100 rounded-pill font-weight-bold py-2 shadow-sm">
+                    <i class="bi bi-book me-1"></i> คู่มือการใช้งานสำหรับครู (อ่านง่าย)
+                </a>
+                <a href="<?= base_url('verify-email') ?>" class="btn btn-outline-primary w-100 rounded-pill font-weight-bold py-2 shadow-sm">
+                    <i class="bi bi-key me-1"></i> ลืมรหัสผ่าน / รีเซ็ตรหัสผ่านครู
+                </a>
+            </div>
+
             <div class="info-note">
                 <div class="d-flex align-items-start">
                     <i class="bi bi-info-circle-fill me-2 mt-1" style="font-size: 1.15rem; flex-shrink: 0;"></i>
                     <div>
-                        <strong>หมายเหตุ:</strong> หากไม่สามารถเข้าสู่ระบบได้ กรุณาตรวจสอบว่าใช้บัญชีอีเมลโรงเรียน
-                        (@skj.ac.th) หรือติดต่อผู้ดูแลระบบสารสนเทศ
+                        <strong>หมายเหตุ:</strong> หากลืมรหัสผ่านหรือจำรหัสผ่านไม่ได้ สามารถใช้ปุ่ม <strong>"ลืมรหัสผ่าน / รีเซ็ตรหัสผ่านครู"</strong> เพื่อสุ่มรับรหัสผ่านใหม่ได้ทันที
                     </div>
                 </div>
             </div>

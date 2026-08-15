@@ -186,7 +186,8 @@
         'club' => 'งานพัฒนาผู้เรียน / บันทึกชุมนุม',
         'attendance' => 'SKJ Check-In',
         'leave' => 'ระบบการลา',
-        'evaluation' => 'ประเมินผลการปฏิบัติงาน (PA)',
+        'evaluation' => 'การประเมินผลการปฏิบัติงาน',
+        'pa-agreement' => 'ข้อตกลงในการพัฒนางาน (PA)',
         'portfolio' => 'ประวัติการอบรมและผลงาน',
         'assessment-head' => 'หัวหน้ากลุ่มสาระ',
         'check-plan' => 'ตรวจแผนการสอน',
@@ -292,7 +293,7 @@
                         </ul>
                     </li>
 
-                    <li class="menu-item <?= is_open_segment([['leave'], ['evaluation'], ['generate-leave-form'], ['portfolio'], ['attendance']], $segments) ?>">
+                    <li class="menu-item <?= is_open_segment([['leave'], ['evaluation'], ['pa-agreement'], ['generate-leave-form'], ['portfolio'], ['attendance']], $segments) ?>">
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
                             <i class="menu-icon tf-icons bi-person-badge-fill"></i>
                             <div data-i18n="งานบุคลากร">งานบุคลากร</div>
@@ -313,7 +314,13 @@
                             <li class="menu-item <?= is_active_segment(['evaluation'], $segments) ? 'active' : '' ?>">
                                 <a href="<?= base_url('evaluation') ?>" class="menu-link">
                                     <i class="bi bi-file-earmark-pdf me-2"></i>
-                                    <div data-i18n="ประเมินผลการปฏิบัติงาน (PA)">ประเมินผลการปฏิบัติงาน (PA)</div>
+                                    <div data-i18n="ประเมินผลการปฏิบัติงาน">ประเมินผลการปฏิบัติงาน</div>
+                                </a>
+                            </li>
+                            <li class="menu-item <?= is_active_segment(['pa-agreement'], $segments) ? 'active' : '' ?>">
+                                <a href="<?= base_url('pa-agreement') ?>" class="menu-link">
+                                    <i class="bi bi-journal-bookmark-fill me-2 text-primary"></i>
+                                    <div data-i18n="ข้อตกลงพัฒนางาน (PA)">ข้อตกลงพัฒนางาน (PA)</div>
                                 </a>
                             </li>
                             <li class="menu-item <?= is_active_segment(['portfolio'], $segments) ? 'active' : '' ?>">

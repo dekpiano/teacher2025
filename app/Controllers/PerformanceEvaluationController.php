@@ -63,7 +63,7 @@ class PerformanceEvaluationController extends BaseController
 
         $person_id = $this->session->get('person_id');
         
-        $data['title'] = "การประเมินผลการปฏิบัติงานข้าราชการหรือพนักงานครูและบุคลากรทางการศึกษาองค์กรปกครองส่วนท้องถิ่น สายงานการสอน ตำแหน่งครู";
+        $data['title'] = "การประเมินผลการปฏิบัติงานข้าราชการหรือพนักงานครูและบุคลากรทางการศึกษาองค์กรปกครองส่วนท้องถิ่น";
         $data['current_year'] = $year;
         $data['current_round'] = $round;
         $data['evaluation'] = $this->evaluationModel->getEvaluation($person_id, $year, $round);

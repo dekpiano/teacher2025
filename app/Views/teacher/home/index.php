@@ -800,15 +800,24 @@
                         <a href="<?= base_url('evaluation') ?>" class="luxe-card">
                             <i class="bi bi-file-earmark-pdf card-icon text-danger"></i>
                             <div class="card-text">
-                                <h6>สรุปผลการปฏิบัติงาน (PA)</h6>
-                                <p>อัปโหลดไฟล์สรุปผลการประเมินรอบปัจจุบัน</p>
+                                <h6>สรุปผลการปฏิบัติงาน</h6>
+                                <p>ส่งผลการปฏิบัติงานประจำรอบ</p>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <a href="<?= base_url('pa-agreement') ?>" class="luxe-card">
+                            <i class="bi bi-journal-bookmark-fill card-icon text-primary"></i>
+                            <div class="card-text">
+                                <h6>ข้อตกลงพัฒนางาน (PA)</h6>
+                                <p>ส่งสื่อนำเสนอ, แผนการสอน, PA1</p>
                             </div>
                         </a>
                     </div>
                     <?php endif; ?>
                     <div class="col-lg-3 col-md-6">
                         <a href="<?= base_url('portfolio') ?>" class="luxe-card">
-                            <i class="bi bi-person-workspace card-icon text-primary"></i>
+                            <i class="bi bi-person-workspace card-icon text-info"></i>
                             <div class="card-text">
                                 <h6>ประวัติการอบรมและผลงาน</h6>
                                 <p>บันทึกประวัติการพัฒนาตนเองและผลงาน</p>

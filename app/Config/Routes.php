@@ -13,6 +13,12 @@ $routes->get('logout', 'Login::logout');
 $routes->get('login/googleLogin', 'Login::googleLogin');
 $routes->get('login/googleCallback', 'Login::googleCallback');
 
+// Teacher Email Verification & Password Reset Routes
+$routes->get('verify-email', 'ControlTeacherVerification::index');
+$routes->get('guide', 'ControlTeacherVerification::guide');
+$routes->post('verify-email/check', 'ControlTeacherVerification::verifyAndGetEmail');
+$routes->post('verify-email/reset-password', 'ControlTeacherVerification::resetPassword');
+
 // Placeholder for the page after login. We will create this controller next.
     $routes->get('home', 'Home::index');
 
@@ -221,6 +227,15 @@ $routes->get('login/googleCallback', 'Login::googleCallback');
         $routes->post('upload', 'PerformanceEvaluationController::upload');
         $routes->post('upload-chunk', 'PerformanceEvaluationController::uploadChunk');
         $routes->post('delete-item', 'PerformanceEvaluationController::deleteItem');
+    });
+
+    // PA Agreement Routes
+    $routes->group('pa-agreement', static function ($routes) {
+        $routes->get('', 'PaAgreementController::index');
+        $routes->get('(:num)', 'PaAgreementController::index/$1');
+        $routes->post('upload', 'PaAgreementController::upload');
+        $routes->post('upload-chunk', 'PaAgreementController::uploadChunk');
+        $routes->post('delete-item', 'PaAgreementController::deleteItem');
     });
 
     // Portfolio Routes
