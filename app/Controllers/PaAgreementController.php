@@ -40,10 +40,51 @@ class PaAgreementController extends BaseController
     }
 
     /**
+     * Check if user is a Government Teacher (ข้าราชการครู)
+     */
+    private function _checkPermission()
+    {
+        $teacherId = $this->session->get('person_id');
+        if (empty($teacherId)) return false;
+
+        $db_skj = db_connect('skj');
+        $user = $this->db_personnel->table('tb_personnel')
+            ->select('tb_personnel.*, ' . $db_skj->database . '.tb_position.posi_name')
+            ->join($db_skj->database . '.tb_position', $db_skj->database . '.tb_position.posi_id = tb_personnel.pers_position', 'left')
+            ->where('pers_id', $teacherId)
+            ->get()
+            ->getRowArray();
+
+        if (!$user) return false;
+
+        $position = $user['posi_name'] ?? '';
+        
+        // Allowed positions: Government Teachers (ข้าราชการครู)
+        $allowedPositions = [
+            'ครูผู้ช่วย',
+            'ครู',
+            'ครูชำนาญการ',
+            'ครูชำนาญการพิเศษ',
+            'ครูเชี่ยวชาญ',
+            'ครูเชี่ยวชาญพิเศษ',
+            'ผู้อำนวยการโรงเรียน',
+            'รองผู้อำนวยการโรงเรียน',
+            'ผู้อำนวยการสถานศึกษา',
+            'รองผู้อำนวยการสถานศึกษา'
+        ];
+
+        return in_array($position, $allowedPositions);
+    }
+
+    /**
      * Main PA Agreement View
      */
     public function index($year = null)
     {
+        if (!$this->_checkPermission()) {
+            return redirect()->to('home')->with('error_gov_teacher_only', 'ระบบข้อตกลงในการพัฒนางาน (PA) นี้ อนุญาตให้ใช้งานเฉพาะ "ข้าราชการครู" เท่านั้น');
+        }
+
         $currentYear = $year ? (int)$year : $this->getCurrentFiscalYear();
         $personId = $this->session->get('person_id');
 

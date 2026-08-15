@@ -803,6 +803,28 @@
                 }
             });
 
+            <?php if (session()->getFlashdata('error_gov_teacher_only')) : ?>
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'สงวนสิทธิ์เฉพาะข้าราชการครู',
+                    html: `
+                        <div class="text-center py-2">
+                            <i class="bi bi-shield-lock-fill text-warning display-4 d-block mb-3"></i>
+                            <p class="mb-2 fs-6 fw-semibold text-dark">
+                                <?= session()->getFlashdata('error_gov_teacher_only') ?>
+                            </p>
+                            <p class="small text-muted mb-0">
+                                ผู้ใช้งานตำแหน่งครูอัตราจ้าง / เจ้าหน้าที่ / บุคลากรอื่น ๆ ไม่จำเป็นต้องส่งแบบประเมินในส่วนนี้
+                            </p>
+                        </div>
+                    `,
+                    confirmButtonText: '<i class="bi bi-check-lg me-1"></i> รับทราบ',
+                    confirmButtonColor: '#696cff',
+                    customClass: {
+                        popup: 'rounded-4 shadow-lg p-4'
+                    }
+                });
+            <?php endif; ?>
             <?php if (session()->getFlashdata('success')) : ?>
                 Swal.fire({
                     icon: 'success',

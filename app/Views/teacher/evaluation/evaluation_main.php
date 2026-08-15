@@ -87,6 +87,14 @@
                         <span class="badge bg-label-info"><i class="bi bi-shield-check me-1"></i> บันทึกแยกอิสระได้ทันที</span>
                     </div>
                 <?php endif; ?>
+
+                <!-- Prominent Notice Banner -->
+                <div class="alert alert-warning d-flex align-items-center py-2 px-3 mt-2 mb-0 rounded-3 border-0 bg-label-warning" role="alert">
+                    <i class="bi bi-shield-lock-fill me-2 fs-5 text-warning"></i>
+                    <div class="small fw-semibold">
+                        <span class="fw-bold text-dark">หมายเหตุสำคัญ:</span> การประเมินผลการปฏิบัติงานนี้ <strong>ใช้เฉพาะข้าราชการครูเท่านั้น</strong> (ครูอัตราจ้าง / เจ้าหน้าที่ ไม่จำเป็นต้องส่งในส่วนนี้)
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -300,6 +308,36 @@
 <?= $this->section('scripts') ?>
 <script>
     $(document).ready(function() {
+        // Modal notification on page load
+        Swal.fire({
+            icon: 'warning',
+            title: '<span class="text-warning fw-bold fs-4">⚠️ ข้อควรทราบสำคัญ</span>',
+            html: `
+                <div class="text-center py-2">
+                    <div class="p-3 bg-label-warning rounded-3 mb-3 border border-warning">
+                        <h5 class="fw-bold text-warning mb-1">
+                            <i class="bi bi-shield-lock-fill me-1"></i> ระบบนี้สำหรับ "ข้าราชการครู" เท่านั้น
+                        </h5>
+                        <div class="text-dark fw-semibold mt-2" style="font-size: 1.05rem;">
+                            สำหรับตำแหน่ง <span class="badge bg-warning text-dark fs-7">ครูผู้ช่วย</span> และ <span class="badge bg-warning text-dark fs-7">ครู (คศ.1 - คศ.5)</span>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-secondary text-start small mb-0 py-2 border">
+                        <i class="bi bi-info-circle-fill text-primary me-1"></i> 
+                        <strong>ครูอัตราจ้าง / ครูจ้างสอน / เจ้าหน้าที่ธุรการ และบุคลากรอื่น ๆ:</strong><br>
+                        <span class="text-muted fw-semibold">ไม่จำเป็นต้องกรอกหรือส่งข้อมูลในระบบนี้</span>
+                    </div>
+                </div>
+            `,
+            confirmButtonText: '<i class="bi bi-check-circle-fill me-1"></i> รับทราบและเข้าใจแล้ว',
+            confirmButtonColor: '#ffab00',
+            allowOutsideClick: false,
+            customClass: {
+                popup: 'rounded-4 shadow-lg p-4'
+            }
+        });
+
         let activeBtn = null;
         let originalHtml = '';
 

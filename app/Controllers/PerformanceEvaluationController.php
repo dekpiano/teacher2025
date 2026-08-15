@@ -55,7 +55,7 @@ class PerformanceEvaluationController extends BaseController
     public function index($year = null, $round = null)
     {
         if (!$this->_checkPermission()) {
-            return redirect()->to('home')->with('error', 'ระบบนี้เฉพาะตำแหน่งครูผู้ช่วยขึ้นไปเท่านั้น');
+            return redirect()->to('home')->with('error_gov_teacher_only', 'ระบบการประเมินผลการปฏิบัติงานนี้ อนุญาตให้ใช้งานเฉพาะ "ข้าราชการครู" เท่านั้น');
         }
         $fiscalInfo = $this->getCurrentFiscalInfo();
         $year = $year ?? $fiscalInfo['year'];
