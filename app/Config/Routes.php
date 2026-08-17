@@ -185,8 +185,10 @@ $routes->post('verify-email/reset-password', 'ControlTeacherVerification::resetP
         $routes->get('download-plan', 'CurriculumController::loadPlan');
         $routes->get('download-plan/(:num)/(:num)/(:any)', 'CurriculumController::loadPlan/$1/$2/$3');
         $routes->get('download-plan-zip/(:any)', 'CurriculumController::downloadPlanZip/$1');
-
-        $routes->get('download-plan-zip/(:any)', 'CurriculumController::downloadPlanZip/$1');
+        $routes->post('update-status1', 'CurriculumController::update_status1');
+        $routes->post('update-status2', 'CurriculumController::update_status2');
+        $routes->post('get-comment', 'CurriculumController::get_comment');
+        $routes->post('save-comment', 'CurriculumController::save_comment');
     });
 
     // Research Routes
@@ -224,6 +226,8 @@ $routes->post('verify-email/reset-password', 'ControlTeacherVerification::resetP
     // Evaluation Routes
     $routes->group('evaluation', static function ($routes) {
         $routes->get('', 'PerformanceEvaluationController::index');
+        $routes->get('round/(:num)', 'PerformanceEvaluationController::index/round/$1');
+        $routes->get('(:num)/(:num)', 'PerformanceEvaluationController::index/$1/$2');
         $routes->post('upload', 'PerformanceEvaluationController::upload');
         $routes->post('upload-chunk', 'PerformanceEvaluationController::uploadChunk');
         $routes->post('delete-item', 'PerformanceEvaluationController::deleteItem');

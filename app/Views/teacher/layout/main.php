@@ -187,7 +187,7 @@
         'attendance' => 'SKJ Check-In',
         'leave' => 'ระบบการลา',
         'evaluation' => 'การประเมินผลการปฏิบัติงาน',
-        'pa-agreement' => 'ข้อตกลงในการพัฒนางาน (PA)',
+        'pa-agreement' => 'การประเมินผลการพัฒนางานตามข้อตกลง (PA)',
         'portfolio' => 'ประวัติการอบรมและผลงาน',
         'assessment-head' => 'หัวหน้ากลุ่มสาระ',
         'check-plan' => 'ตรวจแผนการสอน',
@@ -314,13 +314,13 @@
                             <li class="menu-item <?= is_active_segment(['evaluation'], $segments) ? 'active' : '' ?>">
                                 <a href="<?= base_url('evaluation') ?>" class="menu-link">
                                     <i class="bi bi-file-earmark-pdf me-2"></i>
-                                    <div data-i18n="ประเมินผลการปฏิบัติงาน">ประเมินผลการปฏิบัติงาน</div>
+                                    <div data-i18n="การประเมินผลการปฏิบัติงาน">การประเมินผลการปฏิบัติงาน</div>
                                 </a>
                             </li>
                             <li class="menu-item <?= is_active_segment(['pa-agreement'], $segments) ? 'active' : '' ?>">
                                 <a href="<?= base_url('pa-agreement') ?>" class="menu-link">
                                     <i class="bi bi-journal-bookmark-fill me-2 text-primary"></i>
-                                    <div data-i18n="ข้อตกลงพัฒนางาน (PA)">ข้อตกลงพัฒนางาน (PA)</div>
+                                    <div data-i18n="การประเมินผลการพัฒนางานตามข้อตกลง (PA)">การประเมินผลการพัฒนางานตามข้อตกลง (PA)</div>
                                 </a>
                             </li>
                             <li class="menu-item <?= is_active_segment(['portfolio'], $segments) ? 'active' : '' ?>">

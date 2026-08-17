@@ -36,7 +36,7 @@
 </style>
 
 <div class="row">
-    <div class="col-12 col-xxl-10 mx-auto">
+    <div class="col-12">
         <!-- Compact Hero Header -->
         <div class="card mb-3 eva-hero-card shadow-sm">
             <div class="card-body py-3 px-4">

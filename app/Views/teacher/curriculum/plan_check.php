@@ -1,194 +1,182 @@
 <?= $this->extend('teacher/layout/main') ?>
 
 <?= $this->section('title') ?>
-<?= esc($title ?? '') ?><?= esc($lean[0]->lear_namethai ?? '') ?>
+<?= esc($title ?? 'ตรวจสอบงาน') ?><?= !empty($lean[0]->lear_namethai) ? ' - ' . esc($lean[0]->lear_namethai) : '' ?>
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
 
-
-
-
-        <div class="container-fluid">
-            <?php
-            // Use active plan types passed from the controller
-            $distinctTypePlans = array_column($activePlanTypes, 'type_name');
-            // Sort them if a specific order is desired
-            sort($distinctTypePlans);
-            ?>
-            <div class="card">
-                <div class="card-header d-flex align-items-center justify-content-between">
-                    <h5 class="card-title mb-0">ส่งแผนของ <?= esc($planNew[0]->pers_prefix ?? '') ?><?= esc($planNew[0]->pers_firstname ?? '') ?> <?= esc($planNew[0]->pers_lastname ?? '') ?></h5>
-                    <div class="d-flex align-items-center">
-                        <label for="CheckYearCheckPlan" class="form-label me-2 mb-0">ปีการศึกษา:</label>
-                        <select name="CheckYearCheckPlan" id="CheckYearCheckPlan" class="form-select w-auto">
-                            <?php foreach ($CheckYear as $v_CheckYear): ?>
-                            <option
-                                <?= (service('uri')->getSegment(5) == $v_CheckYear->seplan_year && service('uri')->getSegment(6) == $v_CheckYear->seplan_term) ? "selected":"" ?>
-                                value="<?= esc($v_CheckYear->seplan_year.'/'.$v_CheckYear->seplan_term) ?>">
-                                <?= esc($v_CheckYear->seplan_term.'/'.$v_CheckYear->seplan_year) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table id="tb_checkplan" class="table table-striped table-hover" style="width:100%">
-                            <thead>
-                                <tr>
-                                    <th class="w-auto">ปีการศึกษา</th>
-                                    <th class="w-25">รหัสชื่อวิชา</th>
-                                    <th class="w-auto">ระดับ</th>
-                                    <th class="w-auto">ผู้ส่ง</th>
-                                    <?php foreach($distinctTypePlans as $tp): // Use dynamically generated types ?>
-                                    <th class="w-auto"><?= esc($tp) ?></th>
-                                    <?php endforeach; ?>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-                                // Pre-process checkplan for efficient lookup
-                                $checkplanLookup = [];
-                                foreach ($checkplan as $cp) {
-                                    $checkplanLookup[$cp->seplan_coursecode][$cp->type_name][$cp->seplan_usersend] = $cp;
-                                }
-                                ?>
-                                <?php  foreach ($planNew as $v_planNew): ?>
-                                <tr>
-                                    <td scope="row"><?= esc($v_planNew->seplan_year) ?>/<?= esc($v_planNew->seplan_term) ?></td>
-                                    <td><?= esc($v_planNew->seplan_coursecode) ?> <?= esc($v_planNew->seplan_namesubject) ?>
-                                        (<?= esc($v_planNew->seplan_typesubject) ?>)</td>
-                                    <td>ม.<?= esc($v_planNew->seplan_gradelevel) ?></td>
-                                    <td><?= esc($v_planNew->pers_prefix) ?><?= esc($v_planNew->pers_firstname) ?> <?= esc($v_planNew->pers_lastname) ?>
-                                    </td>
-
-                                    <?php foreach($distinctTypePlans as $v_typeplan_name): // Iterate over dynamic types ?>
-                                    <?php
-                                        $found_plan = $checkplanLookup[$v_planNew->seplan_coursecode][$v_typeplan_name][$v_planNew->seplan_usersend] ?? null;
-                                    ?>
-                                    <td>
-                                        <?php if($found_plan && $found_plan->seplan_file == null): ?>
-                                    <span class="badge bg-label-danger">ยังไม่ส่ง</span>
-                                    <?php elseif($found_plan && $found_plan->seplan_file != null): ?>
-                                    <span class="badge bg-label-success">ส่งแล้ว</span>
-                                    <a href="<?= base_url('uploads/academic/course/plan/' . esc($found_plan->seplan_year) . '/' . esc($found_plan->seplan_term) . '/' . esc($found_plan->seplan_namesubject) . '/' . esc($found_plan->seplan_file)) ?>"
-                                        target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-icon item-edit">
-                                        <i class="bi bi-eye-fill"></i>
-                                    </a>
-                                    <?php else: ?>
-                                    <span class="badge bg-label-secondary">ไม่มีข้อมูล</span>
-                                    <?php endif; ?>
-
-                                    <br>
-                                    <small><b>ผู้ส่ง :</b> <?= esc($found_plan ? $found_plan->seplan_sendcomment : '-') ?></small> <br>
-                                                                            <div class="d-flex align-items-center">
-                                                                                <small class="me-2"><b>หน.ก : </b></small>
-                                                                                <?php 
-                                                                                $status_class_1 = '';
-                                                                                if($found_plan && $found_plan->seplan_status1 == "ผ่าน"){
-                                                                                    $status_class_1 = 'bg-label-success';
-                                                                                }elseif($found_plan && $found_plan->seplan_status1 == "ไม่ผ่าน"){
-                                                                                    $status_class_1 = 'bg-label-danger';
-                                                                                } else {
-                                                                                    $status_class_1 = 'bg-label-warning';
-                                                                                }
-                                                                                ?>
-                                                                                <?php if(session('person_id') == 'pers_014' && session('pers_learning') != ($IDlear ?? '')): // This logic needs to be re-evaluated for CI4 roles ?>
-                                                                                <span class="badge <?= esc($status_class_1) ?>"> <?= esc($found_plan ? $found_plan->seplan_status1 : 'รอตรวจ') ?></span>
-                                                                                <?php else: ?>
-                                                                                <select name="seplan_status1"
-                                                                                    data-planId="<?= esc($found_plan ? $found_plan->seplan_ID : '') ?>"
-                                                                                    class="form-select form-select-sm seplan_status1 <?= esc($status_class_1) ?>">
-                                                                                    <option value="รอตรวจ" <?= ($found_plan && $found_plan->seplan_status1 == "รอตรวจ") ? 'selected' : ''?>>รอตรวจ</option>
-                                                                                    <option value="ผ่าน" <?= ($found_plan && $found_plan->seplan_status1 == "ผ่าน") ? 'selected' : ''?>>ผ่าน</option>
-                                                                                    <option value="ไม่ผ่าน" <?= ($found_plan && $found_plan->seplan_status1 == "ไม่ผ่าน") ? 'selected' : ''?>>ไม่ผ่าน</option>
-                                                                                </select>
-                                                                                <div class="IDCom0<?= esc($found_plan ? $found_plan->seplan_ID : '') ?> TbShowComment1 ms-2">
-                                                                                    <?= ($found_plan && $found_plan->seplan_status1 == "ไม่ผ่าน") ? '<a href="#" class="show_comment1" data-bs-toggle="modal" data-planId="' . esc($found_plan->seplan_ID) . '" data-bs-target="#addcomment1">หมายเหตุ</a>' : ''?>
-                                                                                </div>
-                                                                                <?php endif; ?>
-                                                                            </div>                                    <br>
-                                                                            <div class="d-flex align-items-center">
-                                                                                <small class="me-2"><b>หน.ง : </b></small>
-                                                                                <?php 
-                                                                                $status_class_2 = '';
-                                                                                if($found_plan && $found_plan->seplan_status2 == "ผ่าน"){
-                                                                                    $status_class_2 = 'bg-label-success';
-                                                                                }elseif($found_plan && $found_plan->seplan_status2 == "ไม่ผ่าน"){
-                                                                                    $status_class_2 = 'bg-label-danger';
-                                                                                } else {
-                                                                                    $status_class_2 = 'bg-label-warning';
-                                                                                }
-                                                                                ?>
-                                                                                <?php if(session('person_id') == 'pers_051'):?>
-                                                                                <select name="seplan_status2"
-                                                                                    data-planId="<?= esc($found_plan ? $found_plan->seplan_ID : '') ?>"
-                                                                                    class="form-select form-select-sm seplan_status2 <?= esc($status_class_2) ?>">
-                                                                                    <option value="รอตรวจ" <?= ($found_plan && $found_plan->seplan_status2 == "รอตรวจ") ? 'selected' : ''?>>รอตรวจ</option>
-                                                                                    <option value="ผ่าน" <?= ($found_plan && $found_plan->seplan_status2 == "ผ่าน") ? 'selected' : ''?>>ผ่าน</option>
-                                                                                    <option value="ไม่ผ่าน" <?= ($found_plan && $found_plan->seplan_status2 == "ไม่ผ่าน") ? 'selected' : ''?>>ไม่ผ่าน</option>
-                                                                                </select>
-                                                                                <div class="IDCom<?= esc($found_plan ? $found_plan->seplan_ID : '') ?> TbShowComment2 ms-2">
-                                                                                    <?= ($found_plan && $found_plan->seplan_status2 == "ไม่ผ่าน") ? '<a href="#" class="show_comment2" data-bs-toggle="modal" data-planId="' . esc($found_plan->seplan_ID) . '" data-bs-target="#addcomment2">หมายเหตุ</a>' : ''?>
-                                                                                </div>
-                                                                                <?php else: ?>
-                                                                                    <span class="badge <?= esc($status_class_2) ?>"><?= esc($found_plan ? $found_plan->seplan_status2 : 'รอตรวจ') ?></span>
-                                                                                <?php endif; ?>
-                                                                            </div>                                </td>
-                            </tr>
-                            <?php  endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
+<div class="container-fluid">
+    <?php
+    // Use active plan types passed from the controller
+    $distinctTypePlans = array_column($activePlanTypes ?? [], 'type_name');
+    sort($distinctTypePlans);
+    $teacher_info = $planNew[0] ?? null;
+    ?>
+    <div class="card">
+        <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <h5 class="card-title mb-0">
+                ส่งแผนของ <?= esc($teacher_info->pers_prefix ?? '') ?><?= esc($teacher_info->pers_firstname ?? '') ?> <?= esc($teacher_info->pers_lastname ?? '') ?>
+            </h5>
+            <div class="d-flex align-items-center">
+                <label for="CheckYearCheckPlan" class="form-label me-2 mb-0 text-nowrap">ปีการศึกษา:</label>
+                <select name="CheckYearCheckPlan" id="CheckYearCheckPlan" class="form-select form-select-sm w-auto">
+                    <?php foreach (($CheckYear ?? []) as $v_CheckYear): ?>
+                    <option
+                        <?= (service('uri')->getSegment(5, '') == $v_CheckYear->seplan_year && service('uri')->getSegment(6, '') == $v_CheckYear->seplan_term) ? "selected" : "" ?>
+                        value="<?= esc($v_CheckYear->seplan_year . '/' . $v_CheckYear->seplan_term) ?>">
+                        ภาคเรียนที่ <?= esc($v_CheckYear->seplan_term . '/' . $v_CheckYear->seplan_year) ?>
+                    </option>
+                    <?php endforeach; ?>
+                </select>
             </div>
         </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="tb_checkplan" class="table table-striped table-hover align-middle" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th class="text-nowrap">ปีการศึกษา</th>
+                            <th style="min-width: 200px;">รหัสชื่อวิชา</th>
+                            <th class="text-nowrap">ระดับ</th>
+                            <th class="text-nowrap">ผู้ส่ง</th>
+                            <?php foreach ($distinctTypePlans as $tp): ?>
+                            <th style="min-width: 170px;"><?= esc($tp) ?></th>
+                            <?php endforeach; ?>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        // Pre-process checkplan for efficient lookup
+                        $checkplanLookup = [];
+                        foreach (($checkplan ?? []) as $cp) {
+                            if (!empty($cp->seplan_coursecode) && !empty($cp->type_name) && !empty($cp->seplan_usersend)) {
+                                $checkplanLookup[$cp->seplan_coursecode][$cp->type_name][$cp->seplan_usersend] = $cp;
+                            }
+                        }
+                        ?>
+                        <?php foreach (($planNew ?? []) as $v_planNew): ?>
+                        <tr>
+                            <td class="text-nowrap"><?= esc($v_planNew->seplan_year ?? '') ?>/<?= esc($v_planNew->seplan_term ?? '') ?></td>
+                            <td>
+                                <strong><?= esc($v_planNew->seplan_coursecode ?? '') ?></strong> <?= esc($v_planNew->seplan_namesubject ?? '') ?>
+                                <br><small class="text-muted">(<?= esc($v_planNew->seplan_typesubject ?? '') ?>)</small>
+                            </td>
+                            <td class="text-nowrap">ม.<?= esc($v_planNew->seplan_gradelevel ?? '') ?></td>
+                            <td class="text-nowrap"><?= esc($v_planNew->pers_prefix ?? '') ?><?= esc($v_planNew->pers_firstname ?? '') ?> <?= esc($v_planNew->pers_lastname ?? '') ?></td>
 
+                            <?php foreach ($distinctTypePlans as $v_typeplan_name): ?>
+                            <?php
+                                $found_plan = $checkplanLookup[$v_planNew->seplan_coursecode][$v_typeplan_name][$v_planNew->seplan_usersend] ?? null;
+                            ?>
+                            <td>
+                                <?php if ($found_plan && !empty($found_plan->seplan_file)): ?>
+                                    <span class="badge bg-label-success">ส่งแล้ว</span>
+                                    <a href="<?= site_url('curriculum/download-plan-file/' . esc($found_plan->seplan_ID)) ?>"
+                                        target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-icon btn-outline-primary" title="ดูไฟล์">
+                                        <i class="bi bi-eye-fill"></i>
+                                    </a>
+                                <?php elseif ($found_plan && empty($found_plan->seplan_file)): ?>
+                                    <span class="badge bg-label-danger">ยังไม่ส่ง</span>
+                                <?php else: ?>
+                                    <span class="badge bg-label-secondary">ไม่มีข้อมูล</span>
+                                <?php endif; ?>
 
-    
-<div id="addcomment1" tabindex="-1" aria-labelledby="exampleModalLabel" class="modal fade text-left" aria-hidden="true"
-    style="display: none;">
-    <div role="document" class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-body">
+                                <br>
+                                <small><b>ผู้ส่ง :</b> <?= esc($found_plan->seplan_sendcomment ?? '-') ?></small>
+                                <br>
 
-                <form id="form-comment1" class="form-comment1">
-                    <div class="form-group">
-                        <label for="seplan_comment1">หมายเหตุ:</label>
-                        <textarea wrap="hard" class="form-control seplan_comment1" rows="5" name="seplan_comment1"
-                            id="seplan_comment1"
-                            placeholder="ไม่ผ่านเพราะ เช่น ปรับชื่อรายชื่อ หน้า 5 หรือ ลืมใส่ข้อมูลต้องกรอก"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <button type="button" id="sub_comment1" data-planId class="btn btn-primary">บันทึก</button>
+                                <!-- หน.กลุ่มสาระ (Status 1) -->
+                                <div class="d-flex align-items-center mt-1">
+                                    <small class="me-2 text-nowrap"><b>หน.ก : </b></small>
+                                    <?php 
+                                    $status_class_1 = 'bg-label-warning';
+                                    if ($found_plan && $found_plan->seplan_status1 == "ผ่าน") {
+                                        $status_class_1 = 'bg-label-success';
+                                    } elseif ($found_plan && $found_plan->seplan_status1 == "ไม่ผ่าน") {
+                                        $status_class_1 = 'bg-label-danger';
+                                    }
+                                    ?>
+                                    <?php if (session('person_id') == 'pers_014' && session('pers_learning') != ($IDlear ?? '')): ?>
+                                        <span class="badge <?= esc($status_class_1) ?>"><?= esc($found_plan->seplan_status1 ?? 'รอตรวจ') ?></span>
+                                    <?php elseif ($found_plan): ?>
+                                        <select name="seplan_status1"
+                                            data-plan-id="<?= esc($found_plan->seplan_ID) ?>"
+                                            class="form-select form-select-sm seplan_status1 <?= esc($status_class_1) ?>" style="width: auto;">
+                                            <option value="รอตรวจ" <?= ($found_plan->seplan_status1 == "รอตรวจ") ? 'selected' : '' ?>>รอตรวจ</option>
+                                            <option value="ผ่าน" <?= ($found_plan->seplan_status1 == "ผ่าน") ? 'selected' : '' ?>>ผ่าน</option>
+                                            <option value="ไม่ผ่าน" <?= ($found_plan->seplan_status1 == "ไม่ผ่าน") ? 'selected' : '' ?>>ไม่ผ่าน</option>
+                                        </select>
+                                        <div class="IDCom0<?= esc($found_plan->seplan_ID) ?> TbShowComment1 ms-2">
+                                            <?php if ($found_plan->seplan_status1 == "ไม่ผ่าน"): ?>
+                                                <a href="javascript:void(0);" class="show_comment text-danger" data-bs-toggle="modal" data-plan-id="<?= esc($found_plan->seplan_ID) ?>" data-comment-type="1" data-bs-target="#commentModal"><i class="bi bi-chat-dots-fill"></i> หมายเหตุ</a>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php else: ?>
+                                        <span class="badge bg-label-secondary">-</span>
+                                    <?php endif; ?>
+                                </div>
 
-                    </div>
-                </form>
+                                <!-- หน.งาน (Status 2) -->
+                                <div class="d-flex align-items-center mt-1">
+                                    <small class="me-2 text-nowrap"><b>หน.ง : </b></small>
+                                    <?php 
+                                    $status_class_2 = 'bg-label-warning';
+                                    if ($found_plan && $found_plan->seplan_status2 == "ผ่าน") {
+                                        $status_class_2 = 'bg-label-success';
+                                    } elseif ($found_plan && $found_plan->seplan_status2 == "ไม่ผ่าน") {
+                                        $status_class_2 = 'bg-label-danger';
+                                    }
+                                    ?>
+                                    <?php if (session('person_id') == 'pers_051' && $found_plan): ?>
+                                        <select name="seplan_status2"
+                                            data-plan-id="<?= esc($found_plan->seplan_ID) ?>"
+                                            class="form-select form-select-sm seplan_status2 <?= esc($status_class_2) ?>" style="width: auto;">
+                                            <option value="รอตรวจ" <?= ($found_plan->seplan_status2 == "รอตรวจ") ? 'selected' : '' ?>>รอตรวจ</option>
+                                            <option value="ผ่าน" <?= ($found_plan->seplan_status2 == "ผ่าน") ? 'selected' : '' ?>>ผ่าน</option>
+                                            <option value="ไม่ผ่าน" <?= ($found_plan->seplan_status2 == "ไม่ผ่าน") ? 'selected' : '' ?>>ไม่ผ่าน</option>
+                                        </select>
+                                        <div class="IDCom<?= esc($found_plan->seplan_ID) ?> TbShowComment2 ms-2">
+                                            <?php if ($found_plan->seplan_status2 == "ไม่ผ่าน"): ?>
+                                                <a href="javascript:void(0);" class="show_comment text-danger" data-bs-toggle="modal" data-plan-id="<?= esc($found_plan->seplan_ID) ?>" data-comment-type="2" data-bs-target="#commentModal"><i class="bi bi-chat-dots-fill"></i> หมายเหตุ</a>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php else: ?>
+                                        <span class="badge <?= esc($status_class_2) ?>"><?= esc($found_plan->seplan_status2 ?? 'รอตรวจ') ?></span>
+                                    <?php endif; ?>
+                                </div>
+                            </td>
+                            <?php endforeach; ?>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
             </div>
-
         </div>
     </div>
 </div>
 
-<div id="addcomment2" tabindex="-1" aria-labelledby="exampleModalLabel" class="modal fade text-left" aria-hidden="true"
-    style="display: none;">
-    <div role="document" class="modal-dialog">
+<!-- Modal หมายเหตุ (Unified Bootstrap 5 Modal) -->
+<div id="commentModal" tabindex="-1" aria-labelledby="commentModalLabel" class="modal fade" aria-hidden="true">
+    <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-body">
-
-                <form id="form-comment2" class="form-comment2">
-                    <div class="form-group">
-                        <label for="seplan_comment2">หมายเหตุ:</label>
-                        <textarea wrap="hard" class="form-control seplan_comment2" rows="5" name="seplan_comment2"
-                            id="seplan_comment2"
-                            placeholder="ไม่ผ่านเพราะ เช่น ปรับชื่อรายชื่อ หน้า 5 หรือ ลืมใส่ข้อมูลต้องกรอก"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <button type="button" id="sub_comment2" data-planId class="btn btn-primary">บันทึก</button>
-
-                    </div>
-                </form>
+            <div class="modal-header">
+                <h5 class="modal-title" id="commentModalLabel">บันทึกหมายเหตุ / ข้อเสนอแนะ</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-
+            <div class="modal-body">
+                <input type="hidden" id="modal_plan_id" value="">
+                <input type="hidden" id="modal_comment_type" value="1">
+                <div class="mb-3">
+                    <label for="modal_comment_text" class="form-label fw-bold">หมายเหตุ:</label>
+                    <textarea wrap="hard" class="form-control" rows="5" id="modal_comment_text"
+                        placeholder="ระบุเหตุผลที่ไม่ผ่าน เช่น ปรับแก้หน้า 5 หรือ ลืมใส่กำหนดการสอน"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                <button type="button" id="btn_save_comment" class="btn btn-primary">บันทึก</button>
+            </div>
         </div>
     </div>
 </div>
@@ -198,134 +186,149 @@
 <?= $this->section('scripts') ?>
 <script>
 $(document).ready(function() {
-    // JavaScript for handling comments (AJAX calls will need to be implemented in controller)
-    $('.show_comment1').on('click', function() {
-        var planId = $(this).data('planid');
-        $('#addcomment1 #sub_comment1').data('planId', planId);
-        // Fetch existing comment if any
+    // Dropdown เปลี่ยนปีการศึกษา
+    $('#CheckYearCheckPlan').on('change', function() {
+        const selectedYearTerm = $(this).val();
+        const url = window.location.pathname;
+        const parts = url.split('/');
+        // หากมี segment ปี/เทอม ใน URL (index 5 และ 6)
+        if (parts.length >= 7) {
+            parts[5] = selectedYearTerm.split('/')[0];
+            parts[6] = selectedYearTerm.split('/')[1];
+            window.location.href = parts.join('/');
+        } else {
+            window.location.href = '<?= site_url('curriculum/checkPlan/' . ($IDlear ?? '')) ?>/' + selectedYearTerm;
+        }
+    });
+
+    // เปิด Modal หมายเหตุ (ใช้ Event Delegation)
+    $(document).on('click', '.show_comment', function() {
+        const planId = $(this).data('plan-id');
+        const commentType = $(this).data('comment-type') || 1;
+
+        $('#modal_plan_id').val(planId);
+        $('#modal_comment_type').val(commentType);
+        $('#modal_comment_text').val('');
+
         $.ajax({
-            url: '<?= site_url('curriculum/check-comment1') ?>',
+            url: '<?= site_url('curriculum/get-comment') ?>',
             type: 'POST',
-            data: { planId: planId },
+            data: { plan_id: planId, comment_type: commentType },
             dataType: 'json',
             success: function(response) {
-                if (response && response[0] && response[0].seplan_comment1) {
-                    $('#addcomment1 #seplan_comment1').val(response[0].seplan_comment1.replace(/<br>/g, '\n'));
-                } else {
-                    $('#addcomment1 #seplan_comment1').val('');
+                if (response && response.comment) {
+                    $('#modal_comment_text').val(response.comment.replace(/<br\s*\/?>/gi, '\n'));
                 }
             }
         });
     });
 
-    $('#sub_comment1').on('click', function() {
-        var planId = $(this).data('planId');
-        var comment = $('#addcomment1 #seplan_comment1').val();
+    // บันทึกหมายเหตุ
+    $('#btn_save_comment').on('click', function() {
+        const planId = $('#modal_plan_id').val();
+        const commentType = $('#modal_comment_type').val();
+        const comment = $('#modal_comment_text').val();
+
+        if (!planId) return;
+
         $.ajax({
-            url: '<?= site_url('curriculum/update-comment1') ?>',
+            url: '<?= site_url('curriculum/save-comment') ?>',
             type: 'POST',
-            data: { planId: planId, seplan_comment1: comment },
+            data: { 
+                plan_id: planId, 
+                comment_type: commentType, 
+                comment: comment 
+            },
+            dataType: 'json',
             success: function(response) {
-                if (response == 1) {
-                    Swal.fire('สำเร็จ', 'บันทึกหมายเหตุสำเร็จ', 'success');
-                    $('#addcomment1').modal('hide');
+                if (response && response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'สำเร็จ',
+                        text: 'บันทึกหมายเหตุสำเร็จ',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    const modalEl = document.getElementById('commentModal');
+                    const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                    modalInstance.hide();
                 } else {
                     Swal.fire('ผิดพลาด', 'บันทึกหมายเหตุไม่สำเร็จ', 'error');
                 }
+            },
+            error: function() {
+                Swal.fire('ผิดพลาด', 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์', 'error');
             }
         });
     });
 
-    $('.show_comment2').on('click', function() {
-        var planId = $(this).data('planid');
-        $('#addcomment2 #sub_comment2').data('planId', planId);
-        // Fetch existing comment if any
-        $.ajax({
-            url: '<?= site_url('curriculum/check-comment2') ?>',
-            type: 'POST',
-            data: { planId: planId },
-            dataType: 'json',
-            success: function(response) {
-                if (response && response[0] && response[0].seplan_comment2) {
-                    $('#addcomment2 #seplan_comment2').val(response[0].seplan_comment2.replace(/<br>/g, '\n'));
-                } else {
-                    $('#addcomment2 #seplan_comment2').val('');
-                }
-            }
-        });
-    });
+    // อัปเดตสถานะ หน.กลุ่มสาระ (Status 1)
+    $(document).on('change', '.seplan_status1', function() {
+        const planId = $(this).data('plan-id');
+        const status = $(this).val();
+        const $select = $(this);
 
-    $('#sub_comment2').on('click', function() {
-        var planId = $(this).data('planId');
-        var comment = $('#addcomment2 #seplan_comment2').val();
-        $.ajax({
-            url: '<?= site_url('curriculum/update-comment2') ?>',
-            type: 'POST',
-            data: { planId: planId, seplan_comment2: comment },
-            success: function(response) {
-                if (response == 1) {
-                    Swal.fire('สำเร็จ', 'บันทึกหมายเหตุสำเร็จ', 'success');
-                    $('#addcomment2').modal('hide');
-                } else {
-                    Swal.fire('ผิดพลาด', 'บันทึกหมายเหตุไม่สำเร็จ', 'error');
-                }
-            }
-        });
-    });
-
-    // Status update dropdowns
-    $('#tb_checkplan').on('change', '.seplan_status1', function() {
-        var planId = $(this).data('planid');
-        var status = $(this).val();
-        var $this = $(this);
         $.ajax({
             url: '<?= site_url('curriculum/update-status1') ?>',
             type: 'POST',
-            data: { planId: planId, status1: status },
+            data: { plan_id: planId, status: status },
             dataType: 'json',
             success: function(response) {
-                if (response && response[0]) {
-                    if (response[0].seplan_status1 === 'ไม่ผ่าน') {
-                        $('.IDCom0' + planId).html('<a href="#" class="show_comment1" data-toggle="modal" data-planId="' + planId + '" data-target="#addcomment1">หมายเหตุ</a>');
-                        $this.removeClass('text-success').addClass('text-danger');
-                    } else if (response[0].seplan_status1 === 'ผ่าน') {
+                if (response && response.success) {
+                    $select.removeClass('bg-label-success bg-label-danger bg-label-warning');
+                    if (status === 'ผ่าน') {
+                        $select.addClass('bg-label-success');
                         $('.IDCom0' + planId).empty();
-                        $this.removeClass('text-danger').addClass('text-success');
+                    } else if (status === 'ไม่ผ่าน') {
+                        $select.addClass('bg-label-danger');
+                        $('.IDCom0' + planId).html('<a href="javascript:void(0);" class="show_comment text-danger" data-bs-toggle="modal" data-plan-id="' + planId + '" data-comment-type="1" data-bs-target="#commentModal"><i class="bi bi-chat-dots-fill"></i> หมายเหตุ</a>');
                     } else {
+                        $select.addClass('bg-label-warning');
                         $('.IDCom0' + planId).empty();
-                        $this.removeClass('text-success text-danger');
                     }
+                } else {
+                    Swal.fire('ผิดพลาด', 'ไม่สามารถอัปเดตสถานะได้', 'error');
                 }
+            },
+            error: function() {
+                Swal.fire('ผิดพลาด', 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์', 'error');
             }
         });
     });
 
-    $('#tb_checkplan').on('change', '.seplan_status2', function() {
-        var planId = $(this).data('planid');
-        var status = $(this).val();
-        var $this = $(this);
+    // อัปเดตสถานะ หน.งาน (Status 2)
+    $(document).on('change', '.seplan_status2', function() {
+        const planId = $(this).data('plan-id');
+        const status = $(this).val();
+        const $select = $(this);
+
         $.ajax({
             url: '<?= site_url('curriculum/update-status2') ?>',
             type: 'POST',
-            data: { planId: planId, status2: status },
+            data: { plan_id: planId, status: status },
             dataType: 'json',
             success: function(response) {
-                if (response && response[0]) {
-                    if (response[0].seplan_status2 === 'ไม่ผ่าน') {
-                        $('.IDCom' + planId).html('<a href="#" class="show_comment2" data-toggle="modal" data-planId="' + planId + '" data-target="#addcomment2">หมายเหตุ</a>');
-                        $this.removeClass('text-success').addClass('text-danger');
-                    } else if (response[0].seplan_status2 === 'ผ่าน') {
+                if (response && response.success) {
+                    $select.removeClass('bg-label-success bg-label-danger bg-label-warning');
+                    if (status === 'ผ่าน') {
+                        $select.addClass('bg-label-success');
                         $('.IDCom' + planId).empty();
-                        $this.removeClass('text-danger').addClass('text-success');
+                    } else if (status === 'ไม่ผ่าน') {
+                        $select.addClass('bg-label-danger');
+                        $('.IDCom' + planId).html('<a href="javascript:void(0);" class="show_comment text-danger" data-bs-toggle="modal" data-plan-id="' + planId + '" data-comment-type="2" data-bs-target="#commentModal"><i class="bi bi-chat-dots-fill"></i> หมายเหตุ</a>');
                     } else {
+                        $select.addClass('bg-label-warning');
                         $('.IDCom' + planId).empty();
-                        $this.removeClass('text-success text-danger');
                     }
+                } else {
+                    Swal.fire('ผิดพลาด', 'ไม่สามารถอัปเดตสถานะได้', 'error');
                 }
+            },
+            error: function() {
+                Swal.fire('ผิดพลาด', 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์', 'error');
             }
         });
     });
-
 });
 </script>
 <?= $this->endSection() ?>

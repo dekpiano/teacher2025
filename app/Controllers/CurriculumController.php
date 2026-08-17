@@ -805,6 +805,13 @@ class CurriculumController extends BaseController
                                 ->where('seplan_learning', $idLear)
                                 ->get()->getResult();
 
+        $data['CheckYear'] = $this->db->table('tb_send_plan')
+                                ->select('seplan_year,seplan_term')
+                                ->distinct()
+                                ->orderBy('seplan_year', 'desc')
+                                ->orderBy('seplan_term', 'desc')
+                                ->get()->getResult();
+
         // Fetch active plan types for the view
         $data['activePlanTypes'] = $this->db->table('tb_send_plan_type')
                                             ->select('type_name')
@@ -1224,10 +1231,33 @@ class CurriculumController extends BaseController
     public function update_status1()
     {
         if ($this->request->isAJAX()) {
-            $plan_id = $this->request->getPost('plan_id');
-            $status = $this->request->getPost('status');
+            $plan_id = $this->request->getPost('plan_id') ?? $this->request->getPost('planId');
+            $status = $this->request->getPost('status') ?? $this->request->getPost('status1');
 
-            $result = $this->curriculumModel->update($plan_id, ['seplan_status1' => $status]);
+            $result = $this->curriculumModel->update($plan_id, [
+                'seplan_status1' => $status,
+                'seplan_checkdate1' => date('Y-m-d H:i:s'),
+                'seplan_inspector1' => $this->session->get('person_id')
+            ]);
+
+            if ($result) {
+                return $this->response->setJSON(['success' => true]);
+            }
+        }
+        return $this->response->setJSON(['success' => false]);
+    }
+
+    public function update_status2()
+    {
+        if ($this->request->isAJAX()) {
+            $plan_id = $this->request->getPost('plan_id') ?? $this->request->getPost('planId');
+            $status = $this->request->getPost('status') ?? $this->request->getPost('status2');
+
+            $result = $this->curriculumModel->update($plan_id, [
+                'seplan_status2' => $status,
+                'seplan_checkdate2' => date('Y-m-d H:i:s'),
+                'seplan_inspector2' => $this->session->get('person_id')
+            ]);
 
             if ($result) {
                 return $this->response->setJSON(['success' => true]);
@@ -1239,26 +1269,29 @@ class CurriculumController extends BaseController
     public function get_comment()
     {
         if ($this->request->isAJAX()) {
-            $plan_id = $this->request->getPost('plan_id');
-            $comment_type = $this->request->getPost('comment_type');
-            $field = ($comment_type == 1) ? 'seplan_comment1' : 'seplan_comment2';
+            $plan_id = $this->request->getPost('plan_id') ?? $this->request->getPost('planId');
+            $comment_type = $this->request->getPost('comment_type') ?? 1;
+            $field = ($comment_type == 2) ? 'seplan_comment2' : 'seplan_comment1';
 
             $plan = $this->curriculumModel->find($plan_id);
 
             if ($plan) {
-                return $this->response->setJSON(['comment' => $plan[$field]]);
+                return $this->response->setJSON([
+                    'success' => true,
+                    'comment' => $plan[$field] ?? ''
+                ]);
             }
         }
-        return $this->response->setJSON(['comment' => '']);
+        return $this->response->setJSON(['success' => false, 'comment' => '']);
     }
 
     public function save_comment()
     {
         if ($this->request->isAJAX()) {
-            $plan_id = $this->request->getPost('plan_id');
-            $comment_type = $this->request->getPost('comment_type');
-            $comment = $this->request->getPost('comment');
-            $field = ($comment_type == 1) ? 'seplan_comment1' : 'seplan_comment2';
+            $plan_id = $this->request->getPost('plan_id') ?? $this->request->getPost('planId');
+            $comment_type = $this->request->getPost('comment_type') ?? 1;
+            $comment = $this->request->getPost('comment') ?? $this->request->getPost('seplan_comment1') ?? $this->request->getPost('seplan_comment2');
+            $field = ($comment_type == 2) ? 'seplan_comment2' : 'seplan_comment1';
 
             $result = $this->curriculumModel->update($plan_id, [$field => $comment]);
 

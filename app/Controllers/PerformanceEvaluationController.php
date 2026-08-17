@@ -58,12 +58,18 @@ class PerformanceEvaluationController extends BaseController
             return redirect()->to('home')->with('error_gov_teacher_only', 'ระบบการประเมินผลการปฏิบัติงานนี้ อนุญาตให้ใช้งานเฉพาะ "ข้าราชการครู" เท่านั้น');
         }
         $fiscalInfo = $this->getCurrentFiscalInfo();
-        $year = $year ?? $fiscalInfo['year'];
-        $round = $round ?? $fiscalInfo['round'];
+        
+        if ($year === 'round' || (is_numeric($year) && (int)$year <= 2 && $round === null)) {
+            $round = ($year === 'round') ? (int)$round : (int)$year;
+            $year = $fiscalInfo['year'];
+        } else {
+            $year = $year ? (int)$year : $fiscalInfo['year'];
+            $round = $round ? (int)$round : $fiscalInfo['round'];
+        }
 
         $person_id = $this->session->get('person_id');
         
-        $data['title'] = "การประเมินผลการปฏิบัติงานข้าราชการหรือพนักงานครูและบุคลากรทางการศึกษาองค์กรปกครองส่วนท้องถิ่น";
+        $data['title'] = "การประเมินผลการปฏิบัติงาน";
         $data['current_year'] = $year;
         $data['current_round'] = $round;
         $data['evaluation'] = $this->evaluationModel->getEvaluation($person_id, $year, $round);

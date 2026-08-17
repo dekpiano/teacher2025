@@ -466,6 +466,24 @@
             color: #fff !important;
         }
 
+        .luxe-card-group {
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            transition: all 0.25s ease-out;
+            position: relative;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .luxe-card-group:hover {
+            box-shadow: 0 15px 35px rgba(105, 108, 255, 0.12) !important;
+            border-color: rgba(105, 108, 255, 0.3) !important;
+            transform: translateY(-3px);
+        }
+
         /* Special Badge for HoD */
         .hod-badge {
             background: linear-gradient(135deg, #ffab00 0%, #ff3e1d 100%);
@@ -777,7 +795,7 @@
                     <div class="menu-line"></div>
                 </div>
                 <div class="row g-4 mb-5">
-                    <div class="col-lg-3 col-md-6">
+                    <div class="col-lg-4 col-md-6">
                         <a href="<?= base_url('attendance') ?>" class="luxe-card">
                             <i class="bi bi-clock-history card-icon text-primary"></i>
                             <div class="card-text">
@@ -786,9 +804,9 @@
                             </div>
                         </a>
                     </div>
-                    <div class="col-lg-3 col-md-6">
+                    <div class="col-lg-4 col-md-6">
                         <a href="<?= base_url('leave') ?>" class="luxe-card">
-                            <i class="bi bi-calendar-check card-icon"></i>
+                            <i class="bi bi-calendar-check card-icon text-success"></i>
                             <div class="card-text">
                                 <h6>ระบบการลา</h6>
                                 <p>เขียนใบลาและติดตามสถานะการลา</p>
@@ -796,26 +814,26 @@
                         </a>
                     </div>
                     <?php if ($isPAPermitted): ?>
-                    <div class="col-lg-3 col-md-6">
+                    <div class="col-lg-4 col-md-6">
                         <a href="<?= base_url('evaluation') ?>" class="luxe-card">
                             <i class="bi bi-file-earmark-pdf card-icon text-danger"></i>
                             <div class="card-text">
-                                <h6>สรุปผลการปฏิบัติงาน</h6>
-                                <p>ส่งผลการปฏิบัติงานประจำรอบ</p>
+                                <h6 style="line-height: 1.35;">การประเมินผลการปฏิบัติงานข้าราชการหรือพนักงานครูและบุคลากรทางการศึกษาองค์กรปกครองส่วนท้องถิ่น</h6>
+                                <p>ครั้งที่ 1 (1 ต.ค. - 31 มี.ค.) ครั้งที่ 2 (1 เม.ย. - 30 ก.ย.)</p>
                             </div>
                         </a>
                     </div>
-                    <div class="col-lg-3 col-md-6">
+                    <div class="col-lg-4 col-md-6">
                         <a href="<?= base_url('pa-agreement') ?>" class="luxe-card">
                             <i class="bi bi-journal-bookmark-fill card-icon text-primary"></i>
                             <div class="card-text">
-                                <h6>ข้อตกลงพัฒนางาน (PA)</h6>
+                                <h6>การประเมินผลการพัฒนางานตามข้อตกลง (PA)</h6>
                                 <p>ส่งสื่อนำเสนอ, แผนการสอน, PA1</p>
                             </div>
                         </a>
                     </div>
                     <?php endif; ?>
-                    <div class="col-lg-3 col-md-6">
+                    <div class="col-lg-4 col-md-6">
                         <a href="<?= base_url('portfolio') ?>" class="luxe-card">
                             <i class="bi bi-person-workspace card-icon text-info"></i>
                             <div class="card-text">
