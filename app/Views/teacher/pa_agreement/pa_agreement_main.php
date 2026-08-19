@@ -8,6 +8,12 @@
         display: block;
         margin-top: 0;
     }
+    .table-responsive {
+        overflow-x: auto;
+        overflow-y: visible !important;
+        padding-bottom: 60px;
+        margin-bottom: -60px;
+    }
     .pa-hero-card {
         background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
         border: 1px solid rgba(105, 108, 255, 0.15) !important;
@@ -93,7 +99,7 @@
                                 </span>
                             </div>
                             <div class="text-muted small mt-1">
-                                <i class="bi bi-info-circle me-1"></i> กรุณาส่งเอกสารและสื่อนำเสนอผลการพัฒนางานตามข้อตกลงให้ครบถ้วนทั้ง 3 รายการ
+                                <i class="bi bi-info-circle me-1"></i> กรุณาส่งสื่อนำเสนอและแผนการจัดการเรียนรู้ (สำหรับบันทึกข้อตกลง PA1 จะดำเนินการโดยงานบุคลากร)
                             </div>
                         </div>
                     </div>
@@ -247,7 +253,7 @@
                     </div>
                 </div>
 
-                <!-- Card 3: PA1 Agreement PDF with Drag & Drop Zone -->
+                <!-- Card 3: PA1 Agreement PDF (Managed by HR/Personnel) -->
                 <div class="col-lg-4">
                     <div class="card shadow-sm h-100 pa-card-action <?= ($agreement && !empty($agreement['pa_file_pa1'])) ? 'pa-card-active' : '' ?>">
                         <div class="card-header bg-white border-bottom py-2 px-3 d-flex justify-content-between align-items-center">
@@ -258,19 +264,19 @@
                                 <span class="fw-bold text-dark">3. บันทึกข้อตกลง PA1</span>
                             </div>
                             <?php if ($agreement && !empty($agreement['pa_file_pa1'])) : ?>
-                                <span class="badge bg-label-success rounded-pill px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i> ส่งไฟล์แล้ว</span>
+                                <span class="badge bg-label-success rounded-pill px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i> มีไฟล์ในระบบแล้ว</span>
                             <?php else: ?>
-                                <span class="badge bg-label-secondary rounded-pill px-2 py-1">ยังไม่ส่ง</span>
+                                <span class="badge bg-label-secondary rounded-pill px-2 py-1">รอดำเนินการ</span>
                             <?php endif; ?>
                         </div>
                         <div class="card-body p-3 d-flex flex-column justify-content-between">
                             <div>
                                 <div class="text-muted small mb-2">
-                                    บันทึกข้อตกลงพัฒนางาน PA1 ประจำปีงบประมาณ <?= $current_year ?> (PDF)
+                                    บันทึกข้อตกลงพัฒนางาน PA1 ประจำปีงบประมาณ <?= $current_year ?>
                                 </div>
 
                                 <?php if ($agreement && !empty($agreement['pa_file_pa1'])) : ?>
-                                    <div class="alert alert-outline-success d-flex align-items-center justify-content-between p-2 mb-2 rounded-3" role="alert">
+                                    <div class="alert alert-outline-success d-flex align-items-center justify-content-between p-2 mb-3 rounded-3" role="alert">
                                         <div class="d-flex align-items-center text-truncate me-2">
                                             <i class="bi bi-file-earmark-check-fill fs-4 text-success me-2"></i>
                                             <div class="text-truncate">
@@ -282,39 +288,39 @@
                                             <i class="bi bi-eye me-1"></i> เปิดดู
                                         </a>
                                     </div>
+                                <?php else : ?>
+                                    <div class="alert alert-secondary d-flex align-items-center p-2 mb-3 rounded-3" role="alert">
+                                        <i class="bi bi-hourglass-split fs-4 text-secondary me-2"></i>
+                                        <div class="small text-muted">
+                                            ยังไม่มีไฟล์บันทึกข้อตกลง PA1 ในระบบ
+                                        </div>
+                                    </div>
                                 <?php endif; ?>
 
-                                <!-- Dropzone for PA1 -->
-                                <input type="file" id="pa_file_pa1" accept=".pdf" class="d-none">
-                                <div class="dropzone-box" id="dropzone_pa1">
-                                    <i class="bi bi-cloud-arrow-up-fill dropzone-icon text-primary"></i>
-                                    <div class="small fw-bold text-dark">ลากและวางไฟล์ PA1 ที่นี่</div>
-                                    <div class="x-small text-muted">หรือ <span class="text-primary fw-semibold">คลิกเลือกไฟล์</span> (PDF สูงสุด 20MB)</div>
-                                </div>
-
-                                <!-- Selected File Badge -->
-                                <div class="file-selected-indicator" id="indicator_pa1">
-                                    <div class="d-flex align-items-center justify-content-between">
-                                        <div class="d-flex align-items-center text-truncate me-2">
-                                            <i class="bi bi-filetype-pdf text-danger fs-5 me-2"></i>
-                                            <div class="text-truncate">
-                                                <div class="small fw-semibold text-truncate file-name">-</div>
-                                                <div class="x-small text-muted file-size">-</div>
+                                <div class="bg-label-primary p-3 rounded-3 border border-primary border-opacity-25">
+                                    <div class="d-flex align-items-start">
+                                        <i class="bi bi-info-circle-fill text-primary fs-5 me-2 mt-1"></i>
+                                        <div>
+                                            <div class="fw-bold small text-primary mb-1">จัดการโดยงานบุคลากร</div>
+                                            <div class="text-muted x-small">
+                                                ครูผู้รับการประเมินไม่ต้องอัปโหลดไฟล์ในส่วนนี้ เจ้าหน้าที่งานบุคลากรจะเป็นผู้ดำเนินการนำเข้าไฟล์บันทึกข้อตกลง PA1 ให้ในระบบ
                                             </div>
                                         </div>
-                                        <button type="button" class="btn btn-xs btn-icon btn-label-secondary remove-file" data-target="pa1" title="ยกเลิกไฟล์นี้">
-                                            <i class="bi bi-x-lg"></i>
-                                        </button>
                                     </div>
                                 </div>
-
-                                <div class="progress mt-2 d-none" id="progress_pa1" style="height: 6px;">
-                                    <div class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
-                                </div>
                             </div>
-                            <button type="button" id="btn-save-pa1" class="btn btn-primary btn-sm w-100 mt-3 shadow-xs">
-                                <i class="bi bi-cloud-arrow-up me-1"></i> บันทึกไฟล์ PA1
-                            </button>
+
+                            <div class="pt-2">
+                                <?php if ($agreement && !empty($agreement['pa_file_pa1'])) : ?>
+                                    <a href="<?= env('upload.server.baseurl.pa_agreement') . $agreement['pa_year'] . '/pa1/' . $agreement['pa_file_pa1'] ?>" target="_blank" class="btn btn-label-primary btn-sm w-100 mt-2">
+                                        <i class="bi bi-file-earmark-pdf me-1"></i> ดูเอกสาร PA1 ของปีนี้
+                                    </a>
+                                <?php else : ?>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm w-100 mt-2" disabled>
+                                        <i class="bi bi-clock-history me-1"></i> งานบุคลากรกำลังดำเนินการ
+                                    </button>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -382,47 +388,39 @@
                                                     <i class="bi bi-file-earmark-check"></i>
                                                 </a>
                                             <?php else : ?>
-                                                <span class="badge bg-label-secondary small pe-none">ไม่ได้ส่ง</span>
+                                                <span class="badge bg-label-warning small pe-none"><i class="bi bi-clock me-1"></i>รอเจ้าหน้าที่</span>
                                             <?php endif; ?>
                                         </td>
                                         <td class="text-center pe-3">
-                                            <div class="dropdown dropdown-hover d-inline-block">
-                                                <button class="btn btn-sm btn-icon btn-label-secondary rounded-pill" type="button">
-                                                    <i class="bi bi-trash-fill text-danger"></i>
+                                            <div class="dropdown d-inline-block">
+                                                <button class="btn btn-sm btn-icon btn-label-secondary rounded-pill" type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">
+                                                    <i class="bi bi-three-dots-vertical"></i>
                                                 </button>
-                                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                                    <li><h6 class="dropdown-header">เลือกสิ่งที่ต้องการลบ</h6></li>
+                                                <ul class="dropdown-menu dropdown-menu-end shadow-lg py-2" style="min-width: 220px; z-index: 1060;">
+                                                    <li><h6 class="dropdown-header text-uppercase fs-8 text-muted">ตัวเลือกลบข้อมูล</h6></li>
                                                     <li>
-                                                        <a class="dropdown-item d-flex align-items-center btn-delete <?= empty($row['pa_presentation_link']) ? 'disabled text-muted' : '' ?>" 
+                                                        <a class="dropdown-item d-flex align-items-center btn-delete py-2 <?= empty($row['pa_presentation_link']) ? 'disabled text-muted' : '' ?>" 
                                                            href="javascript:void(0)" 
                                                            data-id="<?= $row['pa_id'] ?>" 
                                                            data-type="presentation">
-                                                            <i class="bi bi-play-circle me-2 text-danger"></i> ลบลิ้งก์นำเสนอ
+                                                            <i class="bi bi-play-circle me-2 text-danger fs-6"></i> ลบลิ้งก์นำเสนอ
                                                         </a>
                                                     </li>
                                                     <li>
-                                                        <a class="dropdown-item d-flex align-items-center btn-delete <?= empty($row['pa_file_lesson_plan']) ? 'disabled text-muted' : '' ?>" 
+                                                        <a class="dropdown-item d-flex align-items-center btn-delete py-2 <?= empty($row['pa_file_lesson_plan']) ? 'disabled text-muted' : '' ?>" 
                                                            href="javascript:void(0)" 
                                                            data-id="<?= $row['pa_id'] ?>" 
                                                            data-type="lesson_plan">
-                                                            <i class="bi bi-journal-text me-2 text-info"></i> ลบไฟล์แผนการสอน
+                                                            <i class="bi bi-journal-text me-2 text-info fs-6"></i> ลบไฟล์แผนการสอน
                                                         </a>
                                                     </li>
+                                                    <li><hr class="dropdown-divider my-1"></li>
                                                     <li>
-                                                        <a class="dropdown-item d-flex align-items-center btn-delete <?= empty($row['pa_file_pa1']) ? 'disabled text-muted' : '' ?>" 
-                                                           href="javascript:void(0)" 
-                                                           data-id="<?= $row['pa_id'] ?>" 
-                                                           data-type="pa1">
-                                                            <i class="bi bi-file-earmark-check me-2 text-primary"></i> ลบไฟล์ข้อตกลง PA1
-                                                        </a>
-                                                    </li>
-                                                    <li><hr class="dropdown-divider"></li>
-                                                    <li>
-                                                        <a class="dropdown-item d-flex align-items-center btn-delete text-danger fw-bold" 
+                                                        <a class="dropdown-item d-flex align-items-center btn-delete py-2 text-danger fw-bold" 
                                                            href="javascript:void(0)" 
                                                            data-id="<?= $row['pa_id'] ?>" 
                                                            data-type="all">
-                                                            <i class="bi bi-trash3-fill me-2"></i> ลบข้อมูลทั้งหมดของปีนี้
+                                                            <i class="bi bi-trash3-fill me-2 fs-6"></i> ลบข้อมูลทั้งหมดของปีนี้
                                                         </a>
                                                     </li>
                                                 </ul>
@@ -548,6 +546,8 @@
             const input = $(inputId);
             const indicator = $(indicatorId);
 
+            if (!dropzone.length || !input.length) return;
+
             // Click dropzone to trigger input
             dropzone.on('click', function() {
                 input.trigger('click');
@@ -555,7 +555,9 @@
 
             // Prevent default drag behaviors
             ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                dropzone[0].addEventListener(eventName, preventDefaults, false);
+                if (dropzone[0]) {
+                    dropzone[0].addEventListener(eventName, preventDefaults, false);
+                }
                 document.body.addEventListener(eventName, preventDefaults, false);
             });
 
@@ -615,7 +617,6 @@
         }
 
         setupDropzone('#dropzone_lesson_plan', '#pa_file_lesson_plan', '#indicator_lesson_plan');
-        setupDropzone('#dropzone_pa1', '#pa_file_pa1', '#indicator_pa1');
 
         // Cancel / Remove selected file
         $('.remove-file').on('click', function(e) {
@@ -625,11 +626,6 @@
                 $('#pa_file_lesson_plan').val('');
                 $('#indicator_lesson_plan').slideUp(150, function() {
                     $('#dropzone_lesson_plan').show();
-                });
-            } else if (target === 'pa1') {
-                $('#pa_file_pa1').val('');
-                $('#indicator_pa1').slideUp(150, function() {
-                    $('#dropzone_pa1').show();
                 });
             }
         });
@@ -673,7 +669,7 @@
         // 2. Save Lesson Plan PDF
         $('#btn-save-lesson-plan').on('click', async function() {
             const fileInput = $('#pa_file_lesson_plan')[0];
-            const file = fileInput.files[0];
+            const file = fileInput ? fileInput.files[0] : null;
             if (!file) {
                 Swal.fire('ข้อผิดพลาด', 'กรุณาเลือกไฟล์แผนการจัดการเรียนรู้ (PDF)', 'warning');
                 return;
@@ -719,59 +715,6 @@
             } catch (err) {
                 btn.prop('disabled', false).html(orig);
                 $('#progress_lesson_plan').addClass('d-none');
-                Swal.fire('ผิดพลาด', err.message, 'error');
-            }
-        });
-
-        // 3. Save PA1 PDF
-        $('#btn-save-pa1').on('click', async function() {
-            const fileInput = $('#pa_file_pa1')[0];
-            const file = fileInput.files[0];
-            if (!file) {
-                Swal.fire('ข้อผิดพลาด', 'กรุณาเลือกไฟล์บันทึกข้อตกลง PA1 (PDF)', 'warning');
-                return;
-            }
-            if (file.type !== 'application/pdf' && !file.name.endsWith('.pdf')) {
-                Swal.fire('ข้อผิดพลาด', 'อนุญาตเฉพาะไฟล์นามสกุล PDF เท่านั้น', 'warning');
-                return;
-            }
-            if (file.size > 20 * 1024 * 1024) {
-                Swal.fire('ข้อผิดพลาด', 'ขนาดไฟล์ต้องไม่เกิน 20MB', 'warning');
-                return;
-            }
-
-            const btn = $(this);
-            const orig = btn.html();
-            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> กำลังอัปโหลด...');
-
-            try {
-                const uploadedFilename = await uploadFileChunked(file, 'pa1', '#progress_pa1');
-                
-                $.ajax({
-                    url: '<?= base_url('pa-agreement/upload') ?>',
-                    type: 'POST',
-                    data: {
-                        pa_year: year,
-                        uploaded_pa1_filename: uploadedFilename
-                    },
-                    dataType: 'json',
-                    success: function(res) {
-                        btn.prop('disabled', false).html(orig);
-                        if (res.status === 'success') {
-                            Swal.fire({ icon: 'success', title: 'สำเร็จ', text: 'บันทึกไฟล์บันทึกข้อตกลง PA1 สำเร็จ', timer: 1500, showConfirmButton: false })
-                                .then(() => location.reload());
-                        } else {
-                            Swal.fire('ผิดพลาด', res.message, 'error');
-                        }
-                    },
-                    error: function() {
-                        btn.prop('disabled', false).html(orig);
-                        Swal.fire('ผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้', 'error');
-                    }
-                });
-            } catch (err) {
-                btn.prop('disabled', false).html(orig);
-                $('#progress_pa1').addClass('d-none');
                 Swal.fire('ผิดพลาด', err.message, 'error');
             }
         });
