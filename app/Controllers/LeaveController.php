@@ -19,6 +19,44 @@ class LeaveController extends BaseController
         $this->db = \Config\Database::connect('personnel');
     }
 
+    public function seedHolidaysNow()
+    {
+        try {
+            $db_personnel = \Config\Database::connect('personnel');
+            
+            // Create table
+            $db_personnel->query("
+                CREATE TABLE IF NOT EXISTS `tb_holidays` (
+                    `holiday_id` INT(11) NOT NULL AUTO_INCREMENT,
+                    `holiday_date` DATE NOT NULL,
+                    `holiday_name` VARCHAR(150) NOT NULL,
+                    `holiday_type` ENUM('public', 'religious', 'special', 'school') DEFAULT 'public',
+                    `holiday_year` INT(4) NOT NULL,
+                    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY (`holiday_id`),
+                    UNIQUE KEY `idx_holiday_date` (`holiday_date`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ");
+
+            // Seed holidays
+            $this->leaveRequestModel->seedInitialHolidays($db_personnel);
+
+            $rows = $db_personnel->table('tb_holidays')->countAllResults();
+
+            return $this->response->setJSON([
+                'status' => 'success',
+                'message' => 'บันทึกข้อมูลวันหยุดลง tb_holidays เรียบร้อยแล้ว',
+                'total_holidays_in_db' => $rows
+            ]);
+        } catch (\Throwable $e) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
+    }
+
     public function index()
     {
         $session = session();
@@ -31,36 +69,91 @@ class LeaveController extends BaseController
         track_recent_page('leave', 'ระบบการลา', 'bi-calendar-check');
 
         $pers_id = $session->get('person_id');
+        $db_personnel = \Config\Database::connect('personnel');
+
+        // ตรวจสอบและสร้าง/Seed ข้อมูลวันหยุดลง tb_holidays อัตโนมัติ (ล่วงหน้า 5+ ปี)
+        $this->leaveRequestModel->getThaiPublicHolidays(date('Y'));
+
         $leaveTypes = $this->leaveTypeModel->where('leave_type_status', 'active')->findAll();
         
-        // Get active leave year
-        $db_personnel = \Config\Database::connect('personnel');
-        $activeYear = $db_personnel->table('tb_leave_years')
-            ->where('ly_status', 'active')
+        // Get all leave years for filter dropdown
+        $leaveYears = $db_personnel->table('tb_leave_years')
+            ->orderBy('ly_name', 'DESC')
             ->get()
-            ->getRow();
+            ->getResultArray();
 
-        // Calculate leave summary for each type
+        // Selected year from filter (or default to current active year)
+        $selectedYearId = $this->request->getGet('year_id');
+        $activeYear = null;
+
+        if ($selectedYearId) {
+            $activeYear = $db_personnel->table('tb_leave_years')
+                ->where('ly_id', $selectedYearId)
+                ->get()
+                ->getRow();
+        }
+
+        if (!$activeYear) {
+            $activeYear = $this->leaveRequestModel->getOrCreateActiveLeaveYear();
+            $selectedYearId = $activeYear->ly_id ?? null;
+        }
+
+        // Calculate leave summary for each type based on selected year
         $leaveSummary = [];
+        $totalAllQuota = 0;
+        $totalAllUsed = 0;
+        $totalAllRemaining = 0;
+
         foreach ($leaveTypes as $type) {
-            $used = $this->leaveRequestModel->getUsedDays($pers_id, $type['leave_type_id']);
+            $used = $this->leaveRequestModel->getUsedDays($pers_id, $type['leave_type_id'], $selectedYearId);
+            $quota = (float)$type['leave_type_quota'];
+            $remaining = $quota - $used;
+
+            $totalAllQuota += $quota;
+            $totalAllUsed += $used;
+            $totalAllRemaining += $remaining;
+
             $leaveSummary[] = [
                 'type_id' => $type['leave_type_id'],
                 'type_name' => $type['leave_type_name'],
-                'quota' => (float)$type['leave_type_quota'],
+                'quota' => $quota,
                 'used' => $used,
-                'remaining' => (float)$type['leave_type_quota'] - $used,
+                'remaining' => $remaining,
             ];
         }
 
+        // โควตารวมทั้งปีงบประมาณ = 46 วัน (23 วัน x 2 รอบ)
+        $totalAllQuota = 46.0;
+        $totalAllRemaining = max(0, $totalAllQuota - $totalAllUsed);
+
+        // Get teacher profile for form prefill
+        $teacher = $db_personnel->table('tb_personnel')
+            ->where('pers_id', $pers_id)
+            ->get()
+            ->getRowArray();
+
+        // Selected round from filter (รอบที่ 1 หรือ รอบที่ 2 หรือ ค่าว่างคือรอบปัจจุบัน)
+        $selectedRound = $this->request->getGet('round') ?: null;
+
+        // ดึงข้อมูลการลาและโควตาประจำรอบ 6 เดือน (สูงสุด 23 วัน/รอบ)
+        $termLeaveInfo = $this->leaveRequestModel->getUsedDaysInTerm($pers_id, null, $activeYear, $selectedRound);
+
         $data = [
             'title' => 'ระบบการลา',
-            'leaves' => $this->leaveRequestModel->getCombinedLeaveHistory($pers_id),
+            'leaves' => $this->leaveRequestModel->getCombinedLeaveHistory($pers_id, $selectedYearId, $selectedRound),
             'leaveTypes' => $leaveTypes,
             'leaveSummary' => $leaveSummary,
-            'lateCount' => $this->leaveRequestModel->getLateCount($pers_id),
-            'lateDetails' => $this->leaveRequestModel->getLateDetails($pers_id),
+            'totalAllQuota' => $totalAllQuota,
+            'totalAllUsed' => $totalAllUsed,
+            'totalAllRemaining' => $totalAllRemaining,
+            'termLeaveInfo' => $termLeaveInfo,
+            'lateCount' => $this->leaveRequestModel->getLateCount($pers_id, $selectedYearId),
+            'lateDetails' => $this->leaveRequestModel->getLateDetails($pers_id, $selectedYearId),
             'activeYear' => $activeYear,
+            'leaveYears' => $leaveYears,
+            'selectedYearId' => $selectedYearId,
+            'selectedRound' => $selectedRound,
+            'teacher' => $teacher,
         ];
 
         return view('teacher/leave/index', $data);
@@ -86,20 +179,29 @@ class LeaveController extends BaseController
         }
 
         $leaveTypeId = $this->request->getPost('leave_type_id');
-        $startDate = $this->request->getPost('leave_start_date');
-        $endDate = $this->request->getPost('leave_end_date');
+        $rawStartDate = $this->request->getPost('leave_start_date');
+        $rawEndDate = $this->request->getPost('leave_end_date');
+        $leavePeriod = $this->request->getPost('leave_period') ?: 'full';
         
-        // Simple day calculation
-        $diff = strtotime($endDate) - strtotime($startDate);
-        $totalDays = round($diff / (60 * 60 * 24)) + 1;
+        $startDate = $this->leaveRequestModel->parseThaiDateToStandard($rawStartDate);
+        $endDate = $this->leaveRequestModel->parseThaiDateToStandard($rawEndDate);
 
-        // Check quota
+        // คำนวณวันลาจริง (ไม่นับเสาร์-อาทิตย์ และวันหยุดนักขัตฤกษ์)
+        $totalDays = $this->leaveRequestModel->calculateWorkingDays($startDate, $endDate, $leavePeriod);
+
+        // 1. ตรวจสอบโควตาประเภทการลา
         $type = $this->leaveTypeModel->find($leaveTypeId);
         if ($type) {
             $used = $this->leaveRequestModel->getUsedDays($session->get('person_id'), $leaveTypeId);
             if (($used + $totalDays) > $type['leave_type_quota']) {
-                return redirect()->back()->withInput()->with('error', 'คุณครูมีวันลาคงไม่พอ (ใช้ไปแล้ว ' . $used . '/' . $type['leave_type_quota'] . ' วัน)');
+                return redirect()->back()->withInput()->with('error', 'คุณครูมีวันลาคงเหลือไม่พอสำหรับการลาครั้งนี้ (ใช้ไปแล้ว ' . $used . '/' . $type['leave_type_quota'] . ' วัน)');
             }
+        }
+
+        // 2. ตรวจสอบกฎโควตาสูงสุด 23 วัน/ภาคเรียน
+        $termInfo = $this->leaveRequestModel->getUsedDaysInTerm($session->get('person_id'), $startDate);
+        if (($termInfo['used_in_term'] + $totalDays) > $termInfo['max_quota']) {
+            return redirect()->back()->withInput()->with('error', 'ไม่สามารถส่งใบลาได้ เนื่องจากยอดวันลารวมใน ' . $termInfo['term_info']['term_name'] . ' จะเกินโควตาสูงสุด 23 วัน (ปัจจุบันลาไปแล้ว ' . $termInfo['used_in_term'] . ' วัน, ขอลารวม ' . ($termInfo['used_in_term'] + $totalDays) . ' วัน)');
         }
 
         $file = $this->request->getFile('leave_file');
@@ -107,6 +209,15 @@ class LeaveController extends BaseController
         if ($file && $file->isValid() && !$file->hasMoved()) {
             $fileName = $file->getRandomName();
             $file->move(ROOTPATH . 'public/uploads/leaves', $fileName);
+        }
+
+        // Ensure columns exist in tb_leave_requests
+        $fields = $this->db->getFieldNames('tb_leave_requests');
+        if (!in_array('leave_contact_address', $fields)) {
+            $this->db->query("ALTER TABLE tb_leave_requests ADD COLUMN leave_contact_address TEXT NULL AFTER leave_period");
+        }
+        if (!in_array('leave_contact_phone', $fields)) {
+            $this->db->query("ALTER TABLE tb_leave_requests ADD COLUMN leave_contact_phone VARCHAR(50) NULL AFTER leave_contact_address");
         }
 
         $saveData = [
@@ -117,7 +228,7 @@ class LeaveController extends BaseController
             'leave_start_date' => $startDate,
             'leave_end_date' => $endDate,
             'leave_total_days' => $totalDays,
-            'leave_period' => $this->request->getPost('leave_period'),
+            'leave_period' => $leavePeriod,
             'leave_contact_address' => $this->request->getPost('leave_contact_address'),
             'leave_contact_phone' => $this->request->getPost('leave_contact_phone'),
             'leave_file' => $fileName,
@@ -153,8 +264,12 @@ class LeaveController extends BaseController
     {
         $session = session();
         $leaveTypeId = $this->request->getPost('leave_type_id');
-        $startDate = $this->request->getPost('leave_start_date');
-        $endDate = $this->request->getPost('leave_end_date');
+        $rawStartDate = $this->request->getPost('leave_start_date');
+        $rawEndDate = $this->request->getPost('leave_end_date');
+        $leavePeriod = $this->request->getPost('leave_period') ?: 'full';
+
+        $startDate = $this->leaveRequestModel->parseThaiDateToStandard($rawStartDate);
+        $endDate = $this->leaveRequestModel->parseThaiDateToStandard($rawEndDate);
 
         $type = $this->leaveTypeModel->find($leaveTypeId);
         if (!$type) {
@@ -162,15 +277,23 @@ class LeaveController extends BaseController
         }
 
         $used = $this->leaveRequestModel->getUsedDays($session->get('person_id'), $leaveTypeId);
-        $totalDays = 0;
-        if ($startDate && $endDate && strtotime($endDate) >= strtotime($startDate)) {
-            $diff = strtotime($endDate) - strtotime($startDate);
-            $totalDays = round($diff / (60 * 60 * 24)) + 1;
-        }
+        
+        // คำนวณวันลาจริง (ไม่นับเสาร์-อาทิตย์ และวันหยุดนักขัตฤกษ์)
+        $totalDays = $this->leaveRequestModel->calculateWorkingDays($startDate, $endDate, $leavePeriod);
 
         $quota = (float)$type['leave_type_quota'];
         $remaining = $quota - $used;
         $canLeave = ($totalDays <= 0) ? true : (($used + $totalDays) <= $quota);
+
+        // ตรวจสอบโควตาประจำเทอม (สูงสุด 23 วัน)
+        $termCheck = $this->leaveRequestModel->getUsedDaysInTerm($session->get('person_id'), $startDate);
+        $termExceeded = false;
+        $termMessage = '';
+        if ($totalDays > 0 && ($termCheck['used_in_term'] + $totalDays) > $termCheck['max_quota']) {
+            $canLeave = false;
+            $termExceeded = true;
+            $termMessage = 'วันลารวมใน ' . $termCheck['term_info']['term_name'] . ' จะเกินโควตาสูงสุด 23 วัน/เทอม (ใช้ไปแล้ว ' . $termCheck['used_in_term'] . ' วัน)';
+        }
 
         return $this->response->setJSON([
             'status' => 'success',
@@ -179,12 +302,81 @@ class LeaveController extends BaseController
             'remaining' => $remaining,
             'request_days' => $totalDays,
             'can_leave' => $canLeave,
+            'term_check' => [
+                'term_name' => $termCheck['term_info']['term_name'],
+                'used_in_term' => $termCheck['used_in_term'],
+                'remaining_in_term' => $termCheck['remaining_in_term'],
+                'max_quota' => $termCheck['max_quota'],
+                'term_exceeded' => $termExceeded,
+                'term_message' => $termMessage,
+            ],
             'debug' => [
                 'pers_id' => $session->get('person_id'),
                 'leave_type_id' => $leaveTypeId,
                 'start_date' => $startDate,
                 'end_date' => $endDate
             ]
+        ]);
+    }
+
+    public function filterData()
+    {
+        $session = session();
+        if (!$session->get('isLoggedIn')) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Unauthorized']);
+        }
+
+        $pers_id = $session->get('person_id');
+        $db_personnel = \Config\Database::connect('personnel');
+
+        $selectedYearId = $this->request->getGet('year_id');
+        $selectedRound = $this->request->getGet('round') ?: null;
+
+        $activeYear = null;
+        if ($selectedYearId) {
+            $activeYear = $db_personnel->table('tb_leave_years')->where('ly_id', $selectedYearId)->get()->getRow();
+        }
+        if (!$activeYear) {
+            $activeYear = $this->leaveRequestModel->getOrCreateActiveLeaveYear();
+            $selectedYearId = $activeYear->ly_id ?? null;
+        }
+
+        $leaveTypes = $this->leaveTypeModel->findAll();
+        $leaveSummary = [];
+        $totalAllQuota = 46.0;
+        $totalAllUsed = 0;
+
+        foreach ($leaveTypes as $type) {
+            $used = $this->leaveRequestModel->getUsedDays($pers_id, $type['leave_type_id'], $selectedYearId);
+            $quota = (float)$type['leave_type_quota'];
+            $remaining = $quota - $used;
+
+            $totalAllUsed += $used;
+
+            $leaveSummary[] = [
+                'type_id' => $type['leave_type_id'],
+                'type_name' => $type['leave_type_name'],
+                'quota' => $quota,
+                'used' => $used,
+                'remaining' => $remaining,
+            ];
+        }
+
+        $totalAllRemaining = max(0, $totalAllQuota - $totalAllUsed);
+        $termLeaveInfo = $this->leaveRequestModel->getUsedDaysInTerm($pers_id, null, $activeYear, $selectedRound);
+        $leaves = $this->leaveRequestModel->getCombinedLeaveHistory($pers_id, $selectedYearId, $selectedRound);
+        $lateCount = $this->leaveRequestModel->getLateCount($pers_id, $selectedYearId);
+
+        return $this->response->setJSON([
+            'status' => 'success',
+            'activeYear' => $activeYear,
+            'leaveSummary' => $leaveSummary,
+            'totalAllQuota' => $totalAllQuota,
+            'totalAllUsed' => $totalAllUsed,
+            'totalAllRemaining' => $totalAllRemaining,
+            'termLeaveInfo' => $termLeaveInfo,
+            'leaves' => $leaves,
+            'lateCount' => $lateCount,
         ]);
     }
 
@@ -276,32 +468,79 @@ class LeaveController extends BaseController
             return redirect()->to('leave')->with('error', 'ไม่พบข้อมูลใบลา');
         }
 
-        // Get personnel info with position name from skj database
+        // Get personnel info
         $db_personnel = \Config\Database::connect('personnel');
         $db_skj = \Config\Database::connect('skj');
         $personnel = $db_personnel->table('tb_personnel')
-            ->select('tb_personnel.*, ' . $db_skj->database . '.tb_position.posi_name')
-            ->join($db_skj->database . '.tb_position', $db_skj->database . '.tb_position.posi_id = tb_personnel.pers_position', 'left')
             ->where('pers_id', $leave['pers_id'])
             ->get()
             ->getRowArray();
 
-        // ดึงข้อมูลผู้ตรวจสอบ (จากคอลัมน์ approved_by)
+        // Get position name and learning group name separately for safety
+        if ($personnel) {
+            if (!empty($personnel['pers_position'])) {
+                $pos = $db_skj->table('tb_position')->where('posi_id', $personnel['pers_position'])->get()->getRowArray();
+                $personnel['posi_name'] = $pos['posi_name'] ?? 'ครู';
+            } else {
+                $personnel['posi_name'] = 'ครู';
+            }
+
+            if (!empty($personnel['pers_learning'])) {
+                $lear = $db_skj->table('tb_learning')->where('lear_id', $personnel['pers_learning'])->get()->getRowArray();
+                $personnel['lear_namethai'] = $lear['lear_namethai'] ?? '';
+            } else {
+                $personnel['lear_namethai'] = '';
+            }
+        }
+
+        // ดึงข้อมูลผู้ตรวจสอบ (เจ้าหน้าที่ที่อนุมัติ จากคอลัมน์ approved_by)
         $approver = null;
         if (!empty($leave['approved_by'])) {
-            // ลองดึงข้อมูลด้วย Query Builder แบบปกติจาก db_personnel
             $approver = $db_personnel->table('tb_personnel')
                 ->where('pers_id', $leave['approved_by'])
                 ->get()
                 ->getRowArray();
             
             if ($approver) {
-                // ดึงชื่อตำแหน่งแยกต่างหากเพื่อความชัวร์ (ลดความซับซ้อนของ JOIN ข้าม DB)
                 $pos = $db_skj->table('tb_position')
                     ->where('posi_id', $approver['pers_position'])
                     ->get()
                     ->getRowArray();
                 $approver['posi_name'] = $pos['posi_name'] ?? 'เจ้าหน้าที่';
+            }
+        }
+
+        // ดึงข้อมูล รองผู้อำนวยการฝ่ายบริหารงานบุคคล (ความเห็นผู้บังคับบัญชา)
+        $deputyDirector = null;
+        $deputyRole = $db_personnel->table('tb_admin_rloes')
+            ->whereIn('admin_rloes_nanetype', ['รองผู้อำนวยการบริหารงานบุคคลกร', 'รองผู้อำนวยการฝ่ายบริหารงานบุคคล', 'รองผู้อำนวยการโรงเรียน', 'รองผู้อำนวยการสถานศึกษา'])
+            ->get()
+            ->getRowArray();
+
+        if ($deputyRole && !empty($deputyRole['admin_rloes_userid'])) {
+            $deputyDirector = $db_personnel->table('tb_personnel')
+                ->where('pers_id', $deputyRole['admin_rloes_userid'])
+                ->get()
+                ->getRowArray();
+            if ($deputyDirector) {
+                $deputyDirector['role_position'] = $deputyRole['admin_rloes_academic_position'] ?? 'รองผู้อำนวยการสถานศึกษา';
+            }
+        }
+
+        // ดึงข้อมูล ผู้อำนวยการสถานศึกษา (คำสั่ง)
+        $director = null;
+        $directorRole = $db_personnel->table('tb_admin_rloes')
+            ->whereIn('admin_rloes_nanetype', ['ผู้อำนวยการโรงเรียน', 'ผู้อำนวยการสถานศึกษา'])
+            ->get()
+            ->getRowArray();
+
+        if ($directorRole && !empty($directorRole['admin_rloes_userid'])) {
+            $director = $db_personnel->table('tb_personnel')
+                ->where('pers_id', $directorRole['admin_rloes_userid'])
+                ->get()
+                ->getRowArray();
+            if ($director) {
+                $director['role_position'] = $directorRole['admin_rloes_academic_position'] ?? 'ผู้อำนวยการสถานศึกษา โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์';
             }
         }
 
@@ -337,169 +576,37 @@ class LeaveController extends BaseController
             9 => 'กันยายน', 10 => 'ตุลาคม', 11 => 'พฤศจิกายน', 12 => 'ธันวาคม'
         ];
 
-        // mPDF is now loaded via Composer autoloader
-        $defaultConfig = (new \Mpdf\Config\ConfigVariables())->getDefaults();
-        $fontDirs = $defaultConfig['fontDir'];
-        $defaultFontConfig = (new \Mpdf\Config\FontVariables())->getDefaults();
-        $fontData = $defaultFontConfig['fontdata'];
-
-        $mpdf = new \Mpdf\Mpdf([
-            'tempDir' => WRITEPATH . 'cache',
-            'fontDir' => array_merge($fontDirs, [
-                ROOTPATH . 'vendor/mpdf/mpdf/ttfonts',
-            ]),
-            'fontdata' => $fontData + [
-                'thsarabun' => [
-                    'R' => 'THSarabunNew.ttf',
-                    'B' => 'THSarabunNew Bold.ttf',
-                    'I' => 'THSarabunNew Italic.ttf',
-                    'BI' => 'THSarabunNew BoldItalic.ttf',
-                ]
-            ],
-            'mode' => 'utf-8',
-            'format' => 'A4',
-            'default_font_size' => 16,
-            'default_font' => 'thsarabun',
-            'margin_left' => 0,
-            'margin_right' => 0,
-            'margin_top' => 0,
-            'margin_bottom' => 0,
-        ]);
-
-        $mpdf->SetTitle('ใบลา - ' . $leave['leave_topic']);
-        
-        // Add page and import Template
-        $templatePath = ROOTPATH . 'uploads/personnel/form-la.pdf';
-        if (file_exists($templatePath)) {
-            $mpdf->SetSourceFile($templatePath);
-            $tplId = $mpdf->ImportPage(1);
-            $mpdf->UseTemplate($tplId);
-        }
-
         // Variables
         $createdDate = strtotime($leave['created_at']);
         $startDate = strtotime($leave['leave_start_date']);
         $endDate = strtotime($leave['leave_end_date']);
         $fullName = ($personnel['pers_prefix'] ?? '') . ($personnel['pers_firstname'] ?? '') . ' ' . ($personnel['pers_lastname'] ?? '');
-        
-        // ดึงชื่อตำแหน่งจากข้อมูลที่ JOIN มา
         $position = $personnel['posi_name'] ?? 'ครู';
-        
-        $department = 'โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์';
+        $groupName = !empty($personnel['lear_namethai']) ? 'กลุ่มสาระการเรียนรู้' . $personnel['lear_namethai'] : 'โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์';
         $contactAddress = $leave['leave_contact_address'] ?? $personnel['pers_address'] ?? '';
         $contactPhone = $leave['leave_contact_phone'] ?? $personnel['pers_phone'] ?? '';
 
-        // --- Start Writing Data (Fine-Tuned ตาม Grid) ---
-        $mpdf->SetFont('thsarabun', '', 16);
+        $data = [
+            'title' => 'ใบลา - ' . $leave['leave_topic'],
+            'leave' => $leave,
+            'personnel' => $personnel,
+            'fullName' => $fullName,
+            'position' => $position,
+            'groupName' => $groupName,
+            'contactAddress' => $contactAddress,
+            'contactPhone' => $contactPhone,
+            'lastLeave' => $lastLeave,
+            'leaveStats' => $leaveStats,
+            'approver' => $approver,
+            'deputyDirector' => $deputyDirector,
+            'director' => $director,
+            'createdDate' => $createdDate,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'thaiMonths' => $thaiMonths,
+        ];
 
-        // เขียนที่ (โรงเรียน...) - Y≈32
-        $mpdf->SetXY(118, 38); $mpdf->Cell(70, 6, 'โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์', 0, 0, 'C');
-
-        // วันที่เขียนใบลา (ขวาบน) - Y≈40
-        $mpdf->SetXY(108, 46); $mpdf->Cell(15, 6, date('j', $createdDate), 0, 0, 'C');
-        $mpdf->SetXY(130, 46); $mpdf->Cell(32, 6, $thaiMonths[date('n', $createdDate)], 0, 0, 'C');
-        $mpdf->SetXY(170, 46); $mpdf->Cell(15, 6, (date('Y', $createdDate) + 543), 0, 0, 'C');
-
-        // เรื่อง - Y≈52
-        $mpdf->SetXY(33, 53); $mpdf->Cell(150, 6, $leave['leave_topic'], 0, 0, 'L');
-
-        // ข้าพเจ้า / ตำแหน่ง / สังกัด - Y≈70
-        $mpdf->SetXY(45, 68); $mpdf->Cell(62, 6, $fullName, 0, 0, 'L');
-        $mpdf->SetXY(114, 68); $mpdf->Cell(40, 6, $position, 0, 0, 'L');
-        $mpdf->SetXY(160, 68); $mpdf->Cell(28, 6, 'กองการศึกษา ฯ', 0, 0, 'L');
-
-        // ประเภทการลา (Checkboxes) - ลาป่วย Y≈82, ลากิจ Y≈91, ลาคลอด Y≈100
-        $mpdf->SetFont('thsarabun', 'B', 18);
-        if ($leave['leave_type_name'] == 'ลาป่วย') {
-            $mpdf->SetXY(36, 76); $mpdf->Cell(5, 5, '/', 0, 0, 'C');
-            $mpdf->SetFont('thsarabun', '', 16);
-            $mpdf->SetXY(75, 76); $mpdf->Cell(120, 6, $leave['leave_detail'], 0, 0, 'L');
-        } elseif ($leave['leave_type_name'] == 'ลากิจส่วนตัว') {
-            $mpdf->SetXY(36, 84); $mpdf->Cell(5, 5, '/', 0, 0, 'C');
-            $mpdf->SetFont('thsarabun', '', 16);
-            $mpdf->SetXY(75, 84); $mpdf->Cell(120, 6, $leave['leave_detail'], 0, 0, 'L');
-        } elseif ($leave['leave_type_name'] == 'ลาคลอดบุตร') {
-            $mpdf->SetXY(36, 92); $mpdf->Cell(5, 5, '/', 0, 0, 'C');
-        }
-
-        // ระยะเวลาลา (ตั้งแต่ - ถึง) - Y≈110
-        $mpdf->SetFont('thsarabun', '', 16);
-        $mpdf->SetXY(36, 103); $mpdf->Cell(15, 6, date('j', $startDate), 0, 0, 'C');
-        $mpdf->SetXY(40, 103); $mpdf->Cell(30, 6, $thaiMonths[date('n', $startDate)], 0, 0, 'C');
-        $mpdf->SetXY(60, 103); $mpdf->Cell(15, 6, (date('Y', $startDate) + 543), 0, 0, 'C');
-        $mpdf->SetXY(95, 103); $mpdf->Cell(15, 6, date('j', $endDate), 0, 0, 'C');
-        $mpdf->SetXY(100, 103); $mpdf->Cell(30, 6, $thaiMonths[date('n', $endDate)], 0, 0, 'C');
-        $mpdf->SetXY(120, 103); $mpdf->Cell(15, 6, (date('Y', $endDate) + 543), 0, 0, 'C');
-        
-        // กำหนด, จำนวนวัน - Y≈119
-        $mpdf->SetXY(165, 103); $mpdf->Cell(15, 6, number_format($leave['leave_total_days'], 1), 0, 0, 'C');
-
-        // ล่าสุุด (ประวัติการลาครั้งสุดท้าย) - ปรับพิกัดเบื้องต้นให้หนีข้อมูลติดต่อ
-        if ($lastLeave) {
-            $mpdf->SetFont('thsarabun', 'B', 18);
-            if ($lastLeave['leave_type_name'] == 'ลาป่วย') { $mpdf->SetXY(45, 111); $mpdf->Cell(5, 5, '/', 0, 0, 'C'); }
-            elseif ($lastLeave['leave_type_name'] == 'ลากิจส่วนตัว') { $mpdf->SetXY(57, 111); $mpdf->Cell(5, 5, '/', 0, 0, 'C'); }
-            elseif ($lastLeave['leave_type_name'] == 'ลาคลอดบุตร') { $mpdf->SetXY(80, 111); $mpdf->Cell(5, 5, '/', 0, 0, 'C'); }
-
-            $mpdf->SetFont('thsarabun', '', 16);
-            $lStart = strtotime($lastLeave['leave_start_date']);
-            $lEnd = strtotime($lastLeave['leave_end_date']);
-            
-            // ตั้งแต่วันที่ (ครั้งสุดท้าย) - Y≈111
-            $lastLeaveStr = date('j', $lStart) . ' ' . $thaiMonths[date('n', $lStart)] . ' ' . (date('Y', $lStart) + 543);
-            $mpdf->SetXY(140, 111); $mpdf->Cell(95, 6, $lastLeaveStr, 0, 0, 'L');
-            $lastLeaveStr = date('j', $lEnd) . ' ' . $thaiMonths[date('n', $lEnd)] . ' ' . (date('Y', $lEnd) + 543);
-            $mpdf->SetXY(33, 118); $mpdf->Cell(95, 6, $lastLeaveStr, 0, 0, 'L');
-            // จำนวนวัน - Y≈118 (แถวเดียวกับเบอร์โทร แต่อยู่คนละฝั่ง)
-            $mpdf->SetXY(89, 118); $mpdf->Cell(15, 6, number_format($lastLeave['leave_total_days'], 1), 0, 0, 'C');
-        }
-
-        // ข้อมูลติดต่อ - เบอร์โทร Y≈128, ที่อยู่ Y≈137
-        $mpdf->SetFont('thsarabun', '', 16);
-        $mpdf->SetXY(153, 118); $mpdf->Cell(45, 6, $contactPhone, 0, 0, 'C');
-        $mpdf->SetXY(30, 125); $mpdf->Cell(170, 6, $contactAddress, 0, 0, 'L');
-
-        // ลงชื่อผู้ลา (ขวาล่าง) - Y≈155, Y≈163
-        $mpdf->SetXY(113, 148); $mpdf->Cell(65, 6, $fullName , 0, 0, 'C');
-        $mpdf->SetXY(113, 156); $mpdf->Cell(65, 6, $position, 0, 0, 'C');
-
-        // --- ตารางสถิติ (ล่างซ้าย) - ป่วย Y≈185, กิจ Y≈195, คลอด Y≈205 ---
-        $mpdf->SetFont('thsarabun', '', 14);
-        // ป่วย - Y≈185
-        $mpdf->SetXY(41, 187); $mpdf->Cell(20, 6, number_format($leaveStats['ลาป่วย']['used_before'], 1), 0, 0, 'C');
-        $mpdf->SetXY(63, 187); $mpdf->Cell(20, 6, ($leave['leave_type_name']=='ลาป่วย' ? number_format($leave['leave_total_days'], 1) : '-'), 0, 0, 'C');
-        $mpdf->SetXY(85, 187); $mpdf->Cell(20, 6, number_format($leaveStats['ลาป่วย']['used_before'] + ($leave['leave_type_name']=='ลาป่วย' ? $leave['leave_total_days'] : 0), 1), 0, 0, 'C');
-        // กิจ - Y≈195
-        $mpdf->SetXY(41, 195); $mpdf->Cell(20, 6, number_format($leaveStats['ลากิจส่วนตัว']['used_before'], 1), 0, 0, 'C');
-        $mpdf->SetXY(63, 195); $mpdf->Cell(20, 6, ($leave['leave_type_name']=='ลากิจส่วนตัว' ? number_format($leave['leave_total_days'], 1) : '-'), 0, 0, 'C');
-        $mpdf->SetXY(85, 195); $mpdf->Cell(20, 6, number_format($leaveStats['ลากิจส่วนตัว']['used_before'] + ($leave['leave_type_name']=='ลากิจส่วนตัว' ? $leave['leave_total_days'] : 0), 1), 0, 0, 'C');
-        // คลอด - Y≈205
-        $mpdf->SetXY(41, 203); $mpdf->Cell(20, 6, number_format($leaveStats['ลาคลอดบุตร']['used_before'], 1), 0, 0, 'C');
-        $mpdf->SetXY(63, 203); $mpdf->Cell(20, 6, ($leave['leave_type_name']=='ลาคลอดบุตร' ? number_format($leave['leave_total_days'], 1) : '-'), 0, 0, 'C');
-        $mpdf->SetXY(85, 203); $mpdf->Cell(20, 6, number_format($leaveStats['ลาคลอดบุตร']['used_before'] + ($leave['leave_type_name']=='ลาคลอดบุตร' ? $leave['leave_total_days'] : 0), 1), 0, 0, 'C');
-
-        // แสดงชื่อผู้ตรวจสอบ (ถ้ามี)
-        if ($approver) {
-            $mpdf->SetFont('thsarabun', '', 16);
-            $approverName = ($approver['pers_prefix'] ?? '') . ($approver['pers_firstname'] ?? '') . ' ' . ($approver['pers_lastname'] ?? '');
-            $approverPosition = $approver['posi_name'] ?? '';
-            
-            // พิกัดจูนเบื้องต้น (ฝั่งซ้าย)
-            $mpdf->SetXY(21, 220); $mpdf->Cell(65, 6, $approverName, 0, 0, 'C');
-            $mpdf->SetXY(22, 227); $mpdf->Cell(65, 6, $approverPosition, 0, 0, 'C');
-            
-            if (!empty($leave['approved_at'])) {
-                $appTime = strtotime($leave['approved_at']);
-                $appDateStr = date('j', $appTime) . ' ' . $thaiMonths[date('n', $appTime)] . ' ' . (date('Y', $appTime) + 543);
-                $mpdf->SetXY(21, 233); $mpdf->Cell(65, 6, $appDateStr, 0, 0, 'C');
-            }
-        }
-
-        // Output
-        $this->response->setHeader('Content-Type', 'application/pdf');
-        $mpdf->Output('ใบลา_' . $leave['leave_id'] . '.pdf', \Mpdf\Output\Destination::INLINE);
-
-        exit;
+        return view('teacher/leave/print_view', $data);
     }
 }
 

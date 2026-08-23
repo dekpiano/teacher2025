@@ -116,40 +116,53 @@ class GenerateLeaveFormController extends BaseController
     <style>
         body {
             font-family: "thsarabun", sans-serif;
-            font-size: 16pt;
-            line-height: 1.5;
+            font-size: 15pt;
+            line-height: 1.4;
+            color: #000;
         }
-        .header-right {
-            text-align: right;
+        .header-box {
+            float: right;
+            width: 200px;
+            font-size: 13pt;
+            line-height: 1.25;
             margin-bottom: 5px;
         }
+        .header-docno {
+            text-align: right;
+            font-size: 13pt;
+            margin-bottom: 4px;
+        }
         .title {
+            clear: both;
             text-align: center;
-            font-size: 20pt;
+            font-size: 18pt;
             font-weight: bold;
-            margin: 10px 0;
+            margin-top: 5px;
+            margin-bottom: 6px;
         }
         .subtitle {
             text-align: center;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
         .date-line {
             text-align: right;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            padding-right: 30px;
         }
         .content {
-            text-indent: 60px;
-            margin-bottom: 5px;
+            text-indent: 50px;
+            margin-bottom: 4px;
         }
         .no-indent {
             text-indent: 0;
         }
         .checkbox {
             display: inline-block;
-            width: 12px;
-            height: 12px;
+            width: 11px;
+            height: 11px;
             border: 1px solid #000;
-            margin-right: 3px;
+            margin-right: 4px;
+            margin-left: 2px;
             vertical-align: middle;
         }
         .dotted {
@@ -157,198 +170,190 @@ class GenerateLeaveFormController extends BaseController
             display: inline-block;
         }
         .signature-section {
-            margin-top: 20px;
+            margin-top: 10px;
             text-align: right;
-            padding-right: 30px;
+            padding-right: 40px;
+            line-height: 1.4;
         }
         table.stats {
             width: 100%;
             border-collapse: collapse;
-            margin: 10px 0;
-            font-size: 14pt;
+            margin: 6px 0;
+            font-size: 13.5pt;
         }
         table.stats th, table.stats td {
             border: 1px solid #000;
-            padding: 4px 6px;
+            padding: 3px 4px;
             text-align: center;
         }
-        .two-col {
+        .bottom-table {
             width: 100%;
+            border-collapse: collapse;
+            margin-top: 6px;
         }
-        .two-col td {
-            width: 50%;
+        .bottom-table td {
             vertical-align: top;
-            padding: 5px;
+            padding: 2px 8px;
         }
         .small-text {
-            font-size: 14pt;
+            font-size: 13.5pt;
         }
-        .mt-10 { margin-top: 10px; }
-        .mb-5 { margin-bottom: 5px; }
+        .center-block {
+            text-align: center;
+        }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <div class="header-right">
-        ปร.001/<span class="dotted" style="width: 80px;">&nbsp;</span>
+    <!-- Header Right Box -->
+    <div class="header-box">
+        <div class="header-docno">บค.๐๐๒/๒๕๖๘</div>
+        <div>เลขรับเรื่อง...............................................</div>
+        <div>วัน/เดือน/ปี.........................เวลา............</div>
     </div>
 
     <!-- Title -->
     <div class="title">ใบลาป่วย  ลาคลอดบุตร  ลากิจส่วนตัว</div>
     <div class="subtitle">
-        เขียนที่ <span class="dotted" style="width: 280px;">&nbsp;</span>
+        เขียนที่.......................................................................................................
     </div>
     <div class="date-line">
-        วันที่ <span class="dotted" style="width: 40px;">&nbsp;</span>
-        เดือน <span class="dotted" style="width: 100px;">&nbsp;</span>
-        พ.ศ. <span class="dotted" style="width: 50px;">&nbsp;</span>
+        วันที่.............เดือน............................................พ.ศ......................
     </div>
 
     <!-- Subject -->
-    <div class="content no-indent mb-5">
-        <strong>เรื่อง</strong> <span class="dotted" style="width: 450px;">&nbsp;</span>
+    <div class="content no-indent" style="margin-bottom: 3px;">
+        <strong>เรื่อง</strong> ...................................................................................................................................................................................
     </div>
 
     <!-- To -->
-    <div class="content no-indent mb-5">
-        <strong>เรียน</strong> ผู้อำนวยการสถานศึกษา โรงเรียนสวรรค์อนันตวิทยา (จิรประวัติ) นครสวรรค์
+    <div class="content no-indent" style="margin-bottom: 4px;">
+        <strong>เรียน</strong> ผู้อำนวยการสถานศึกษา โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์
     </div>
 
     <!-- Personal Info -->
     <div class="content">
-        ข้าพเจ้า <span class="dotted" style="width: 200px;">&nbsp;</span>
-        ตำแหน่ง <span class="dotted" style="width: 120px;">&nbsp;</span>
-        สังกัด <span class="dotted" style="width: 180px;">&nbsp;</span>
+        ข้าพเจ้า..................................................................ตำแหน่ง................................................................................................
+    </div>
+    <div class="content no-indent">
+        สังกัด...........................................................................................................................................................................................
     </div>
 
     <!-- Leave Type -->
-    <div class="content">
-        ขอ
-        <span class="checkbox"></span> ป่วย
-        <span class="checkbox"></span> กิจส่วนตัว
+    <div class="content" style="margin-top: 4px;">
+        <span style="display:inline-block; width: 60px;">ขอลา</span>
+        <span class="checkbox"></span> ป่วย&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;เนื่องจาก ..........................................................................................................
+    </div>
+    <div class="content" style="text-indent: 60px;">
+        <span class="checkbox"></span> กิจส่วนตัว&nbsp;&nbsp;&nbsp;เนื่องจาก ..........................................................................................................
+    </div>
+    <div class="content" style="text-indent: 60px;">
         <span class="checkbox"></span> คลอดบุตร
-        เนื่องจาก <span class="dotted" style="width: 280px;">&nbsp;</span>
     </div>
 
     <!-- Leave Duration -->
-    <div class="content">
-        ตั้งแต่วันที่ <span class="dotted" style="width: 40px;">&nbsp;</span>
-        เดือน <span class="dotted" style="width: 80px;">&nbsp;</span>
-        พ.ศ. <span class="dotted" style="width: 40px;">&nbsp;</span>
-        ถึงวันที่ <span class="dotted" style="width: 40px;">&nbsp;</span>
-        เดือน <span class="dotted" style="width: 80px;">&nbsp;</span>
-        พ.ศ. <span class="dotted" style="width: 40px;">&nbsp;</span>
-        มีกำหนด <span class="dotted" style="width: 40px;">&nbsp;</span> วัน
+    <div class="content" style="margin-top: 4px;">
+        ตั้งแต่วันที่.....................................................ถึงวันที่.......................................................มีกำหนด....................................วัน
     </div>
 
     <!-- Previous Leave -->
     <div class="content">
-        ข้าพเจ้าได้ลา
-        <span class="checkbox"></span> ป่วย
-        <span class="checkbox"></span> กิจส่วนตัว
-        <span class="checkbox"></span> คลอดบุตร
-        ครั้งสุดท้ายตั้งแต่วันที่ <span class="dotted" style="width: 150px;">&nbsp;</span>
+        ข้าพเจ้าได้ลา&nbsp;&nbsp;&nbsp;&nbsp;<span class="checkbox"></span> ป่วย&nbsp;&nbsp;&nbsp;&nbsp;<span class="checkbox"></span> กิจส่วนตัว&nbsp;&nbsp;&nbsp;&nbsp;<span class="checkbox"></span> คลอดบุตร&nbsp;&nbsp;ครั้งสุดท้ายตั้งแต่วันที่.................................................
     </div>
     <div class="content no-indent">
-        ถึงวันที่ <span class="dotted" style="width: 200px;">&nbsp;</span>
-        มีกำหนด <span class="dotted" style="width: 40px;">&nbsp;</span> วัน ในระหว่างลาติดต่อข้าพเจ้าได้ที่ <span class="dotted" style="width: 150px;">&nbsp;</span>
+        ถึงวันที่..................................................................มีกำหนด...................วัน ในระหว่างลาติดต่อข้าพเจ้าได้ที่ ..............................
+    </div>
+    <div class="content no-indent">
+        ...................................................................................................................................................................................................
     </div>
 
     <!-- Signature -->
     <div class="signature-section">
-        <div class="mb-5">ขอแสดงความนับถือ</div>
-        <div class="mt-10">(ลงชื่อ) <span class="dotted" style="width: 180px;">&nbsp;</span></div>
-        <div>(<span class="dotted" style="width: 180px;">&nbsp;</span>)</div>
-        <div>ตำแหน่ง <span class="dotted" style="width: 150px;">&nbsp;</span></div>
+        <div>ขอแสดงความนับถือ</div>
+        <div style="margin-top: 6px;">(ลงชื่อ)...................................................................</div>
+        <div>(...................................................................)</div>
+        <div>ตำแหน่ง...................................................................</div>
     </div>
 
-    <!-- Statistics Table -->
-    <div class="mt-10">
-        <strong>สถิติการลาในปีงบประมาณนี้</strong>
-    </div>
-    <table class="stats">
-        <thead>
-            <tr>
-                <th rowspan="2">ประเภท<br>การลา</th>
-                <th colspan="2">ลามาแล้ว</th>
-                <th colspan="2">ลาครั้งนี้</th>
-                <th colspan="2">รวมเป็น</th>
-                <th rowspan="2">ความเห็นผู้รับผิดชอบ</th>
-            </tr>
-            <tr>
-                <th>ครั้ง</th>
-                <th>วันทำการ</th>
-                <th>ครั้ง</th>
-                <th>วันทำการ</th>
-                <th>ครั้ง</th>
-                <th>วันทำการ</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>ป่วย</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-            </tr>
-            <tr>
-                <td>กิจส่วนตัว</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-            </tr>
-            <tr>
-                <td>คลอดบุตร</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-            </tr>
-        </tbody>
-    </table>
-
-    <!-- Approval Section -->
-    <table class="two-col" style="margin-top: 10px;">
+    <!-- Lower Section: 2 Columns (Left: Stats & Approvers / Right: Supervisors & Principal Command) -->
+    <table class="bottom-table">
         <tr>
-            <td>
-                <div>(ลงชื่อ) <span class="dotted" style="width: 150px;">&nbsp;</span> ผู้ตรวจสอบ</div>
-                <div class="mt-10">(<span class="dotted" style="width: 150px;">&nbsp;</span>)</div>
-            </td>
-            <td>
-                <div><strong>คำสั่ง</strong></div>
-                <div>
-                    <span class="checkbox"></span> อนุญาต
-                    <span class="checkbox"></span> ไม่อนุญาต
+            <!-- Left Column: สถิติการลา & ผู้ตรวจสอบ & หัวหน้ากลุ่มสาระ -->
+            <td style="width: 50%; padding-right: 12px;">
+                <div style="font-weight: bold; margin-bottom: 2px;">สถิติการลาในปีงบประมาณนี้</div>
+                <table class="stats">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%;">ประเภท<br>การลา</th>
+                            <th style="width: 25%;">ลามาแล้ว<br>(วันทำการ)</th>
+                            <th style="width: 25%;">ลาครั้งนี้<br>(วันทำการ)</th>
+                            <th style="width: 25%;">รวมเป็น<br>(วันทำการ)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="text-align: left; padding-left: 5px;">ป่วย</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: left; padding-left: 5px;">กิจส่วนตัว</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: left; padding-left: 5px;">คลอดบุตร</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div style="margin-top: 6px; line-height: 1.4;">
+                    <div>(ลงชื่อ)...................................................................ผู้ตรวจสอบ</div>
+                    <div style="text-align: center; width: 220px;">(...................................................................)</div>
+                    <div>ตำแหน่ง...................................................................</div>
+                    <div>วันที่............/......................../...................</div>
                 </div>
-                <div class="mt-10">(ลงชื่อ) <span class="dotted" style="width: 150px;">&nbsp;</span></div>
-                <div>(<span class="dotted" style="width: 150px;">&nbsp;</span>)</div>
-                <div>ตำแหน่ง <span class="dotted" style="width: 130px;">&nbsp;</span></div>
-                <div>วันที่ <span class="dotted" style="width: 140px;">&nbsp;</span></div>
+
+                <div style="margin-top: 8px; line-height: 1.4;">
+                    <div style="font-weight: bold; margin-bottom: 2px;">ความเห็นของหัวหน้ากลุ่มสาระฯ/หัวหน้างานฝ่าย</div>
+                    <div>.......................................................................................................</div>
+                    <div style="margin-top: 4px;">(ลงชื่อ)...................................................................</div>
+                    <div style="text-align: center; width: 220px;">(...................................................................)</div>
+                    <div>ตำแหน่ง...................................................................</div>
+                    <div>วันที่............/......................../...................</div>
+                </div>
+            </td>
+
+            <!-- Right Column: ความเห็นผู้บังคับบัญชา & คำสั่ง -->
+            <td style="width: 50%; padding-left: 12px;">
+                <div style="line-height: 1.4;">
+                    <div style="font-weight: bold; margin-bottom: 2px;">ความเห็นผู้บังคับบัญชา</div>
+                    <div>.......................................................................................................</div>
+                    <div style="margin-top: 4px;">(ลงชื่อ)...................................................................</div>
+                    <div style="text-align: center; width: 220px;">(...................................................................)</div>
+                    <div>ตำแหน่ง...................................................................</div>
+                    <div>วันที่............/......................../...................</div>
+                </div>
+
+                <div style="margin-top: 10px; line-height: 1.4;">
+                    <div style="font-weight: bold; margin-bottom: 2px;">คำสั่ง</div>
+                    <div style="margin-bottom: 4px;">
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="checkbox"></span> อนุญาต&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="checkbox"></span> ไม่อนุญาต
+                    </div>
+                    <div>.......................................................................................................</div>
+                    <div>.......................................................................................................</div>
+                    <div style="margin-top: 4px;">(ลงชื่อ)...................................................................</div>
+                    <div style="text-align: center; width: 220px;">(...................................................................)</div>
+                    <div>ตำแหน่ง...................................................................</div>
+                    <div>วันที่............/......................../...................</div>
+                </div>
             </td>
         </tr>
     </table>
-
-    <!-- Footer -->
-    <div class="mt-10 small-text">
-        <strong>ความเห็นของหัวหน้ากลุ่มสาระ/งานที่รับผิดชอบ</strong>
-    </div>
-    <div class="small-text">
-        (ลงชื่อ) <span class="dotted" style="width: 150px;">&nbsp;</span>
-        (<span class="dotted" style="width: 150px;">&nbsp;</span>)
-        ตำแหน่ง <span class="dotted" style="width: 120px;">&nbsp;</span>
-        วันที่ <span class="dotted" style="width: 100px;">&nbsp;</span>
-    </div>
 
 </body>
 </html>';

@@ -34,6 +34,8 @@ $routes->post('verify-email/reset-password', 'ControlTeacherVerification::resetP
     // Leave Routes
     $routes->group('leave', static function ($routes) {
         $routes->get('', 'LeaveController::index');
+        $routes->get('seed-holidays', 'LeaveController::seedHolidaysNow');
+        $routes->get('filterData', 'LeaveController::filterData');
         $routes->post('create', 'LeaveController::create');
         $routes->get('delete/(:num)', 'LeaveController::delete/$1');
         $routes->post('check-quota', 'LeaveController::check_quota');
