@@ -53,6 +53,10 @@ RUN mkdir -p /tmp/opcache && chmod 777 /tmp/opcache
 RUN a2enmod rewrite ssl
 RUN a2ensite default-ssl
 
+# Set Apache request body limit (120MB) for SSL uploads
+RUN echo 'LimitRequestBody 125829120' > /etc/apache2/conf-available/upload-limit.conf \
+    && a2enconf upload-limit
+
 # Set working directory
 WORKDIR /var/www/html
 

@@ -125,11 +125,12 @@
             <input type="hidden" name="pa_year" value="<?= $current_year ?>">
             <input type="hidden" name="uploaded_lesson_plan_filename" id="uploaded_lesson_plan_filename" value="">
             <input type="hidden" name="uploaded_pa1_filename" id="uploaded_pa1_filename" value="">
+            <input type="hidden" name="uploaded_presentation_filename" id="uploaded_presentation_filename" value="">
 
             <div class="row g-3">
                 <!-- Card 1: Presentation (PPT/Canva) -->
                 <div class="col-lg-4">
-                    <div class="card shadow-sm h-100 pa-card-action <?= ($agreement && !empty($agreement['pa_presentation_link'])) ? 'pa-card-active' : '' ?>">
+                    <div class="card shadow-sm h-100 pa-card-action <?= ($agreement && (!empty($agreement['pa_presentation_link']) || !empty($agreement['pa_file_presentation']))) ? 'pa-card-active' : '' ?>">
                         <div class="card-header bg-white border-bottom py-2 px-3 d-flex justify-content-between align-items-center">
                             <div class="d-flex align-items-center">
                                 <div class="pa-icon-box bg-label-danger me-2">
@@ -137,11 +138,17 @@
                                 </div>
                                 <span class="fw-bold text-dark">1. สื่อนำเสนอผลงาน</span>
                             </div>
-                            <?php if ($agreement && !empty($agreement['pa_presentation_link'])) : ?>
-                                <span class="badge bg-label-success rounded-pill px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i> ส่งลิ้งก์แล้ว</span>
-                            <?php else: ?>
-                                <span class="badge bg-label-secondary rounded-pill px-2 py-1">ยังไม่ส่ง</span>
-                            <?php endif; ?>
+                            <div class="d-flex gap-1">
+                                <?php if ($agreement && !empty($agreement['pa_presentation_link'])) : ?>
+                                    <span class="badge bg-label-success rounded-pill px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i> ลิ้งก์</span>
+                                <?php endif; ?>
+                                <?php if ($agreement && !empty($agreement['pa_file_presentation'])) : ?>
+                                    <span class="badge bg-label-success rounded-pill px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i> ไฟล์</span>
+                                <?php endif; ?>
+                                <?php if (!$agreement || (empty($agreement['pa_presentation_link']) && empty($agreement['pa_file_presentation']))) : ?>
+                                    <span class="badge bg-label-secondary rounded-pill px-2 py-1">ยังไม่ส่ง</span>
+                                <?php endif; ?>
+                            </div>
                         </div>
                         <div class="card-body p-3 d-flex flex-column justify-content-between">
                             <div>
@@ -150,7 +157,7 @@
                                 </div>
 
                                 <?php if ($agreement && !empty($agreement['pa_presentation_link'])) : ?>
-                                    <div class="alert alert-outline-danger d-flex align-items-center justify-content-between p-2 mb-3 rounded-3" role="alert">
+                                    <div class="alert alert-outline-danger d-flex align-items-center justify-content-between p-2 mb-2 rounded-3" role="alert">
                                         <div class="d-flex align-items-center text-truncate me-2">
                                             <i class="bi bi-link-45deg fs-4 text-danger me-1"></i>
                                             <div class="text-truncate">
@@ -164,6 +171,22 @@
                                     </div>
                                 <?php endif; ?>
 
+                                <?php if ($agreement && !empty($agreement['pa_file_presentation'])) : ?>
+                                    <div class="alert alert-outline-warning d-flex align-items-center justify-content-between p-2 mb-2 rounded-3" role="alert">
+                                        <div class="d-flex align-items-center text-truncate me-2">
+                                            <i class="bi bi-file-earmark-play-fill fs-4 text-warning me-2"></i>
+                                            <div class="text-truncate">
+                                                <div class="small fw-bold text-dark text-truncate">มีไฟล์สื่อนำเสนอในระบบแล้ว</div>
+                                                <div class="x-small text-muted text-truncate"><?= esc($agreement['pa_file_presentation']) ?></div>
+                                            </div>
+                                        </div>
+                                        <a href="<?= env('upload.server.baseurl.pa_agreement') . $agreement['pa_year'] . '/presentation/' . $agreement['pa_file_presentation'] ?>" target="_blank" class="btn btn-xs btn-warning text-nowrap rounded-pill px-2">
+                                            <i class="bi bi-eye me-1"></i> เปิดดู
+                                        </a>
+                                    </div>
+                                <?php endif; ?>
+
+                                <!-- URL Link Input -->
                                 <div class="mb-2">
                                     <label for="pa_presentation_link" class="form-label small fw-semibold text-secondary mb-1">
                                         วาง URL สื่อนำเสนอ (Canva, Drive, YouTube):
@@ -173,9 +196,47 @@
                                         <input type="url" class="form-control form-control-sm" id="pa_presentation_link" name="pa_presentation_link" placeholder="https://..." value="<?= $agreement['pa_presentation_link'] ?? '' ?>">
                                     </div>
                                 </div>
+
+                                <button type="button" id="btn-save-link" class="btn btn-primary btn-sm w-100 shadow-xs">
+                                    <i class="bi bi-link-45deg me-1"></i> บันทึกลิ้งก์สื่อนำเสนอ
+                                </button>
+
+                                <hr class="my-2">
+
+                                <label class="form-label small fw-semibold text-secondary mb-1">
+                                    หรืออัปโหลดไฟล์สื่อนำเสนอ:
+                                </label>
+
+                                <!-- Dropzone for Presentation File -->
+                                <input type="file" id="pa_file_presentation" accept=".ppt,.pptx,.pdf,.mp4,.avi,.mov" class="d-none">
+                                <div class="dropzone-box" id="dropzone_presentation">
+                                    <i class="bi bi-cloud-arrow-up-fill dropzone-icon text-danger"></i>
+                                    <div class="small fw-bold text-dark">ลากและวางไฟล์สื่อนำเสนอที่นี่</div>
+                                    <div class="x-small text-muted">หรือ <span class="text-danger fw-semibold">คลิกเลือกไฟล์</span> (PPT, PDF, MP4 สูงสุด 100MB)</div>
+                                </div>
+
+                                <!-- Selected File Badge -->
+                                <div class="file-selected-indicator" id="indicator_presentation">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center text-truncate me-2">
+                                            <i class="bi bi-file-earmark-play text-danger fs-5 me-2"></i>
+                                            <div class="text-truncate">
+                                                <div class="small fw-semibold text-truncate file-name">-</div>
+                                                <div class="x-small text-muted file-size">-</div>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-xs btn-icon btn-label-secondary remove-file" data-target="presentation" title="ยกเลิกไฟล์นี้">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="progress mt-3 d-none shadow-sm" id="progress_presentation" style="height: 20px; border-radius: 10px; font-size: 0.8rem; font-weight: bold;">
+                                    <div class="progress-bar bg-danger progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                                </div>
                             </div>
-                            <button type="button" id="btn-save-link" class="btn btn-primary btn-sm w-100 mt-3 shadow-xs">
-                                <i class="bi bi-link-45deg me-1"></i> บันทึกลิ้งก์สื่อนำเสนอ
+                            <button type="button" id="btn-save-presentation-file" class="btn btn-danger btn-sm w-100 mt-2 shadow-xs">
+                                <i class="bi bi-cloud-arrow-up me-1"></i> บันทึกไฟล์สื่อนำเสนอ
                             </button>
                         </div>
                     </div>
@@ -242,8 +303,8 @@
                                     </div>
                                 </div>
 
-                                <div class="progress mt-2 d-none" id="progress_lesson_plan" style="height: 6px;">
-                                    <div class="progress-bar bg-info" role="progressbar" style="width: 0%"></div>
+                                <div class="progress mt-3 d-none shadow-sm" id="progress_lesson_plan" style="height: 20px; border-radius: 10px; font-size: 0.8rem; font-weight: bold;">
+                                    <div class="progress-bar bg-info progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
                                 </div>
                             </div>
                             <button type="button" id="btn-save-lesson-plan" class="btn btn-info text-white btn-sm w-100 mt-3 shadow-xs">
@@ -345,7 +406,8 @@
                             <tr>
                                 <th class="ps-3">ปีงบประมาณ</th>
                                 <th>วันที่ส่งล่าสุด</th>
-                                <th class="text-center">สื่อนำเสนอ</th>
+                                <th class="text-center">ลิ้งก์นำเสนอ</th>
+                                <th class="text-center">ไฟล์นำเสนอ</th>
                                 <th class="text-center">แผนการสอน (PDF)</th>
                                 <th class="text-center">ข้อตกลง PA1 (PDF)</th>
                                 <th class="text-center pe-3">จัดการ</th>
@@ -354,7 +416,7 @@
                         <tbody>
                             <?php if (empty($history)) : ?>
                                 <tr>
-                                    <td colspan="6" class="text-center py-4 text-muted">
+                                    <td colspan="7" class="text-center py-4 text-muted">
                                         <i class="bi bi-inbox fs-3 d-block mb-1 text-light"></i>
                                         ไม่พบประวัติการส่งข้อมูล
                                     </td>
@@ -366,11 +428,20 @@
                                         <td class="small text-muted"><?= date('d/m/Y H:i', strtotime($row['pa_created_at'] . ' +543 years')) ?> น.</td>
                                         <td class="text-center">
                                             <?php if (!empty($row['pa_presentation_link'])) : ?>
-                                                <a href="<?= esc($row['pa_presentation_link']) ?>" target="_blank" class="btn btn-sm btn-icon btn-label-danger rounded-pill shadow-xs" title="เปิดดูสื่อนำเสนอ">
+                                                <a href="<?= esc($row['pa_presentation_link']) ?>" target="_blank" class="btn btn-sm btn-icon btn-label-danger rounded-pill shadow-xs" title="เปิดดูลิ้งก์สื่อนำเสนอ">
                                                     <i class="bi bi-play-circle-fill"></i>
                                                 </a>
                                             <?php else : ?>
-                                                <span class="badge bg-label-secondary small pe-none">ไม่ได้ส่ง</span>
+                                                <span class="badge bg-label-secondary small pe-none">-</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="text-center">
+                                            <?php if (!empty($row['pa_file_presentation'])) : ?>
+                                                <a href="<?= env('upload.server.baseurl.pa_agreement') . $row['pa_year'] . '/presentation/' . $row['pa_file_presentation'] ?>" target="_blank" class="btn btn-sm btn-icon btn-label-warning rounded-pill shadow-xs" title="เปิดดูไฟล์สื่อนำเสนอ">
+                                                    <i class="bi bi-file-earmark-play-fill"></i>
+                                                </a>
+                                            <?php else : ?>
+                                                <span class="badge bg-label-secondary small pe-none">-</span>
                                             <?php endif; ?>
                                         </td>
                                         <td class="text-center">
@@ -414,6 +485,14 @@
                                                             <i class="bi bi-journal-text me-2 text-info fs-6"></i> ลบไฟล์แผนการสอน
                                                         </a>
                                                     </li>
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center btn-delete py-2 <?= empty($row['pa_file_presentation']) ? 'disabled text-muted' : '' ?>" 
+                                                           href="javascript:void(0)" 
+                                                           data-id="<?= $row['pa_id'] ?>" 
+                                                           data-type="presentation_file">
+                                                            <i class="bi bi-file-earmark-play me-2 text-warning fs-6"></i> ลบไฟล์สื่อนำเสนอ
+                                                        </a>
+                                                    </li>
                                                     <li><hr class="dropdown-divider my-1"></li>
                                                     <li>
                                                         <a class="dropdown-item d-flex align-items-center btn-delete py-2 text-danger fw-bold" 
@@ -442,7 +521,7 @@
 <script>
     $(document).ready(function() {
         const year = '<?= $current_year ?>';
-        const CHUNK_SIZE = 1024 * 1024 * 2; // 2MB chunk
+        const CHUNK_SIZE = 1024 * 900; // 900KB chunk (Bypass Nginx 1MB limit & Reduce chunk count)
 
         // Modal notification on page load
         Swal.fire({
@@ -480,7 +559,10 @@
             const teacherId = '<?= session()->get('person_id') ?>';
             const timestamp = Math.floor(Date.now() / 1000);
             const fileExt = file.name.split('.').pop() || 'pdf';
-            const prefix = (folderSubpath === 'lesson_plan') ? 'Plan' : 'PA1';
+            let prefix = 'File';
+            if (folderSubpath === 'lesson_plan') prefix = 'Plan';
+            else if (folderSubpath === 'pa1') prefix = 'PA1';
+            else if (folderSubpath === 'presentation') prefix = 'Pres';
             const targetFilename = `PA_${prefix}_${year}_${teacherId}_${timestamp}.${fileExt}`;
             const targetPath = `personnel/teacher/pa_agreement/${year}/${folderSubpath}`;
 
@@ -502,29 +584,63 @@
                 formData.append('chunk', chunkIndex);
                 formData.append('chunks', totalChunks);
 
-                const response = await $.ajax({
-                    url: '<?= base_url('pa-agreement/upload-chunk') ?>',
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false
-                });
+                let retries = 5;
+                let chunkSuccess = false;
 
-                let res = response;
-                if (typeof response === 'string') {
-                    try { res = JSON.parse(response); } catch(e) {}
-                }
+                while (retries > 0 && !chunkSuccess) {
+                    try {
+                        const response = await $.ajax({
+                            url: '<?= base_url('pa-agreement/upload-chunk') ?>',
+                            type: 'POST',
+                            data: formData,
+                            processData: false,
+                            contentType: false,
+                            timeout: 10000 // 10 seconds timeout for ajax
+                        }).catch(function(jqXHR) {
+                            let errMsg = jqXHR.statusText;
+                            if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
+                                errMsg = jqXHR.responseJSON.message;
+                            } else if (jqXHR.responseText) {
+                                errMsg = jqXHR.responseText.substring(0, 150);
+                            }
+                            throw new Error('HTTP ' + jqXHR.status + ': ' + errMsg);
+                        });
 
-                if (res.status !== 'success') {
-                    throw new Error(res.message || 'เกิดข้อผิดพลาดในการอัปโหลดไฟล์');
-                }
+                        let res = response;
+                        if (typeof response === 'string') {
+                            try { res = JSON.parse(response); } catch(e) {
+                                res = { status: 'error', message: 'Server error: ' + response.substring(0, 100) };
+                            }
+                        }
 
-                if (chunkIndex === totalChunks - 1 && res.filename) {
-                    finalSavedName = res.filename;
+                        if (res.status !== 'success' && res.status !== 'chunk_saved') {
+                            throw new Error(res.message || 'เกิดข้อผิดพลาดในการอัปโหลดไฟล์');
+                        }
+
+                        if (chunkIndex === totalChunks - 1 && res.filename) {
+                            finalSavedName = res.filename;
+                        }
+                        
+                        chunkSuccess = true; // Mark as success to exit retry loop
+
+                    } catch (error) {
+                        retries--;
+                        console.warn(`Chunk ${chunkIndex} failed. Retries left: ${retries}. Error:`, error);
+                        if (retries === 0) {
+                            throw new Error(error.message || 'การเชื่อมต่อขัดข้อง กรุณาลองใหม่อีกครั้ง');
+                        }
+                        // Wait 3 seconds before retrying this chunk
+                        await new Promise(resolve => setTimeout(resolve, 3000));
+                    }
                 }
 
                 const percent = Math.round(((chunkIndex + 1) / totalChunks) * 100);
                 progressBar.css('width', percent + '%').text(percent + '%');
+
+                // Delay 1000ms to prevent Cloudflare rate limiting / DDoS protection
+                if (chunkIndex < totalChunks - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
             }
 
             return finalSavedName;
@@ -541,10 +657,18 @@
         }
 
         // Setup Drag & Drop Zone for a specific input/dropzone pair
-        function setupDropzone(dropzoneId, inputId, indicatorId) {
+        function setupDropzone(dropzoneId, inputId, indicatorId, allowedTypes, maxSizeMB) {
             const dropzone = $(dropzoneId);
             const input = $(inputId);
             const indicator = $(indicatorId);
+            const maxSize = (maxSizeMB || 20) * 1024 * 1024;
+
+            // Default allowed types (PDF only)
+            const defaultTypes = ['application/pdf'];
+            const defaultExts = ['.pdf'];
+            const types = allowedTypes ? allowedTypes.types : defaultTypes;
+            const exts = allowedTypes ? allowedTypes.exts : defaultExts;
+            const typeLabel = allowedTypes ? allowedTypes.label : 'PDF';
 
             if (!dropzone.length || !input.length) return;
 
@@ -592,13 +716,15 @@
             });
 
             function handleFileSelection(file) {
-                if (file.type !== 'application/pdf' && !file.name.endsWith('.pdf')) {
-                    Swal.fire('ข้อผิดพลาด', 'กรุณาเลือกเฉพาะไฟล์ PDF เท่านั้น', 'warning');
+                const fileExt = '.' + (file.name.split('.').pop() || '').toLowerCase();
+                const isValidType = types.includes(file.type) || exts.includes(fileExt);
+                if (!isValidType) {
+                    Swal.fire('ข้อผิดพลาด', `กรุณาเลือกเฉพาะไฟล์ ${typeLabel} เท่านั้น`, 'warning');
                     input.val('');
                     return;
                 }
-                if (file.size > 20 * 1024 * 1024) {
-                    Swal.fire('ข้อผิดพลาด', 'ขนาดไฟล์ต้องไม่เกิน 20MB', 'warning');
+                if (file.size > maxSize) {
+                    Swal.fire('ข้อผิดพลาด', `ขนาดไฟล์ต้องไม่เกิน ${maxSizeMB}MB`, 'warning');
                     input.val('');
                     return;
                 }
@@ -616,7 +742,13 @@
             }
         }
 
+        // Setup dropzones
         setupDropzone('#dropzone_lesson_plan', '#pa_file_lesson_plan', '#indicator_lesson_plan');
+        setupDropzone('#dropzone_presentation', '#pa_file_presentation', '#indicator_presentation', {
+            types: ['application/pdf', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'video/mp4', 'video/avi', 'video/quicktime'],
+            exts: ['.ppt', '.pptx', '.pdf', '.mp4', '.avi', '.mov'],
+            label: 'PPT, PPTX, PDF, MP4, AVI, MOV'
+        }, 100);
 
         // Cancel / Remove selected file
         $('.remove-file').on('click', function(e) {
@@ -626,6 +758,12 @@
                 $('#pa_file_lesson_plan').val('');
                 $('#indicator_lesson_plan').slideUp(150, function() {
                     $('#dropzone_lesson_plan').show();
+                });
+            }
+            if (target === 'presentation') {
+                $('#pa_file_presentation').val('');
+                $('#indicator_presentation').slideUp(150, function() {
+                    $('#dropzone_presentation').show();
                 });
             }
         });
@@ -715,6 +853,62 @@
             } catch (err) {
                 btn.prop('disabled', false).html(orig);
                 $('#progress_lesson_plan').addClass('d-none');
+                Swal.fire('ผิดพลาด', err.message, 'error');
+            }
+        });
+
+        // 3. Save Presentation File
+        $('#btn-save-presentation-file').on('click', async function() {
+            const fileInput = $('#pa_file_presentation')[0];
+            const file = fileInput ? fileInput.files[0] : null;
+            if (!file) {
+                Swal.fire('ข้อผิดพลาด', 'กรุณาเลือกไฟล์สื่อนำเสนอ (PPT, PDF, MP4)', 'warning');
+                return;
+            }
+
+            const allowedExts = ['.ppt', '.pptx', '.pdf', '.mp4', '.avi', '.mov'];
+            const fileExt = '.' + (file.name.split('.').pop() || '').toLowerCase();
+            if (!allowedExts.includes(fileExt)) {
+                Swal.fire('ข้อผิดพลาด', 'อนุญาตเฉพาะไฟล์ PPT, PPTX, PDF, MP4, AVI, MOV เท่านั้น', 'warning');
+                return;
+            }
+            if (file.size > 100 * 1024 * 1024) {
+                Swal.fire('ข้อผิดพลาด', 'ขนาดไฟล์ต้องไม่เกิน 100MB', 'warning');
+                return;
+            }
+
+            const btn = $(this);
+            const orig = btn.html();
+            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> กำลังอัปโหลด...');
+
+            try {
+                const uploadedFilename = await uploadFileChunked(file, 'presentation', '#progress_presentation');
+                
+                $.ajax({
+                    url: '<?= base_url('pa-agreement/upload') ?>',
+                    type: 'POST',
+                    data: {
+                        pa_year: year,
+                        uploaded_presentation_filename: uploadedFilename
+                    },
+                    dataType: 'json',
+                    success: function(res) {
+                        btn.prop('disabled', false).html(orig);
+                        if (res.status === 'success') {
+                            Swal.fire({ icon: 'success', title: 'สำเร็จ', text: 'บันทึกไฟล์สื่อนำเสนอสำเร็จ', timer: 1500, showConfirmButton: false })
+                                .then(() => location.reload());
+                        } else {
+                            Swal.fire('ผิดพลาด', res.message, 'error');
+                        }
+                    },
+                    error: function() {
+                        btn.prop('disabled', false).html(orig);
+                        Swal.fire('ผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้', 'error');
+                    }
+                });
+            } catch (err) {
+                btn.prop('disabled', false).html(orig);
+                $('#progress_presentation').addClass('d-none');
                 Swal.fire('ผิดพลาด', err.message, 'error');
             }
         });

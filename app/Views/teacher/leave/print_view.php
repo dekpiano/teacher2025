@@ -359,7 +359,26 @@
         <div class="bottom-container">
             <!-- Left Column: Statistics & Inspector & Department Head -->
             <div class="col-left">
-                <div style="font-size: 14.5pt; font-weight: normal; margin-bottom: 2px;">สถิติการลาในปีงบประมาณนี้</div>
+                <?php
+                    // คำนวณช่วงปีงบประมาณอัตโนมัติจากวันเริ่มต้นขอลา (รองรับทั้ง 2 ระบบ)
+                    $fYear = (int)date('Y', $startDate);
+                    $fMonth = (int)date('n', $startDate);
+                    if ($fMonth >= 10) {
+                        $fYearBE = $fYear + 1 + 543;
+                        $fStartTh = "1 ต.ค. " . ($fYear + 543);
+                        $fEndTh = "30 ก.ย. " . ($fYear + 1 + 543);
+                    } else {
+                        $fYearBE = $fYear + 543;
+                        $fStartTh = "1 ต.ค. " . ($fYear - 1 + 543);
+                        $fEndTh = "30 ก.ย. " . ($fYear + 543);
+                    }
+                    if (isset($fiscalYearBE)) $fYearBE = $fiscalYearBE;
+                    if (isset($fiscalStartTh)) $fStartTh = $fiscalStartTh;
+                    if (isset($fiscalEndTh)) $fEndTh = $fiscalEndTh;
+                ?>
+                <div style="font-size: 14.5pt; font-weight: normal; margin-bottom: 2px;">
+                    สถิติการลาในปีงบประมาณนี้ <span class="data-val">(<?= esc($fYearBE) ?>: <?= esc($fStartTh) ?> - <?= esc($fEndTh) ?>)</span>
+                </div>
                 <table class="stats-table">
                     <thead>
                         <tr>
@@ -370,23 +389,28 @@
                         </tr>
                     </thead>
                     <tbody>
+                        <?php
+                            $isSick = (strpos($leave['leave_type_name'], 'ป่วย') !== false);
+                            $isPersonal = (strpos($leave['leave_type_name'], 'กิจ') !== false);
+                            $isMaternity = (strpos($leave['leave_type_name'], 'คลอด') !== false);
+                        ?>
                         <tr>
                             <td style="text-align: left; padding-left: 4px;">ป่วย</td>
                             <td><?= number_format($leaveStats['ลาป่วย']['used_before'], 1) ?></td>
-                            <td><?= ($leave['leave_type_name'] == 'ลาป่วย') ? number_format($leave['leave_total_days'], 1) : '-' ?></td>
-                            <td><?= number_format($leaveStats['ลาป่วย']['used_before'] + (($leave['leave_type_name'] == 'ลาป่วย') ? $leave['leave_total_days'] : 0), 1) ?></td>
+                            <td><?= $isSick ? number_format($leave['leave_total_days'], 1) : '-' ?></td>
+                            <td><?= number_format($leaveStats['ลาป่วย']['used_before'] + ($isSick ? $leave['leave_total_days'] : 0), 1) ?></td>
                         </tr>
                         <tr>
                             <td style="text-align: left; padding-left: 4px;">กิจส่วนตัว</td>
                             <td><?= number_format($leaveStats['ลากิจส่วนตัว']['used_before'], 1) ?></td>
-                            <td><?= ($leave['leave_type_name'] == 'ลากิจส่วนตัว') ? number_format($leave['leave_total_days'], 1) : '-' ?></td>
-                            <td><?= number_format($leaveStats['ลากิจส่วนตัว']['used_before'] + (($leave['leave_type_name'] == 'ลากิจส่วนตัว') ? $leave['leave_total_days'] : 0), 1) ?></td>
+                            <td><?= $isPersonal ? number_format($leave['leave_total_days'], 1) : '-' ?></td>
+                            <td><?= number_format($leaveStats['ลากิจส่วนตัว']['used_before'] + ($isPersonal ? $leave['leave_total_days'] : 0), 1) ?></td>
                         </tr>
                         <tr>
                             <td style="text-align: left; padding-left: 4px;">คลอดบุตร</td>
                             <td><?= number_format($leaveStats['ลาคลอดบุตร']['used_before'], 1) ?></td>
-                            <td><?= ($leave['leave_type_name'] == 'ลาคลอดบุตร') ? number_format($leave['leave_total_days'], 1) : '-' ?></td>
-                            <td><?= number_format($leaveStats['ลาคลอดบุตร']['used_before'] + (($leave['leave_type_name'] == 'ลาคลอดบุตร') ? $leave['leave_total_days'] : 0), 1) ?></td>
+                            <td><?= $isMaternity ? number_format($leave['leave_total_days'], 1) : '-' ?></td>
+                            <td><?= number_format($leaveStats['ลาคลอดบุตร']['used_before'] + ($isMaternity ? $leave['leave_total_days'] : 0), 1) ?></td>
                         </tr>
                     </tbody>
                 </table>
@@ -396,7 +420,7 @@
                     <div>(ลงชื่อ)...................................................................ผู้ตรวจสอบ</div>
                     <div>( <?= $approver ? '<span class="data-val">' . esc($approver['pers_prefix'] . $approver['pers_firstname'] . ' ' . $approver['pers_lastname']) . '</span>' : '...................................................................' ?> )</div>
                     <div>ตำแหน่ง <?= $approver ? '<span class="data-val">' . esc($approver['posi_name'] ?? 'เจ้าหน้าที่') . '</span>' : '...................................................................' ?></div>
-                    <div>วันที่ <?= (!empty($leave['approved_at'])) ? '<span class="data-val">' . date('j', strtotime($leave['approved_at'])) . '/' . date('n', strtotime($leave['approved_at'])) . '/' . (date('Y', strtotime($leave['approved_at'])) + 543) . '</span>' : '............/......................../...................' ?></div>
+                    <div>วันที่ <?= (!empty($leave['approved_at'])) ? '<span class="data-val">' . date('j', strtotime($leave['approved_at'])) . ' ' . $thaiMonths[date('n', strtotime($leave['approved_at']))] . ' ' . (date('Y', strtotime($leave['approved_at'])) + 543) . '</span>' : '............/......................../...................' ?></div>
                 </div>
 
                 <!-- 2. Department Head Sign (หัวหน้ากลุ่มสาระฯ) -->
@@ -420,7 +444,7 @@
                     <div style="margin-top: 3px;">(ลงชื่อ)...................................................................</div>
                     <div>( <?= $deputyDirector ? '<span class="data-val">' . esc($deputyDirector['pers_prefix'] . $deputyDirector['pers_firstname'] . ' ' . $deputyDirector['pers_lastname']) . '</span>' : '...................................................................' ?> )</div>
                     <div>ตำแหน่ง <?= $deputyDirector ? '<span class="data-val">' . esc($deputyDirector['role_position'] ?? 'รองผู้อำนวยการสถานศึกษา') . '</span>' : 'รองผู้อำนวยการสถานศึกษา' ?></div>
-                    <div>วันที่ <?= (!empty($leave['approved_at'])) ? '<span class="data-val">' . date('j', strtotime($leave['approved_at'])) . '/' . date('n', strtotime($leave['approved_at'])) . '/' . (date('Y', strtotime($leave['approved_at'])) + 543) . '</span>' : '............/......................../...................' ?></div>
+                    <div>วันที่ <?= (!empty($leave['approved_at'])) ? '<span class="data-val">' . date('j', strtotime($leave['approved_at'])) . ' ' . $thaiMonths[date('n', strtotime($leave['approved_at']))] . ' ' . (date('Y', strtotime($leave['approved_at'])) + 543) . '</span>' : '............/......................../...................' ?></div>
                 </div>
 
                 <!-- 4. Director Order (คำสั่งผู้อำนวยการสถานศึกษา) -->
@@ -428,9 +452,9 @@
                     <div class="sign-title">คำสั่ง</div>
                     <div style="margin-top: 2px; margin-bottom: 2px;">
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        <span class="checkbox <?= ($leave['leave_status'] == 'approved') ? 'checked' : '' ?>"></span> อนุญาต
+                        <span class="checkbox"></span> อนุญาต
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        <span class="checkbox <?= ($leave['leave_status'] == 'rejected') ? 'checked' : '' ?>"></span> ไม่อนุญาต
+                        <span class="checkbox"></span> ไม่อนุญาต
                     </div>
                     <div>.......................................................................................................</div>
                     <div>.......................................................................................................</div>
@@ -438,7 +462,7 @@
                     <div>( <?= $director ? '<span class="data-val">' . esc($director['pers_prefix'] . $director['pers_firstname'] . ' ' . $director['pers_lastname']) . '</span>' : '...................................................................' ?> )</div>
                     <div>ตำแหน่ง <span class="data-val">ผู้อำนวยการสถานศึกษา</span></div>
                     <div><span class="data-val">โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์</span></div>
-                    <div>วันที่ <?= (!empty($leave['approved_at'])) ? '<span class="data-val">' . date('j', strtotime($leave['approved_at'])) . '/' . date('n', strtotime($leave['approved_at'])) . '/' . (date('Y', strtotime($leave['approved_at'])) + 543) . '</span>' : '............/......................../...................' ?></div>
+                    <div>วันที่ ............/......................../...................</div>
                 </div>
             </div>
         </div>
@@ -446,3 +470,4 @@
 
 </body>
 </html>
+

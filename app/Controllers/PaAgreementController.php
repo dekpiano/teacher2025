@@ -117,6 +117,14 @@ class PaAgreementController extends BaseController
             $insertData['pa_presentation_link'] = trim($post['pa_presentation_link']);
         }
 
+        // 1.5 Presentation File (from chunked upload completion)
+        if (!empty($post['uploaded_presentation_filename'])) {
+            if ($existing && !empty($existing['pa_file_presentation']) && $existing['pa_file_presentation'] !== $post['uploaded_presentation_filename']) {
+                $this->_deleteFileFromServer("personnel/teacher/pa_agreement/{$year}/presentation/{$existing['pa_file_presentation']}");
+            }
+            $insertData['pa_file_presentation'] = $post['uploaded_presentation_filename'];
+        }
+
         // 2. Lesson Plan File (from chunked upload completion or standard post)
         if (!empty($post['uploaded_lesson_plan_filename'])) {
             if ($existing && !empty($existing['pa_file_lesson_plan']) && $existing['pa_file_lesson_plan'] !== $post['uploaded_lesson_plan_filename']) {
@@ -181,7 +189,13 @@ class PaAgreementController extends BaseController
             $response = $client->post($uploadUrl, [
                 'multipart' => $postData,
                 'headers' => $headers,
-                'http_errors' => false
+                'http_errors' => false,
+                'timeout' => 120,
+                'connect_timeout' => 30,
+                'verify' => false,
+                'curl' => [
+                    CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4
+                ]
             ]);
 
             return $this->response->setContentType('application/json')
@@ -217,6 +231,14 @@ class PaAgreementController extends BaseController
             return $this->response->setJSON(['status' => 'success', 'message' => 'ลบลิ้งก์นำเสนอเรียบร้อย']);
         }
 
+        if ($type === 'presentation_file') {
+            if (!empty($agreement['pa_file_presentation'])) {
+                $this->_deleteFileFromServer("personnel/teacher/pa_agreement/{$year}/presentation/{$agreement['pa_file_presentation']}");
+            }
+            $this->paModel->update($id, ['pa_file_presentation' => null]);
+            return $this->response->setJSON(['status' => 'success', 'message' => 'ลบไฟล์สื่อนำเสนอเรียบร้อย']);
+        }
+
         if ($type === 'lesson_plan') {
             if (!empty($agreement['pa_file_lesson_plan'])) {
                 $this->_deleteFileFromServer("personnel/teacher/pa_agreement/{$year}/lesson_plan/{$agreement['pa_file_lesson_plan']}");
@@ -234,6 +256,9 @@ class PaAgreementController extends BaseController
         }
 
         if ($type === 'all') {
+            if (!empty($agreement['pa_file_presentation'])) {
+                $this->_deleteFileFromServer("personnel/teacher/pa_agreement/{$year}/presentation/{$agreement['pa_file_presentation']}");
+            }
             if (!empty($agreement['pa_file_lesson_plan'])) {
                 $this->_deleteFileFromServer("personnel/teacher/pa_agreement/{$year}/lesson_plan/{$agreement['pa_file_lesson_plan']}");
             }
