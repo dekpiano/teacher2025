@@ -364,6 +364,66 @@ class CurriculumController extends BaseController
         }
     }
 
+    /**
+     * Build the full URL to a plan file on the remote server.
+     *
+     * @param array  $plan        The plan record from DB
+     * @param string $baseFileUrl The base URL from .env
+     * @param bool   $encode      Whether to rawurlencode the path segments
+     * @return string
+     */
+    private function _buildFileUrl(array $plan, string $baseFileUrl, bool $encode = true): string
+    {
+        $year = $plan['seplan_year'];
+        $term = $plan['seplan_term'];
+        $subject = $plan['seplan_namesubject'];
+        $file = $plan['seplan_file'];
+
+        if ($encode) {
+            $subject = str_replace('%2F', '/', rawurlencode($subject));
+            $file = rawurlencode($file);
+        }
+
+        return rtrim($baseFileUrl, '/') . '/' . $year . '/' . $term . '/' . $subject . '/' . $file;
+    }
+
+    /**
+     * Try to fetch file data from the remote server.
+     * First tries the URL-encoded version, then falls back to a non-encoded version.
+     *
+     * @param array  $plan        The plan record from DB
+     * @param string $baseFileUrl The base URL from .env
+     * @return array ['success' => bool, 'data' => string|null, 'url' => string, 'http_status' => string]
+     */
+    private function _fetchRemoteFile(array $plan, string $baseFileUrl): array
+    {
+        // Attempt 1: URL-encoded (standard)
+        $fileUrl = $this->_buildFileUrl($plan, $baseFileUrl, true);
+        $fileData = @file_get_contents($fileUrl);
+
+        if ($fileData !== false) {
+            return ['success' => true, 'data' => $fileData, 'url' => $fileUrl, 'http_status' => 'HTTP/1.1 200 OK'];
+        }
+
+        // Attempt 2: Non-encoded URL (fallback for servers that handle UTF-8 paths directly)
+        $fileUrlRaw = $this->_buildFileUrl($plan, $baseFileUrl, false);
+        if ($fileUrlRaw !== $fileUrl) {
+            $fileData = @file_get_contents($fileUrlRaw);
+            if ($fileData !== false) {
+                return ['success' => true, 'data' => $fileData, 'url' => $fileUrlRaw, 'http_status' => 'HTTP/1.1 200 OK'];
+            }
+        }
+
+        // Both failed — get HTTP status for error reporting
+        $httpStatus = '';
+        $headers = @get_headers($fileUrl);
+        if ($headers && isset($headers[0])) {
+            $httpStatus = $headers[0];
+        }
+
+        return ['success' => false, 'data' => null, 'url' => $fileUrl, 'http_status' => $httpStatus];
+    }
+
     public function downloadPlanFile($seplanID)
     {
         if (!$seplanID) {
@@ -390,21 +450,16 @@ class CurriculumController extends BaseController
             return redirect()->back();
         }
 
-        $fileUrl = rtrim($baseFileUrl, '/') . '/' . $plan['seplan_year'] . '/' . $plan['seplan_term'] . '/' . str_replace('%2F', '/', rawurlencode($plan['seplan_namesubject'])) . '/' . rawurlencode($plan['seplan_file']);
+        // Fetch with fallback
+        $result = $this->_fetchRemoteFile($plan, $baseFileUrl);
 
-        // Fetch the file content from the URL.
-        $fileData = @file_get_contents($fileUrl);
-
-        if ($fileData === false) {
-            $httpStatus = '';
-            $headers = @get_headers($fileUrl);
-            if ($headers && isset($headers[0])) {
-                $httpStatus = $headers[0];
-            }
-            $this->session->setFlashdata('error', "ไฟล์ไม่อยู่บน Server — ชื่อไฟล์ใน DB: {$plan['seplan_file']} | HTTP: {$httpStatus} | URL: {$fileUrl}");
+        if (!$result['success']) {
+            $this->session->setFlashdata('error', "ไฟล์ไม่อยู่บน Server — ชื่อไฟล์ใน DB: {$plan['seplan_file']} | HTTP: {$result['http_status']} | URL: {$result['url']}");
             return redirect()->back();
         }
 
+        $fileUrl = $result['url'];
+        $fileData = $result['data'];
         $fileExtension = strtolower(pathinfo($plan['seplan_file'], PATHINFO_EXTENSION));
         
         if (in_array($fileExtension, ['doc', 'docx'])) {
@@ -448,12 +503,20 @@ class CurriculumController extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'ระบบยังไม่ได้ตั้งค่า upload.server.baseurl ในไฟล์ .env — กรุณาแจ้งผู้ดูแลระบบ', 'reason' => 'NO_CONFIG']);
         }
 
-        $fileUrl = rtrim($baseFileUrl, '/') . '/' . $plan['seplan_year'] . '/' . $plan['seplan_term'] . '/' . str_replace('%2F', '/', rawurlencode($plan['seplan_namesubject'])) . '/' . rawurlencode($plan['seplan_file']);
-
-        // Check if file exists using HTTP headers (faster and lighter)
+        // Attempt 1: URL-encoded (standard)
+        $fileUrl = $this->_buildFileUrl($plan, $baseFileUrl, true);
         $headers = @get_headers($fileUrl);
         if ($headers && strpos($headers[0], '200') !== false) {
             return $this->response->setJSON(['status' => 'success']);
+        }
+
+        // Attempt 2: Non-encoded URL (fallback for servers that handle UTF-8 paths directly)
+        $fileUrlRaw = $this->_buildFileUrl($plan, $baseFileUrl, false);
+        if ($fileUrlRaw !== $fileUrl) {
+            $headersRaw = @get_headers($fileUrlRaw);
+            if ($headersRaw && strpos($headersRaw[0], '200') !== false) {
+                return $this->response->setJSON(['status' => 'success']);
+            }
         }
 
         $httpStatus = ($headers && isset($headers[0])) ? $headers[0] : 'ไม่สามารถเชื่อมต่อ Server ได้';
@@ -744,17 +807,22 @@ class CurriculumController extends BaseController
 
         $hasFiles = false;
         foreach ($dataFiles as $fileRecord) {
-            $fileUrl = rtrim($baseFileUrl, '/') . '/' . $fileRecord->seplan_year . '/' . $fileRecord->seplan_term . '/' . str_replace('%2F', '/', rawurlencode($fileRecord->seplan_namesubject)) . '/' . rawurlencode($fileRecord->seplan_file);
+            // Convert stdClass to array for _fetchRemoteFile helper
+            $planArr = [
+                'seplan_year' => $fileRecord->seplan_year,
+                'seplan_term' => $fileRecord->seplan_term,
+                'seplan_namesubject' => $fileRecord->seplan_namesubject,
+                'seplan_file' => $fileRecord->seplan_file,
+            ];
+            $result = $this->_fetchRemoteFile($planArr, $baseFileUrl);
 
-            $fileData = @file_get_contents($fileUrl);
-
-            if ($fileData !== false) {
+            if ($result['success']) {
                 $hasFiles = true;
                 // Add file to zip with a structured path
                 $zipPath = $fileRecord->seplan_year . '/' . $fileRecord->seplan_term . '/' . $fileRecord->seplan_namesubject . '/' . $fileRecord->seplan_file;
-                $zip->addFromString($zipPath, $fileData);
+                $zip->addFromString($zipPath, $result['data']);
             } else {
-                log_message('error', 'Could not download file for zipping: ' . $fileUrl);
+                log_message('error', 'Could not download file for zipping: ' . $result['url']);
             }
         }
 

@@ -148,7 +148,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (!empty($_POST['desired_filename'])) {
         // Use the filename provided by the main application, but sanitize it again for security
         $rawFilename = basename($_POST['desired_filename']); // Use basename to strip any path info
-        $newFileName = preg_replace('/[^a-zA-Z0-9_\-\\.]/', '', $rawFilename); // Remove potentially unsafe characters
+        // Allow Unicode letters (\p{L}), Unicode numbers (\p{N}), and safe special characters
+        $newFileName = preg_replace('/[^\p{L}\p{N}_\-\.]/u', '', $rawFilename);
         $newFileName = str_replace(' ', '_', $newFileName);
         
         // Final check in case sanitization results in an empty name
@@ -164,9 +165,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $filename_part = pathinfo($originalName, PATHINFO_FILENAME);
         $extension = pathinfo($originalName, PATHINFO_EXTENSION);
 
-        // Sanitize the filename part
-        $filename_part = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $filename_part);
-        if (empty($filename_part)) {
+        // Sanitize the filename part — allow Unicode letters/numbers
+        $filename_part = preg_replace('/[^\p{L}\p{N}_\-]/u', '_', $filename_part);
+        if (empty($filename_part) || preg_match('/^_+$/', $filename_part)) {
             $filename_part = "uploaded_file";
         }
         
