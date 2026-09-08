@@ -99,8 +99,8 @@
                 <p class="mb-1">สถานะการบันทึกข้อมูล</p>
                 <?php if (!empty($onoff_start_date) && !empty($onoff_end_date)) : ?>
                     <div class="mt-2 pt-2 border-top" style="border-color: rgba(0,0,0,0.1) !important;">
-                        <small class="d-block mb-1"><i class="bi bi-play-circle me-1 text-success"></i>เปิด: <strong><?= date('d/m/Y H:i', strtotime($onoff_start_date)) ?></strong> น.</small>
-                        <small class="d-block"><i class="bi bi-stop-circle me-1 text-danger"></i>ปิด: <strong><?= date('d/m/Y H:i', strtotime($onoff_end_date)) ?></strong> น.</small>
+                        <small class="d-block mb-1"><i class="bi bi-play-circle me-1 text-success"></i>เปิด: <strong><?= thai_date_and_time($onoff_start_date) ?></strong> น.</small>
+                        <small class="d-block"><i class="bi bi-stop-circle me-1 text-danger"></i>ปิด: <strong><?= thai_date_and_time($onoff_end_date) ?></strong> น.</small>
                         <?php if (!$statusOff && !$isDateTimeOpen) : ?>
                             <span class="badge bg-warning text-dark mt-2 w-100"><i class="bi bi-exclamation-triangle me-1"></i>ไม่อยู่ในช่วงเวลา</span>
                         <?php endif; ?>
@@ -137,7 +137,7 @@
                         <div>
                             <h6 class="alert-heading mb-1 fw-bold">ระบบยังไม่เปิดให้บันทึกผลการเรียน!</h6>
                             <?php if (!$statusOff && !empty($onoff_start_date) && !empty($onoff_end_date) && !(isset($isDateTimeOpen) ? $isDateTimeOpen : true)) : ?>
-                                <span>ระบบจะเปิดให้บันทึกคะแนนตั้งแต่ <strong><?= date('d/m/Y H:i', strtotime($onoff_start_date)) ?> น.</strong> ถึง <strong><?= date('d/m/Y H:i', strtotime($onoff_end_date)) ?> น.</strong></span>
+                                <span>ระบบจะเปิดให้บันทึกคะแนนตั้งแต่ <strong><?= thai_date_and_time($onoff_start_date) ?> น.</strong> ถึง <strong><?= thai_date_and_time($onoff_end_date) ?> น.</strong></span>
                             <?php else : ?>
                                 <span>ขณะนี้ฝ่ายวิชาการยังไม่เปิดระบบให้บันทึกคะแนนสำหรับการเรียนซ้ำ กรุณารอประกาศแจ้งอีกครั้ง</span>
                             <?php endif; ?>

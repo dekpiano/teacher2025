@@ -10,7 +10,7 @@
     .objectives-header {
         background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
         border-radius: 1.25rem;
-        padding: 2.5rem;
+        padding: 2.2rem 2.5rem;
         color: white;
         margin-bottom: 2rem;
         position: relative;
@@ -26,6 +26,53 @@
         background: rgba(255,255,255,0.1);
         border-radius: 50%;
         pointer-events: none;
+    }
+    .badge-club-name {
+        background: #ffffff !important;
+        color: #1e1b4b !important;
+        font-weight: 800 !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12) !important;
+        border: 1px solid rgba(255,255,255,0.8) !important;
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1.1rem !important;
+        font-size: 1.05rem !important;
+    }
+    .badge-meta-pill {
+        background: #ffffff !important;
+        color: #1e293b !important;
+        font-weight: 700 !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+        border: 1px solid rgba(226, 232, 240, 0.9) !important;
+        padding: 0.45rem 0.95rem !important;
+        font-size: 0.88rem !important;
+        display: inline-flex;
+        align-items: center;
+    }
+    .btn-white-action {
+        background: #ffffff !important;
+        color: #4338ca !important;
+        font-weight: 700 !important;
+        border: 1px solid rgba(255,255,255,0.9) !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.12) !important;
+        transition: all 0.2s ease;
+    }
+    .btn-white-action:hover {
+        background: #f8fafc !important;
+        color: #312e81 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 14px rgba(0,0,0,0.16) !important;
+    }
+    .btn-white-icon {
+        background: #ffffff !important;
+        color: #475569 !important;
+        font-weight: 600 !important;
+        border: none !important;
+        transition: all 0.2s ease;
+    }
+    .btn-white-icon:hover {
+        background: #f1f5f9 !important;
+        color: #1e293b !important;
     }
     .table-card {
         border-radius: 1.25rem;
@@ -80,16 +127,17 @@
         left: 50%;
         transform: translateX(-50%);
         z-index: 1000;
-        background: rgba(255, 255, 255, 0.85);
+        background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(15px);
-        padding: 1rem 2.5rem;
+        padding: 0.9rem 2rem;
         border-radius: 100px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-        border: 1px solid rgba(255,255,255,0.5);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.18);
+        border: 1px solid rgba(226, 232, 240, 0.8);
         display: flex;
         align-items: center;
-        gap: 2rem;
-        min-width: 500px;
+        gap: 1.5rem;
+        max-width: 92%;
+        width: 600px;
     }
     
     .sticky-header-row th {
@@ -156,30 +204,41 @@
             <div class="col-lg-7">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb breadcrumb-light mb-2">
-                        <li class="breadcrumb-item"><a href="<?= site_url('home') ?>" class="text-white opacity-75">หน้าหลัก</a></li>
-                        <li class="breadcrumb-item"><a href="<?= site_url('club') ?>" class="text-white opacity-75">ชุมนุม</a></li>
-                        <li class="breadcrumb-item"><a href="<?= site_url('club/manage/' . $club->club_id) ?>" class="text-white opacity-75">จัดการชุมนุม</a></li>
-                        <li class="breadcrumb-item active text-white" aria-current="page">ประเมินผลกิจกรรม</li>
+                        <li class="breadcrumb-item"><a href="<?= site_url('home') ?>" class="text-white text-decoration-none">หน้าหลัก</a></li>
+                        <li class="breadcrumb-item"><a href="<?= site_url('club') ?>" class="text-white text-decoration-none">ชุมนุม</a></li>
+                        <li class="breadcrumb-item"><a href="<?= site_url('club/manage/' . $club->club_id) ?>" class="text-white text-decoration-none">จัดการชุมนุม</a></li>
+                        <li class="breadcrumb-item active text-white fw-bold" aria-current="page">ประเมินผลกิจกรรม</li>
                     </ol>
                 </nav>
                 <h1 class="display-6 fw-bold text-white mb-2">
                     <i class="bi bi-journal-check me-2"></i>ประเมินผลกิจกรรมชุมนุม
                 </h1>
-                <p class="lead mb-0 text-white opacity-75 small">
-                    <i class="bi bi-tag-fill me-1"></i> <?= esc($club->club_name) ?>
-                </p>
+                <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
+                    <span class="badge rounded-pill badge-club-name">
+                        <i class="bi bi-tag-fill me-1 text-primary"></i> <?= esc($club->club_name) ?>
+                    </span>
+                    <span class="badge rounded-pill badge-meta-pill">
+                        <i class="bi bi-calendar-event me-1 text-primary"></i> ปีการศึกษา <?= esc($club->club_year) ?> ภาคเรียนที่ <?= esc($club->club_trem) ?>
+                    </span>
+                    <span class="badge rounded-pill badge-meta-pill">
+                        <i class="bi bi-mortarboard me-1 text-success"></i> <?= esc($studyTimeInfo['formatted_level'] ?? $club->club_level) ?>
+                    </span>
+                    <span class="badge rounded-pill badge-meta-pill">
+                        <i class="bi bi-clock-history me-1 text-warning"></i> <?= esc($studyTimeInfo['study_time_per_week_label'] ?? '1 คาบ/สัปดาห์') ?> (<?= esc($studyTimeInfo['total_study_time_label'] ?? '20 ชม.') ?>)
+                    </span>
+                </div>
             </div>
             <div class="col-lg-5 mt-4 mt-lg-0">
                 <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
-                    <button type="button" class="btn btn-white rounded-pill px-4 py-2 shadow-sm text-primary fw-bold" data-bs-toggle="modal" data-bs-target="#manageObjectivesModal">
+                    <button type="button" class="btn btn-white-action rounded-pill px-4 py-2" data-bs-toggle="modal" data-bs-target="#manageObjectivesModal">
                         <i class="bi bi-gear-fill me-2"></i> ตั้งค่าจุดประสงค์
                     </button>
                     
                     <div class="btn-group shadow-sm rounded-pill overflow-hidden bg-white p-1">
-                        <a href="<?= site_url('club/manual') ?>" class="btn btn-white border-0 rounded-pill px-3 py-2 text-primary fw-bold small">
+                        <a href="<?= site_url('club/manual') ?>" class="btn btn-white-icon rounded-pill px-3 py-2 text-primary fw-bold small">
                             <i class="bi bi-book-half me-2"></i> คู่มือ
                         </a>
-                        <button type="button" class="btn btn-white border-0 rounded-pill px-3 py-2 text-muted" data-bs-toggle="modal" data-bs-target="#clubHelpModal">
+                        <button type="button" class="btn btn-white-icon rounded-pill px-3 py-2 text-muted" data-bs-toggle="modal" data-bs-target="#clubHelpModal">
                             <i class="bi bi-question-circle"></i>
                         </button>
                     </div>
@@ -470,7 +529,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const columnChecks = document.querySelectorAll('.obj-check-' + objectiveId);
         const checkedCount = document.querySelectorAll('.obj-check-' + objectiveId + ':checked').length;
-        headerCheck.checked = (checkedCount === columnChecks.length);
+        headerCheck.checked = (columnChecks.length > 0 && checkedCount === columnChecks.length);
     }
 
     // --- Check All Global (Pass All Students in All Objectives) ---
@@ -493,23 +552,44 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Set initial check-all columns state
-    <?php foreach ($objectives as $objective): ?>
-        updateColumnCheckAllState('<?= $objective->objective_id ?>');
-    <?php endforeach; ?>
+    <?php if (!empty($objectives)): ?>
+        <?php foreach ($objectives as $objective): ?>
+            updateColumnCheckAllState('<?= $objective->objective_id ?>');
+        <?php endforeach; ?>
+    <?php endif; ?>
 
     // --- Modal Management ---
     const objectiveForm = document.getElementById('objectiveDefinitionForm');
     const modalTitle = document.getElementById('manageObjectivesModalLabel');
     const objectiveIdInput = document.getElementById('objective_id');
     const listContainer = document.getElementById('objectives-list-container');
+    const manageModalEl = document.getElementById('manageObjectivesModal');
 
-    // Reset modal
-    const settingsBtn = document.querySelector('button[data-bs-target="#manageObjectivesModal"]');
-    if (settingsBtn) {
-        settingsBtn.addEventListener('click', function() {
-            objectiveForm.reset();
-            objectiveIdInput.value = '';
-            modalTitle.textContent = 'จัดการจุดประสงค์';
+    function updateCsrfToken(newToken) {
+        if (!newToken) return;
+        document.querySelectorAll('input[name="<?= csrf_token() ?>"]').forEach(input => {
+            input.value = newToken;
+        });
+    }
+
+    if (manageModalEl) {
+        manageModalEl.addEventListener('show.bs.modal', function() {
+            if (!objectiveIdInput.value) {
+                objectiveForm.reset();
+                objectiveIdInput.value = '';
+                modalTitle.textContent = 'จัดการจุดประสงค์';
+                const rows = document.querySelectorAll('#objectives-modal-table tbody tr');
+                const orderInput = document.getElementById('objective_order');
+                if (orderInput) {
+                    orderInput.value = rows.length + 1;
+                }
+            }
+        });
+
+        manageModalEl.addEventListener('hidden.bs.modal', function() {
+            if (hasChangedObjectives) {
+                location.reload();
+            }
         });
     }
 
@@ -540,8 +620,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('HTTP error ' + response.status);
+                }
+                return response.json();
+            })
             .then(data => {
+                if (data.csrf_token) {
+                    updateCsrfToken(data.csrf_token);
+                }
                 if (data.success) {
                     hasChangedObjectives = true;
                     Swal.fire({
@@ -558,17 +646,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     objectiveIdInput.value = '';
                     modalTitle.textContent = 'จัดการจุดประสงค์';
                     updateObjectivesTable(data.objectives);
+                    
+                    const nextOrder = (data.objectives ? data.objectives.length : 0) + 1;
+                    const orderInput = document.getElementById('objective_order');
+                    if (orderInput) {
+                        orderInput.value = nextOrder;
+                    }
                 } else {
                     Swal.fire({
                         icon: 'error',
                         title: 'ผิดพลาด',
-                        text: data.message
+                        text: data.message || 'ไม่สามารถบันทึกได้'
                     });
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                Swal.fire('Error', 'เกิดข้อผิดพลาดในการเชื่อมต่อ', 'error');
+                Swal.fire('Error', 'เกิดข้อผิดพลาดในการเชื่อมต่อ หรือเซสชันหมดอายุ', 'error');
             })
             .finally(() => {
                 submitBtn.disabled = false;

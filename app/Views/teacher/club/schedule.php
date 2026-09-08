@@ -3,15 +3,18 @@
 <?= $this->section('title') ?>
 <?= esc($title ?? 'ตารางกิจกรรมชุมนุม') ?>
 <?= $this->endSection() ?>
+<?php
+    $defaultPeriods = $studyTimeInfo['periods_per_week'] ?? 1;
+?>
 
 <?= $this->section('content') ?>
 
 <style>
     .schedule-header {
-        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-        border-radius: 1.25rem;
-        padding: 2.5rem;
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
         color: white;
+        border-radius: 1.5rem;
+        padding: 2.5rem 2rem;
         margin-bottom: 2rem;
         position: relative;
         overflow: hidden;
@@ -23,38 +26,61 @@
         right: -10%;
         width: 300px;
         height: 300px;
-        background: rgba(255,255,255,0.1);
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
         border-radius: 50%;
         pointer-events: none;
     }
     .table-card {
-        border-radius: 1.25rem;
         border: none;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
         overflow: hidden;
     }
-    .week-badge {
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #f1f5f9;
-        color: #4338ca;
-        border-radius: 10px;
-        font-weight: 700;
-        margin: 0 auto;
-    }
     .status-badge {
-        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
         border-radius: 2rem;
         font-weight: 600;
-        font-size: 0.75rem;
+        display: inline-flex;
+        align-items: center;
+    }
+    .week-badge {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background-color: #f1f5f9;
+        color: #475569;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.9rem;
     }
     .btn-action {
         border-radius: 0.75rem;
-        padding: 0.5rem 1.25rem;
+        padding: 0.5rem 1rem;
         font-weight: 600;
         transition: all 0.2s;
+    }
+    .btn-action:hover {
+        transform: translateY(-2px);
+    }
+    .badge-meta-pill {
+        background: #ffffff !important;
+        color: #1e293b !important;
+        padding: 0.45rem 0.95rem;
+        border-radius: 50rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e2e8f0;
+    }
+    .badge-meta-pill .val-highlight {
+        color: #4338ca !important;
+        font-weight: 700;
+        margin-left: 0.35rem;
     }
 </style>
 
@@ -82,22 +108,38 @@
     <!-- Header Section -->
     <div class="schedule-header shadow-lg">
         <div class="row align-items-center text-start">
-            <div class="col-lg-7">
+            <div class="col-lg-8">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb breadcrumb-light mb-2">
-                        <li class="breadcrumb-item"><a href="<?= site_url('home') ?>" class="text-white opacity-75">หน้าหลัก</a></li>
-                        <li class="breadcrumb-item"><a href="<?= site_url('club') ?>" class="text-white opacity-75">ชุมนุม</a></li>
-                        <li class="breadcrumb-item active text-white" aria-current="page">ตารางกิจกรรม</li>
+                        <li class="breadcrumb-item"><a href="<?= site_url('home') ?>" class="text-white text-opacity-75">หน้าหลัก</a></li>
+                        <li class="breadcrumb-item"><a href="<?= site_url('club') ?>" class="text-white text-opacity-75">ชุมนุม</a></li>
+                        <li class="breadcrumb-item active text-white fw-bold" aria-current="page">ตารางกิจกรรม</li>
                     </ol>
                 </nav>
-                <h1 class="display-6 fw-bold text-white mb-1">
+                <h1 class="display-6 fw-bold text-white mb-2">
                     <i class="bi bi-calendar-week me-2"></i><?= esc($club->club_name) ?>
                 </h1>
-                <p class="lead mb-0 text-white opacity-75 small">
-                    <i class="bi bi-info-circle me-1"></i> ตารางกิจกรรมและบันทึกเวลาเรียนประจำเทอม
-                </p>
+                <div class="d-flex align-items-center flex-wrap gap-2 mt-3">
+                    <span class="badge-meta-pill">
+                        <i class="bi bi-info-circle-fill me-1 text-primary"></i> บันทึกเวลาเรียนประจำเทอม
+                    </span>
+                    <?php if (!empty($studyTimeInfo)): ?>
+                        <span class="badge-meta-pill">
+                            <i class="bi bi-mortarboard-fill me-1 text-primary"></i> ระดับชั้น: 
+                            <span class="val-highlight"><?= esc($studyTimeInfo['formatted_level']) ?></span>
+                        </span>
+                        <span class="badge-meta-pill">
+                            <i class="bi bi-clock-fill me-1 text-warning"></i> เวลาเรียน: 
+                            <span class="val-highlight"><?= esc($studyTimeInfo['study_periods_per_week_label']) ?> (<?= esc($studyTimeInfo['study_time_per_week_label']) ?>)</span>
+                        </span>
+                        <span class="badge-meta-pill">
+                            <i class="bi bi-calendar2-check-fill me-1 text-success"></i> รวมทั้งสิ้น: 
+                            <span class="val-highlight"><?= esc($studyTimeInfo['total_study_periods_label']) ?></span>
+                        </span>
+                    <?php endif; ?>
+                </div>
             </div>
-            <div class="col-lg-5 mt-4 mt-lg-0">
+            <div class="col-lg-4 mt-4 mt-lg-0">
                 <div class="d-flex flex-wrap justify-content-lg-end gap-2">
                     <div class="btn-group shadow-sm rounded-pill overflow-hidden bg-white p-1">
                         <a href="<?= site_url('club/manual') ?>" class="btn btn-white border-0 rounded-pill px-3 py-2 text-primary fw-bold small">
@@ -119,7 +161,14 @@
         </div>
         <div>
             <h6 class="alert-heading fw-bold mb-1">หมายเหตุการบันทึกข้อมูล</h6>
-            <p class="mb-0 small text-dark">คุณครูจำเป็นต้องกดปุ่ม <strong class="text-primary"><i class="bi bi-pencil-square"></i> กิจกรรม</strong> เพื่อบันทึกรายละเอียดการสอนในสัปดาห์นั้นๆ ให้เรียบร้อยก่อน ระบบจึงจะเปิดให้กดปุ่ม <strong class="text-primary"><i class="bi bi-person-check"></i> เช็คชื่อ</strong> ได้ครับ</p>
+            <p class="mb-0 small text-dark">
+                คุณครูจำเป็นต้องกดปุ่ม <strong class="text-primary"><i class="bi bi-pencil-square"></i> กิจกรรม</strong> เพื่อบันทึกรายละเอียดการสอนในสัปดาห์นั้นๆ ให้เรียบร้อยก่อน ระบบจึงจะเปิดให้กดปุ่ม <strong class="text-primary"><i class="bi bi-person-check"></i> เช็คชื่อ</strong> ได้ครับ
+                <?php if (!empty($studyTimeInfo)): ?>
+                    <span class="badge bg-primary bg-opacity-10 text-primary ms-1">
+                        เกณฑ์ชุมนุมนี้: <?= esc($studyTimeInfo['study_periods_per_week_label']) ?> (<?= esc($studyTimeInfo['study_time_per_week_label']) ?>) รวม <?= esc($studyTimeInfo['total_study_periods_label']) ?>
+                    </span>
+                <?php endif; ?>
+            </p>
         </div>
     </div>
 
@@ -156,7 +205,7 @@
                                                 <span class="text-muted"><i class="bi bi-dash-circle me-1"></i>รอกำหนดวันที่</span>
                                             <?php else: ?>
                                                 <i class="bi bi-calendar-event text-primary me-1"></i>
-                                                <?= esc(date('d/m/Y', strtotime($schedule->tcs_start_date))) ?>
+                                                <?= esc(thai_date($schedule->tcs_start_date, 'short')) ?>
                                             <?php endif; ?>
                                         </div>
                                     </td>
@@ -171,7 +220,18 @@
                                         <?php endif; ?>
                                     </td>
                                     <td class="text-center">
-                                        <span class="badge bg-light text-dark border"><?= esc($schedule->act_number_of_periods ?? '-') ?></span>
+                                        <?php if (!empty($schedule->act_name)): ?>
+                                            <?php 
+                                                $showPeriods = (!empty($schedule->act_number_of_periods) && (!($studyTimeInfo['is_high_school_or_mixed'] ?? false) || $schedule->act_number_of_periods > 1))
+                                                    ? $schedule->act_number_of_periods 
+                                                    : $defaultPeriods;
+                                            ?>
+                                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1">
+                                                <?= esc($showPeriods) ?> คาบ
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="badge bg-light text-muted border">-</span>
+                                        <?php endif; ?>
                                     </td>
                                     <td class="text-center">
                                         <?php if ($schedule->attendance_recorded): ?>
@@ -190,6 +250,9 @@
                                                 $isDateNotSet = ($schedule->tcs_start_date == '0000-00-00' || empty($schedule->tcs_start_date));
                                                 $isActivityNotSet = empty($schedule->act_name);
                                                 $isAttendanceDisabled = $isDateNotSet || $isActivityNotSet;
+                                                $currentPeriods = (!empty($schedule->act_number_of_periods) && (!($studyTimeInfo['is_high_school_or_mixed'] ?? false) || $schedule->act_number_of_periods > 1))
+                                                    ? $schedule->act_number_of_periods 
+                                                    : $defaultPeriods;
                                             ?>
                                             <button type="button" class="btn btn-light btn-sm btn-action border shadow-sm" data-bs-toggle="modal" data-bs-target="#activityModal"
                                                 data-date="<?= esc($schedule->tcs_start_date) ?>"
@@ -198,7 +261,7 @@
                                                 data-location="<?= esc($schedule->act_location ?? '') ?>"
                                                 data-start-time="<?= esc($schedule->act_start_time ?? '') ?>"
                                                 data-end-time="<?= esc($schedule->act_end_time ?? '') ?>"
-                                                data-periods="<?= esc($schedule->act_number_of_periods ?? '1') ?>"
+                                                data-periods="<?= esc($currentPeriods) ?>"
                                                 <?= $isDateNotSet ? 'disabled' : '' ?>>
                                                 <i class="bi bi-pencil-square me-1"></i> กิจกรรม
                                             </button>
@@ -258,7 +321,7 @@
                         </div>
                         <div class="col-md-4">
                             <div class="form-floating mb-4">
-                                <input type="number" class="form-control" id="modal_act_number_of_periods" name="act_number_of_periods" value="1" min="1">
+                                <input type="number" class="form-control" id="modal_act_number_of_periods" name="act_number_of_periods" value="<?= esc($defaultPeriods) ?>" min="1">
                                 <label for="modal_act_number_of_periods">จำนวนคาบ</label>
                             </div>
                         </div>
@@ -266,14 +329,14 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-floating mb-4">
-                                <input type="time" class="form-control" id="modal_activity_start_time" name="activity_start_time">
-                                <label for="modal_activity_start_time">เวลาเริ่ม</label>
+                                <input type="text" class="form-control flatpickr-time" id="modal_activity_start_time" name="activity_start_time" placeholder="00:00">
+                                <label for="modal_activity_start_time">เวลาเริ่ม (เช่น 08:30)</label>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-floating mb-4">
-                                <input type="time" class="form-control" id="modal_activity_end_time" name="activity_end_time">
-                                <label for="modal_activity_end_time">เวลาสิ้นสุด</label>
+                                <input type="text" class="form-control flatpickr-time" id="modal_activity_end_time" name="activity_end_time" placeholder="00:00">
+                                <label for="modal_activity_end_time">เวลาสิ้นสุด (เช่น 10:10)</label>
                             </div>
                         </div>
                     </div>
@@ -318,21 +381,33 @@
             var startTime = button.data('start-time');
             var endTime = button.data('end-time');
             var periods = button.data('periods');
+            if (!periods || periods == '0') {
+                periods = '<?= $defaultPeriods ?>';
+            }
 
             var modal = $(this);
             modal.find('#modal_activity_date').val(date);
             modal.find('#modal_activity_name').val(name);
             modal.find('#modal_activity_description').val(description);
             modal.find('#modal_activity_location').val(location);
-            modal.find('#modal_activity_start_time').val(startTime);
-            modal.find('#modal_activity_end_time').val(endTime);
+            
+            var startInput = modal.find('#modal_activity_start_time')[0];
+            if (startInput && startInput._flatpickr) {
+                startInput._flatpickr.setDate(startTime || '', true);
+            } else {
+                modal.find('#modal_activity_start_time').val(startTime || '');
+            }
+
+            var endInput = modal.find('#modal_activity_end_time')[0];
+            if (endInput && endInput._flatpickr) {
+                endInput._flatpickr.setDate(endTime || '', true);
+            } else {
+                modal.find('#modal_activity_end_time').val(endTime || '');
+            }
+
             modal.find('#modal_act_number_of_periods').val(periods);
             
-            var formattedDate = new Date(date).toLocaleDateString('th-TH', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric'
-            });
+            var formattedDate = window.formatThaiBE ? window.formatThaiBE(date, 'full') : date;
             modal.find('.modal-title').text('บันทึกกิจกรรมสำหรับวันที่ ' + formattedDate);
         });
 

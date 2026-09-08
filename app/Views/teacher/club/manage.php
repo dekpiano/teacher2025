@@ -191,7 +191,7 @@
                             </div>
                             <div>
                                 <div class="text-muted small">วันที่ก่อตั้ง</div>
-                                <h4 class="fw-bold mb-0 small"><?= date('d M Y', strtotime($club->club_established_date)) ?></h4>
+                                <h4 class="fw-bold mb-0 small"><?= esc(thai_date($club->club_established_date, 'short')) ?></h4>
                             </div>
                         </div>
                     </div>

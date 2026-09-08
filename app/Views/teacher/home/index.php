@@ -814,6 +814,7 @@
                         </a>
                     </div>
                     <?php if ($isPAPermitted): ?>
+                    <?php /* ปิดชั่วคราว - evaluation card
                     <div class="col-lg-4 col-md-6">
                         <a href="<?= base_url('evaluation') ?>" class="luxe-card">
                             <i class="bi bi-file-earmark-pdf card-icon text-danger"></i>
@@ -823,6 +824,7 @@
                             </div>
                         </a>
                     </div>
+                    */ ?>
                     <div class="col-lg-4 col-md-6">
                         <a href="<?= base_url('pa-agreement') ?>" class="luxe-card">
                             <i class="bi bi-journal-bookmark-fill card-icon text-primary"></i>

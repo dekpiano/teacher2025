@@ -69,7 +69,7 @@
                                     <?= $system_config['is_open'] ? 'เปิดรับส่งเอกสาร' : 'ปิดรับส่งเอกสาร' ?>
                                 </span>
                                 <span class="text-muted small border-start ps-2">
-                                    <?= date('d/m/Y', strtotime($system_config['config']['conf_start_date'] . ' +543 years')) ?> - <?= date('d/m/Y', strtotime($system_config['config']['conf_end_date'] . ' +543 years')) ?>
+                                    <?= thai_date($system_config['config']['conf_start_date'], 'short') ?> - <?= thai_date($system_config['config']['conf_end_date'], 'short') ?>
                                 </span>
                             </div>
                         <?php endif; ?>
@@ -239,7 +239,7 @@
                                     <tr>
                                         <td class="ps-3 fw-semibold text-dark"><?= $row['eva_year'] ?></td>
                                         <td><span class="badge bg-label-info">ครั้งที่ <?= $row['eva_round'] ?></span></td>
-                                        <td class="small text-muted"><?= date('d/m/Y H:i', strtotime($row['eva_created_at'] . ' +543 years')) ?> น.</td>
+                                        <td class="small text-muted"><?= thai_date_and_time($row['eva_created_at']) ?> น.</td>
                                         <td class="text-center">
                                             <?php if (!empty($row['eva_file'])) : ?>
                                                 <a href="<?= env('upload.server.baseurl.evaluation') . $row['eva_year'] . '/' . $row['eva_round'] . '/' . $row['eva_file'] ?>" target="_blank" class="btn btn-sm btn-icon btn-label-primary rounded-pill shadow-xs" title="เปิดดูไฟล์ PDF">

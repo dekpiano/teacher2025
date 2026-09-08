@@ -425,7 +425,7 @@
                                 <?php foreach ($history as $row) : ?>
                                     <tr>
                                         <td class="ps-3 fw-semibold text-dark"><?= $row['pa_year'] ?></td>
-                                        <td class="small text-muted"><?= date('d/m/Y H:i', strtotime($row['pa_created_at'] . ' +543 years')) ?> น.</td>
+                                        <td class="small text-muted"><?= thai_date_and_time($row['pa_created_at']) ?> น.</td>
                                         <td class="text-center">
                                             <?php if (!empty($row['pa_presentation_link'])) : ?>
                                                 <a href="<?= esc($row['pa_presentation_link']) ?>" target="_blank" class="btn btn-sm btn-icon btn-label-danger rounded-pill shadow-xs" title="เปิดดูลิ้งก์สื่อนำเสนอ">

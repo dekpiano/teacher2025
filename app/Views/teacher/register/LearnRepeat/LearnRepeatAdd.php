@@ -67,7 +67,7 @@
             <div>
                 <h6 class="alert-heading mb-1 fw-bold">ระบบปิดการบันทึกคะแนน!</h6>
                 <?php if (!empty($onoff_start_date) && !empty($onoff_end_date)) : ?>
-                    <span>ระบบจะเปิดให้บันทึกคะแนนตั้งแต่ <strong><?= date('d/m/Y H:i', strtotime($onoff_start_date)) ?> น.</strong> ถึง <strong><?= date('d/m/Y H:i', strtotime($onoff_end_date)) ?> น.</strong> เท่านั้น (ดูอย่างเดียว ไม่สามารถแก้ไขข้อมูลได้)</span>
+                    <span>ระบบจะเปิดให้บันทึกคะแนนตั้งแต่ <strong><?= thai_date_and_time($onoff_start_date) ?> น.</strong> ถึง <strong><?= thai_date_and_time($onoff_end_date) ?> น.</strong> เท่านั้น (ดูอย่างเดียว ไม่สามารถแก้ไขข้อมูลได้)</span>
                 <?php else : ?>
                     <span>ขณะนี้ระบบยังไม่เปิดให้บันทึกคะแนน กรุณาติดต่อฝ่ายวิชาการ</span>
                 <?php endif; ?>

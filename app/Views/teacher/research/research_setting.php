@@ -58,17 +58,21 @@
             <h6 class="fw-bold text-dark mb-4"><i class="bi bi-calendar-event me-2 text-primary"></i>กำหนดช่วงเวลาเปิด-ปิดรับงาน</h6>
             <div class="row g-4 mb-5">
                 <div class="col-md-6">
-                    <div class="form-floating">
-                        <input type="datetime-local" class="form-control" id="seres_setup_startdate" name="seres_setup_startdate" 
-                               value="<?= date('Y-m-d\TH:i', strtotime($setup->seres_setup_startdate)) ?>" required>
-                        <label for="seres_setup_startdate">วันที่เริ่มต้น (Start Date)</label>
+                    <div class="mb-3">
+                        <label for="seres_setup_startdate" class="form-label fw-semibold text-dark">
+                            <i class="bi bi-calendar-event me-1 text-primary"></i> วันที่เริ่มต้น (Start Date)
+                        </label>
+                        <input type="text" class="form-control flatpickr-datetime" id="seres_setup_startdate" name="seres_setup_startdate" 
+                               value="<?= !empty($setup->seres_setup_startdate) ? date('Y-m-d H:i', strtotime($setup->seres_setup_startdate)) : '' ?>" placeholder="เลือกวันและเวลาเริ่มต้น" required>
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <div class="form-floating">
-                        <input type="datetime-local" class="form-control" id="seres_setup_enddate" name="seres_setup_enddate" 
-                               value="<?= date('Y-m-d\TH:i', strtotime($setup->seres_setup_enddate)) ?>" required>
-                        <label for="seres_setup_enddate">วันที่สิ้นสุด (End Date)</label>
+                    <div class="mb-3">
+                        <label for="seres_setup_enddate" class="form-label fw-semibold text-dark">
+                            <i class="bi bi-calendar-check me-1 text-primary"></i> วันที่สิ้นสุด (End Date)
+                        </label>
+                        <input type="text" class="form-control flatpickr-datetime" id="seres_setup_enddate" name="seres_setup_enddate" 
+                               value="<?= !empty($setup->seres_setup_enddate) ? date('Y-m-d H:i', strtotime($setup->seres_setup_enddate)) : '' ?>" placeholder="เลือกวันและเวลาสิ้นสุด" required>
                     </div>
                 </div>
             </div>

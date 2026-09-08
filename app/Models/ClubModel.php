@@ -410,10 +410,14 @@ class ClubModel extends Model
         }
 
         // Use upsertBatch for batch insert/update
-        $builder = $this->db->table('tb_club_student_progress');
-        $builder->upsertBatch($batchData);
-
-        return $this->db->affectedRows() > 0;
+        try {
+            $builder = $this->db->table('tb_club_student_progress');
+            $builder->upsertBatch($batchData);
+            return true;
+        } catch (\Throwable $e) {
+            log_message('error', 'Error in saveStudentProgress: ' . $e->getMessage());
+            return false;
+        }
     }
 
     // --- Club Objective Definition Methods ---
@@ -476,6 +480,82 @@ class ClubModel extends Model
                        ->get()
                        ->getRowArray();
         return $result ? $result['admin_rloes_userid'] : null;
+    }
+
+    /**
+     * Determines study time and periods info for a club based on club level and members.
+     * ม.ต้น: 1 คาบ/สัปดาห์ (1 ชม./สัปดาห์), รวม 20 คาบ (20 ชม.)
+     * ม.ปลาย หรือ ม.ต้น และ ม.ปลาย รวมกัน: 2 คาบ/สัปดาห์ (2 ชม./สัปดาห์), รวม 40 คาบ (40 ชม.)
+     *
+     * @param object $club The club object.
+     * @param array|null $members Optional members array. If null, will fetch if needed.
+     * @return array Array containing periods_per_week, hours_per_week, total_periods, total_hours, labels, etc.
+     */
+    public function getClubStudyTimeInfo(object $club, ?array $members = null): array
+    {
+        $clubLevel = trim($club->club_level ?? '');
+        $hasHighSchool = false;
+
+        // 1. Check club_level string (e.g. "ม.ปลาย", "ม.ต้น และ ม.ปลาย", "ม.ต้นและม.ปลาย")
+        if (mb_strpos($clubLevel, 'ปลาย') !== false || 
+            mb_strpos($clubLevel, '4') !== false || 
+            mb_strpos($clubLevel, '5') !== false || 
+            mb_strpos($clubLevel, '6') !== false) {
+            $hasHighSchool = true;
+        }
+
+        // 2. If not detected from club_level, check members
+        if (!$hasHighSchool) {
+            if ($members === null && !empty($club->club_id)) {
+                $members = $this->getClubMembers((int)$club->club_id);
+            }
+            if (!empty($members)) {
+                foreach ($members as $member) {
+                    $classStr = trim($member->StudentClass ?? '');
+                    if (preg_match('/^(ม\.)?[456][\/\.\-\s]/u', $classStr) || 
+                        preg_match('/^[456]\b/u', $classStr) || 
+                        preg_match('/ม\.[456]/u', $classStr) || 
+                        mb_strpos($classStr, 'ปลาย') !== false) {
+                        $hasHighSchool = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        $periodsPerWeek = $hasHighSchool ? 2 : 1;
+        $hoursPerWeek = $hasHighSchool ? 2 : 1;
+        $totalPeriods = $hasHighSchool ? 40 : 20;
+        $totalHours = $hasHighSchool ? 40 : 20;
+
+        return [
+            'has_high_school' => $hasHighSchool,
+            'is_high_school_or_mixed' => $hasHighSchool,
+            'periods_per_week' => $periodsPerWeek,
+            'hours_per_week' => $hoursPerWeek,
+            'total_periods' => $totalPeriods,
+            'total_hours' => $totalHours,
+            'study_time_per_week_label' => $hoursPerWeek . ' ชม./สัปดาห์',
+            'study_periods_per_week_label' => $periodsPerWeek . ' คาบ/สัปดาห์',
+            'total_study_time_label' => $totalHours . ' ชม.',
+            'total_study_periods_label' => $totalPeriods . ' คาบ',
+            'formatted_level' => $this->formatClubLevelText($clubLevel),
+        ];
+    }
+
+    public function formatClubLevelText(string $level): string
+    {
+        $level = trim($level);
+        if ($level === 'ม.ต้น') {
+            return 'มัธยมศึกษาตอนต้น';
+        }
+        if ($level === 'ม.ปลาย') {
+            return 'มัธยมศึกษาตอนปลาย';
+        }
+        if ($level === 'ม.ต้น และ ม.ปลาย' || (mb_strpos($level, 'ต้น') !== false && mb_strpos($level, 'ปลาย') !== false)) {
+            return 'มัธยมศึกษาตอนต้น และ ตอนปลาย';
+        }
+        return 'มัธยมศึกษา ' . $level;
     }
 }
 

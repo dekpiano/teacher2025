@@ -62,12 +62,12 @@ class ClubController extends BaseController
         return $session->get('person_id');
     }
 
-    private function isClubAdvisor(string $teacherId, object $club): bool
+    private function isClubAdvisor(?string $teacherId, ?object $club): bool
     {
-        if (!$club) {
+        if (!$club || empty($teacherId)) {
             return false;
         }
-        $advisors = explode('|', $club->club_faculty_advisor);
+        $advisors = explode('|', (string)($club->club_faculty_advisor ?? ''));
         return in_array($teacherId, $advisors);
     }
 
@@ -290,6 +290,7 @@ class ClubController extends BaseController
         $data['title'] = "ตารางกิจกรรมชุมนุม: " . $club->club_name;
         $data['club'] = $club;
         $data['schedules'] = $this->clubModel->getSchedulesByYear($club->club_year, $club->club_trem, $clubId);
+        $data['studyTimeInfo'] = $this->clubModel->getClubStudyTimeInfo($club);
 
         // Add attendance status to each schedule
         foreach ($data['schedules'] as $schedule) {
@@ -345,6 +346,12 @@ class ClubController extends BaseController
             return redirect()->to('club');
         }
 
+        $studyTimeInfo = $this->clubModel->getClubStudyTimeInfo($club);
+        $periods = $this->request->getPost('act_number_of_periods');
+        if (empty($periods) || (int)$periods < 1) {
+            $periods = $studyTimeInfo['periods_per_week'];
+        }
+
         $data = [
             'act_club_id' => $clubId,
             'act_date' => $this->request->getPost('activity_date'),
@@ -353,7 +360,7 @@ class ClubController extends BaseController
             'act_location' => $this->request->getPost('activity_location'),
             'act_start_time' => $this->request->getPost('activity_start_time'),
             'act_end_time' => $this->request->getPost('activity_end_time'),
-            'act_number_of_periods' => $this->request->getPost('act_number_of_periods'),
+            'act_number_of_periods' => $periods,
         ];
 
         // Basic validation
@@ -392,6 +399,7 @@ class ClubController extends BaseController
         $data['club'] = $club;
         $data['schedule'] = $schedule;
         $data['members'] = $this->clubModel->getClubMembers($clubId);
+        $data['studyTimeInfo'] = $this->clubModel->getClubStudyTimeInfo($club, $data['members']);
 
         // Fetch existing attendance for this schedule
         $existingAttendance = [];
@@ -497,6 +505,7 @@ class ClubController extends BaseController
         $data['title'] = "รายงานการบันทึกเวลาเรียน: " . $club->club_name;
         $data['club'] = $club;
         $data['members'] = $this->clubModel->getClubMembers($clubId);
+        $data['studyTimeInfo'] = $this->clubModel->getClubStudyTimeInfo($club, $data['members']);
         
         $schedules = $this->clubModel->getSchedulesByYear($club->club_year, $club->club_trem, $clubId);
         
@@ -575,6 +584,7 @@ class ClubController extends BaseController
 
         $data['club'] = $club;
         $data['members'] = $this->clubModel->getClubMembers($clubId);
+        $data['studyTimeInfo'] = $this->clubModel->getClubStudyTimeInfo($club, $data['members']);
         
         $schedules = $this->clubModel->getSchedulesByYear($club->club_year, $club->club_trem, $clubId);
         
@@ -888,6 +898,7 @@ class ClubController extends BaseController
         $data['title'] = "จุดประสงค์กิจกรรม: " . $club->club_name;
         $data['club'] = $club;
         $data['members'] = $this->clubModel->getClubMembers($clubId);
+        $data['studyTimeInfo'] = $this->clubModel->getClubStudyTimeInfo($club, $data['members']);
         $data['objectives'] = $this->clubModel->getObjectivesByClub($clubId);
         $data['progress'] = $this->clubModel->getClubStudentProgress($clubId);
 
@@ -973,7 +984,8 @@ class ClubController extends BaseController
         return $this->response->setJSON([
             'success' => $success,
             'message' => $message,
-            'objectives' => $objectives
+            'objectives' => $objectives,
+            'csrf_token' => csrf_hash()
         ]);
     }
 

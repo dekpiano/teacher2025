@@ -12,7 +12,7 @@
             <div class="card">
                 <div class="card-header">
                     <h4>เช็คชื่อโฮมรูม ห้อง <?= esc($teacher->Reg_Class ?? '') ?></h4>
-                    <p>วันที่: <?= thai_date(strtotime(date('Y-m-d'))) ?></p>
+                    <p class="mb-0 text-muted"><i class="bi bi-calendar-event me-1 text-primary"></i>วันที่: <span class="fw-semibold text-dark"><?= thai_date('now', 'full') ?></span></p>
                 </div>
                 <div class="card-body">
                     <form action="<?= esc($Action) ?>" method="post">

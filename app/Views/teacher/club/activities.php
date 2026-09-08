@@ -8,24 +8,78 @@
 
 <style>
     .activities-header {
-        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-        border-radius: 1.25rem;
-        padding: 2.5rem;
+        background: linear-gradient(135deg, #3730a3 0%, #4f46e5 50%, #6b21a8 100%);
+        border-radius: 1.5rem;
+        padding: 2.25rem 2rem;
         color: white;
         margin-bottom: 2rem;
         position: relative;
         overflow: hidden;
+        box-shadow: 0 12px 30px rgba(55, 48, 163, 0.25);
     }
     .activities-header::after {
         content: "";
         position: absolute;
-        top: -50%;
-        right: -10%;
-        width: 300px;
-        height: 300px;
-        background: rgba(255,255,255,0.1);
+        top: -40%;
+        right: -5%;
+        width: 320px;
+        height: 320px;
+        background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 70%);
         border-radius: 50%;
         pointer-events: none;
+    }
+    .badge-club-name {
+        background: #ffffff !important;
+        color: #312e81 !important;
+        border: 2px solid #e0e7ff;
+        padding: 0.45rem 1rem;
+        border-radius: 50rem;
+        font-size: 0.95rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .badge-meta-pill {
+        background: #ffffff !important;
+        color: #1e293b !important;
+        padding: 0.45rem 0.95rem;
+        border-radius: 50rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e2e8f0;
+    }
+    .badge-meta-pill .val-highlight {
+        color: #4338ca !important;
+        font-weight: 700;
+        margin-left: 0.35rem;
+    }
+    .btn-print-pdf {
+        background: #ffffff !important;
+        color: #4338ca !important;
+        border: none !important;
+        font-weight: 700;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        transition: all 0.25s ease;
+    }
+    .btn-print-pdf:hover {
+        background: #f8fafc !important;
+        color: #312e81 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+    }
+    .btn-manual-action {
+        background: rgba(255, 255, 255, 0.9) !important;
+        color: #4338ca !important;
+        font-weight: 700;
+        border: none;
+    }
+    .btn-manual-action:hover {
+        background: #ffffff !important;
+        color: #312e81 !important;
     }
     .report-card {
         border-radius: 1.25rem;
@@ -101,31 +155,48 @@
     </div>
 
     <!-- Header Section -->
-    <div class="activities-header shadow-lg">
+    <div class="activities-header">
         <div class="row align-items-center text-start">
-            <div class="col-lg-7">
+            <div class="col-lg-8">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb breadcrumb-light mb-2">
-                        <li class="breadcrumb-item"><a href="<?= site_url('home') ?>" class="text-white opacity-75">หน้าหลัก</a></li>
-                        <li class="breadcrumb-item"><a href="<?= site_url('club') ?>" class="text-white opacity-75">ชุมนุม</a></li>
-                        <li class="breadcrumb-item active text-white" aria-current="page">รายงานสรุปผล</li>
+                        <li class="breadcrumb-item"><a href="<?= site_url('home') ?>" class="text-white text-opacity-75">หน้าหลัก</a></li>
+                        <li class="breadcrumb-item"><a href="<?= site_url('club') ?>" class="text-white text-opacity-75">ชุมนุม</a></li>
+                        <li class="breadcrumb-item active text-white fw-bold" aria-current="page">รายงานสรุปผล</li>
                     </ol>
                 </nav>
                 <h1 class="display-6 fw-bold text-white mb-2">
                     <i class="bi bi-bar-chart-line-fill me-2"></i>รายงานสรุปผลกิจกรรม
                 </h1>
-                <p class="lead mb-0 text-white opacity-75 small">
-                    <i class="bi bi-tag-fill me-1"></i> <?= esc($club->club_name) ?>
-                </p>
+                
+                <div class="d-flex align-items-center flex-wrap gap-2 mt-3">
+                    <span class="badge-club-name">
+                        <i class="bi bi-tag-fill me-1 text-primary"></i> <?= esc($club->club_name) ?>
+                    </span>
+                    <?php if (!empty($studyTimeInfo)): ?>
+                        <span class="badge-meta-pill">
+                            <i class="bi bi-mortarboard-fill me-1 text-primary"></i> ระดับชั้น: 
+                            <span class="val-highlight"><?= esc($studyTimeInfo['formatted_level']) ?></span>
+                        </span>
+                        <span class="badge-meta-pill">
+                            <i class="bi bi-clock-fill me-1 text-warning"></i> เวลาเรียน: 
+                            <span class="val-highlight"><?= esc($studyTimeInfo['study_periods_per_week_label']) ?> (<?= esc($studyTimeInfo['study_time_per_week_label']) ?>)</span>
+                        </span>
+                        <span class="badge-meta-pill">
+                            <i class="bi bi-calendar2-check-fill me-1 text-success"></i> รวมทั้งสิ้น: 
+                            <span class="val-highlight"><?= esc($studyTimeInfo['total_study_periods_label']) ?> (<?= esc($studyTimeInfo['total_study_time_label']) ?>)</span>
+                        </span>
+                    <?php endif; ?>
+                </div>
             </div>
-            <div class="col-lg-5 mt-4 mt-lg-0">
+            <div class="col-lg-4 mt-4 mt-lg-0">
                 <div class="d-flex flex-wrap justify-content-lg-end gap-2">
-                    <a href="<?= site_url('club/printActivitiesReport/' . $club->club_id) ?>" target="_blank" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm fw-bold border-2 border-white">
+                    <a href="<?= site_url('club/printActivitiesReport/' . $club->club_id) ?>" target="_blank" class="btn btn-print-pdf rounded-pill px-4 py-2">
                         <i class="bi bi-printer-fill me-2"></i> พิมพ์รายงาน PDF
                     </a>
                     
                     <div class="btn-group shadow-sm rounded-pill overflow-hidden bg-white p-1">
-                        <a href="<?= site_url('club/manual') ?>" class="btn btn-white border-0 rounded-pill px-3 py-2 text-primary fw-bold small">
+                        <a href="<?= site_url('club/manual') ?>" class="btn btn-manual-action border-0 rounded-pill px-3 py-2 small">
                             <i class="bi bi-book-half me-2"></i> คู่มือ
                         </a>
                         <button type="button" class="btn btn-white border-0 rounded-pill px-3 py-2 text-muted" data-bs-toggle="modal" data-bs-target="#clubHelpModal">
@@ -139,11 +210,19 @@
 
     <!-- Part 1: Attendance Report -->
     <div class="report-card card shadow-sm">
-        <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+        <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2">
             <h5 class="card-title mb-0 fw-bold text-dark">
                 <i class="bi bi-calendar-check text-primary me-2"></i>1. รายงานผลการบันทึกเวลาเรียน
             </h5>
-            <div class="text-muted smallest">เกณฑ์การผ่าน: เข้าเรียนไม่น้อยกว่า 80%</div>
+            <?php if (!empty($studyTimeInfo)): ?>
+                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-2 rounded-pill fw-bold" style="font-size: 0.85rem;">
+                    <i class="bi bi-info-circle-fill me-1"></i> เกณฑ์ผ่าน: เข้าเรียนไม่น้อยกว่า 80% (เวลาเรียน <?= esc($studyTimeInfo['study_time_per_week_label']) ?> รวม <?= esc($studyTimeInfo['total_study_time_label']) ?>)
+                </span>
+            <?php else: ?>
+                <span class="badge bg-light text-dark border px-3 py-2 rounded-pill fw-bold" style="font-size: 0.85rem;">
+                    เกณฑ์การผ่าน: เข้าเรียนไม่น้อยกว่า 80%
+                </span>
+            <?php endif; ?>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">

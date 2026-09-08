@@ -157,7 +157,7 @@
         <div class="mb-2">
             <img src="https://skj.ac.th/uploads/logoSchool/LogoSKJ_4.png" alt="School Logo" class="school-logo">
             <h1 class="cover-title">สมุดประเมินผลกิจกรรมนักเรียน</h1>
-            <p class="cover-subtitle">ระดับชั้นมัธยมศึกษาตอน<?= esc($club->club_level) ?></p>
+            <p class="cover-subtitle">ระดับชั้น<?= esc($studyTimeInfo['formatted_level'] ?? ('มัธยมศึกษาตอน' . $club->club_level)) ?></p>
             <p class="h6 mb-0 fw-bold">โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์</p>
             <p class="small mb-0">อำเภอเมืองนครสวรรค์ จังหวัดนครสวรรค์</p>
         </div>
@@ -233,7 +233,7 @@
         <div class="text-center mb-3">
             <p class="mb-0 fw-bold" style="font-size: 14pt;">กำหนดการจัดกิจกรรมการเรียนรู้</p>
             <p class="mb-0" style="font-size: 12pt;">กิจกรรม ชุมนุม <?= esc($club->club_name) ?> | ภาคเรียนที่ <?= esc($club->club_trem) ?>/<?= esc($club->club_year) ?></p>
-            <p class="mb-0" style="font-size: 12pt;">ชั้นมัธยมศึกษาตอน<?= esc($club->club_level) ?> จำนวน <?= esc($club->club_max_participants) ?> คาบ</p>
+            <p class="mb-0" style="font-size: 12pt;">ชั้น<?= esc($studyTimeInfo['formatted_level'] ?? ('มัธยมศึกษาตอน' . $club->club_level)) ?> จำนวน <?= esc($studyTimeInfo['total_study_periods_label'] ?? '20 คาบ') ?></p>
         </div>
 
         <table class="table table-bordered" style="width: 100%; font-size: 11pt;">
@@ -246,14 +246,22 @@
             </thead>
             <tbody>
                 <?php if (!empty($activities)): ?>
-                    <?php $totalPeriods = 0; ?>
+                    <?php 
+                        $defaultPeriods = $studyTimeInfo['periods_per_week'] ?? 1;
+                        $totalPeriods = 0; 
+                    ?>
                     <?php foreach ($activities as $index => $activity): ?>
+                        <?php 
+                            $actPeriods = (!empty($activity->act_number_of_periods) && (!($studyTimeInfo['is_high_school_or_mixed'] ?? false) || $activity->act_number_of_periods > 1))
+                                ? $activity->act_number_of_periods 
+                                : $defaultPeriods;
+                        ?>
                         <tr style="height: 28px;">
                             <td class="text-center" style="padding: 5px;"><?= esc($index + 1) ?></td>
                             <td style="padding: 5px 10px;"><?= esc($activity->act_name) ?></td>
-                            <td class="text-center" style="padding: 5px;"><?= esc($activity->act_number_of_periods) ?></td>
+                            <td class="text-center" style="padding: 5px;"><?= esc($actPeriods) ?></td>
                         </tr>
-                        <?php $totalPeriods += $activity->act_number_of_periods; ?>
+                        <?php $totalPeriods += $actPeriods; ?>
                     <?php endforeach; ?>
                     <tr style="background-color: #f0f0f0;">
                         <td colspan="2" class="text-end fw-bold" style="padding: 6px 10px;">รวมเวลาเรียนทั้งสิ้น</td>
@@ -269,8 +277,8 @@
     <!-- PAGE 3: ATTENDANCE RECORD (LANDSCAPE) - OPTIMIZED FOR 30 STUDENTS -->
     <div class="printable-page container-fluid landscape-page-3 text-center" style="padding: 0.5rem;">
         <?php
-            $studyTimePerWeek = ($club->club_level === 'ม.ปลาย') ? '2 ชม./สัปดาห์' : '1 คาบ/สัปดาห์';
-            $totalStudyTime = ($club->club_level === 'ม.ปลาย') ? '40 ชม.' : '20 ชม.';
+            $studyTimePerWeek = $studyTimeInfo['study_time_per_week_label'] ?? (($club->club_level === 'ม.ปลาย') ? '2 ชม./สัปดาห์' : '1 คาบ/สัปดาห์');
+            $totalStudyTime = $studyTimeInfo['total_study_time_label'] ?? (($club->club_level === 'ม.ปลาย') ? '40 ชม.' : '20 ชม.');
         ?>
         <div class="table-header mb-2" style="font-size: 10pt;">
             <p class="mb-0 fw-bold">การบันทึกเวลาเรียน ชุมนุม <?= esc($club->club_name) ?> | ภาคเรียนที่ <?= esc($club->club_trem) ?>/<?= esc($club->club_year) ?> | เวลาเรียน <?= esc($studyTimePerWeek) ?> รวม <?= esc($totalStudyTime) ?></p>

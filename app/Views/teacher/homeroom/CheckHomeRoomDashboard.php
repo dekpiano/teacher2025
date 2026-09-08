@@ -10,14 +10,15 @@
     <div class="row">
         <div class="col-md-12">
             <div class="card">
-                <div class="card-header">
-                    <h4>แดชบอร์ดสรุปการเช็คชื่อโฮมรูม ระดับชั้น ม.<?= esc($teacher->Reg_Class ?? '') ?></h4>
-                    <form id="date-form" class="form-inline">
-                        <div class="form-group">
-                            <label for="datepicker">เลือกวันที่: </label>
-                            <input type="text" id="datepicker" name="date" class="form-control ml-2" value="<?= esc($current_date) ?>">
-                        </div>
-                        <button type="submit" class="btn btn-primary ml-2">ค้นหา</button>
+                <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-bar-chart-fill text-primary me-2"></i>แดชบอร์ดสรุปการเช็คชื่อโฮมรูม ระดับชั้น ม.<?= esc($teacher->Reg_Class ?? '') ?>
+                        <span class="badge bg-label-primary ms-2"><?= thai_date($current_date, 'short') ?></span>
+                    </h5>
+                    <form id="date-form" class="d-flex align-items-center gap-2">
+                        <label for="homeroom_datepicker" class="text-nowrap mb-0 small fw-semibold">เลือกวันที่:</label>
+                        <input type="text" id="homeroom_datepicker" name="date" class="form-control form-control-sm flatpickr-date" value="<?= date('Y-m-d', strtotime($current_date)) ?>" style="width: 170px;">
+                        <button type="submit" class="btn btn-sm btn-primary text-nowrap"><i class="bi bi-search me-1"></i>ค้นหา</button>
                     </form>
                 </div>
                 <div class="card-body">
@@ -79,16 +80,14 @@
 
 <?= $this->section('scripts') ?>
 <script>
-$(function() {
-    // Date Picker
-    $("#datepicker").datepicker({
-        dateFormat: 'dd-mm-yy'
-    });
-
     $('#date-form').on('submit', function(e) {
         e.preventDefault();
-        var date = $('#datepicker').val();
-        window.location.href = "<?= site_url('homeroom/dashboard/') ?>" + date;
+        var rawVal = $('#homeroom_datepicker').val();
+        if (rawVal) {
+            var parts = rawVal.split('-');
+            var formatted = (parts.length === 3) ? parts[2] + '-' + parts[1] + '-' + parts[0] : rawVal;
+            window.location.href = "<?= site_url('homeroom/dashboard/') ?>" + formatted;
+        }
     });
 
     // Bar Chart

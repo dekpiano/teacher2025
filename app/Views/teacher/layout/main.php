@@ -103,6 +103,51 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css">
     <!-- FullCalendar CSS -->
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/index.global.min.css' rel='stylesheet' />
+    <!-- Flatpickr CSS & Thai Buddhist Era Theme -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://npmcdn.com/flatpickr/dist/themes/airbnb.css">
+    <style>
+        .flatpickr-calendar {
+            font-family: inherit;
+            border-radius: 0.85rem !important;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
+            border: 1px solid #e2e8f0 !important;
+        }
+        .flatpickr-calendar.hasTime .flatpickr-time {
+            border-top: 1px solid #f1f5f9 !important;
+        }
+        .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange {
+            background: #6366f1 !important;
+            border-color: #6366f1 !important;
+        }
+        .flatpickr-day:hover {
+            background: #e0e7ff !important;
+        }
+        .flatpickr-current-month .cur-month {
+            font-weight: 700 !important;
+            color: #1e1b4b !important;
+        }
+        .flatpickr-year-be-select {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #4338ca;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 2px 8px;
+            background: #ffffff;
+            cursor: pointer;
+            outline: none;
+            margin-left: 6px;
+        }
+        .flatpickr-year-be-select:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px rgba(99,102,241,0.2);
+        }
+        .flatpickr-input[readonly] {
+            background-color: #ffffff !important;
+            cursor: pointer;
+        }
+    </style>
 
     <?= $this->renderSection('styles') ?>
 
@@ -134,42 +179,46 @@
     $segments = $currentUri->getSegments();
 
     // Helper: Check active menu link accurately
-    function is_active_segment($expected_segments, $current_segments) {
-        // Home page check (URL is '/' or '/home')
-        if (empty($expected_segments)) {
-            if (empty($current_segments) || (count($current_segments) === 1 && $current_segments[0] === 'home')) {
-                return 'active';
-            }
-            return '';
-        }
-        
-        if (count($current_segments) < count($expected_segments)) {
-            return '';
-        }
-
-        for ($i = 0; $i < count($expected_segments); $i++) {
-            if ($expected_segments[$i] !== $current_segments[$i]) {
+    if (!function_exists('is_active_segment')) {
+        function is_active_segment($expected_segments, $current_segments) {
+            // Home page check (URL is '/' or '/home')
+            if (empty($expected_segments)) {
+                if (empty($current_segments) || (count($current_segments) === 1 && $current_segments[0] === 'home')) {
+                    return 'active';
+                }
                 return '';
             }
+            
+            if (count($current_segments) < count($expected_segments)) {
+                return '';
+            }
+
+            for ($i = 0; $i < count($expected_segments); $i++) {
+                if ($expected_segments[$i] !== $current_segments[$i]) {
+                    return '';
+                }
+            }
+            return 'active';
         }
-        return 'active';
     }
 
     // Helper: Check parent menu open/active state
-    function is_open_segment($expected_parent_segments, $current_segments) {
-        foreach ($expected_parent_segments as $parent_segment_array) {
-            $match = true;
-            for ($i = 0; $i < count($parent_segment_array); $i++) {
-                if (!isset($current_segments[$i]) || $parent_segment_array[$i] !== $current_segments[$i]) {
-                    $match = false;
-                    break;
+    if (!function_exists('is_open_segment')) {
+        function is_open_segment($expected_parent_segments, $current_segments) {
+            foreach ($expected_parent_segments as $parent_segment_array) {
+                $match = true;
+                for ($i = 0; $i < count($parent_segment_array); $i++) {
+                    if (!isset($current_segments[$i]) || $parent_segment_array[$i] !== $current_segments[$i]) {
+                        $match = false;
+                        break;
+                    }
+                }
+                if ($match) {
+                    return 'open active';
                 }
             }
-            if ($match) {
-                return 'open active';
-            }
+            return '';
         }
-        return '';
     }
 
     // Map URI paths to friendly Thai Breadcrumb names
@@ -315,12 +364,14 @@
                                     <div data-i18n="ระบบการลา">ระบบการลา</div>
                                 </a>
                             </li>
+                            <?php /* ปิดชั่วคราว - evaluation menu
                             <li class="menu-item <?= is_active_segment(['evaluation'], $segments) ? 'active' : '' ?>">
                                 <a href="<?= base_url('evaluation') ?>" class="menu-link">
                                     <i class="bi bi-file-earmark-pdf me-2"></i>
                                     <div data-i18n="การประเมินผลการปฏิบัติงาน">การประเมินผลการปฏิบัติงาน</div>
                                 </a>
                             </li>
+                            */ ?>
                             <li class="menu-item <?= is_active_segment(['pa-agreement'], $segments) ? 'active' : '' ?>">
                                 <a href="<?= base_url('pa-agreement') ?>" class="menu-link">
                                     <i class="bi bi-journal-bookmark-fill me-2 text-primary"></i>
@@ -574,6 +625,142 @@
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.colVis.min.js"></script>
     <!-- FullCalendar JS -->
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/index.global.min.js'></script>
+    <!-- Flatpickr JS & Thai Localization -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/th.js"></script>
+
+    <script>
+        // Global Thai Buddhist Era Date & Time Utilities
+        window.thaiMonthsFull = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+        window.thaiMonthsShort = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+
+        window.formatThaiBE = function(date, format = 'short') {
+            if (!date) return '';
+            if (typeof date === 'string') {
+                date = new Date(date);
+            }
+            if (isNaN(date.getTime())) return '';
+            const d = String(date.getDate()).padStart(2, '0');
+            const m = format === 'full' ? window.thaiMonthsFull[date.getMonth()] : window.thaiMonthsShort[date.getMonth()];
+            const y = date.getFullYear() + 543;
+            return `${d} ${m} ${y}`;
+        };
+
+        window.initThaiDatePickers = function(container = document) {
+            if (typeof flatpickr === 'undefined') return;
+
+            // 1. Date Only Pickers (.flatpickr-date, [data-thai-datepicker])
+            const dateInputs = container.querySelectorAll ? container.querySelectorAll('.flatpickr-date, [data-thai-datepicker]') : [];
+            dateInputs.forEach(el => {
+                if (el._flatpickr) return; // already initialized
+                flatpickr(el, {
+                    locale: 'th',
+                    dateFormat: 'Y-m-d',
+                    altInput: true,
+                    altFormat: 'j F Y',
+                    formatDate: function(date, format, locale) {
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const month = window.thaiMonthsShort[date.getMonth()];
+                        const yearBE = date.getFullYear() + 543;
+                        return `${day} ${month} ${yearBE}`;
+                    },
+                    onReady: function(selectedDates, dateStr, instance) {
+                        renderThaiYearDropdown(instance);
+                        instance.config.onMonthChange.push(() => renderThaiYearDropdown(instance));
+                        instance.config.onYearChange.push(() => renderThaiYearDropdown(instance));
+                    }
+                });
+            });
+
+            // 2. Time Pickers (.flatpickr-time, [data-thai-timepicker])
+            const timeInputs = container.querySelectorAll ? container.querySelectorAll('.flatpickr-time, [data-thai-timepicker]') : [];
+            timeInputs.forEach(el => {
+                if (el._flatpickr) return;
+                flatpickr(el, {
+                    enableTime: true,
+                    noCalendar: true,
+                    dateFormat: "H:i",
+                    time_24hr: true,
+                    minuteIncrement: 5,
+                    allowInput: true
+                });
+            });
+
+            // 3. Date & Time Pickers (.flatpickr-datetime, [data-thai-datetimepicker])
+            const datetimeInputs = container.querySelectorAll ? container.querySelectorAll('.flatpickr-datetime, [data-thai-datetimepicker]') : [];
+            datetimeInputs.forEach(el => {
+                if (el._flatpickr) return;
+                flatpickr(el, {
+                    locale: 'th',
+                    enableTime: true,
+                    time_24hr: true,
+                    dateFormat: 'Y-m-d H:i',
+                    altInput: true,
+                    altFormat: 'j F Y H:i',
+                    formatDate: function(date, format, locale) {
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const month = window.thaiMonthsShort[date.getMonth()];
+                        const yearBE = date.getFullYear() + 543;
+                        const hours = String(date.getHours()).padStart(2, '0');
+                        const mins = String(date.getMinutes()).padStart(2, '0');
+                        return `${day} ${month} ${yearBE} ${hours}:${mins} น.`;
+                    },
+                    onReady: function(selectedDates, dateStr, instance) {
+                        renderThaiYearDropdown(instance);
+                        instance.config.onMonthChange.push(() => renderThaiYearDropdown(instance));
+                        instance.config.onYearChange.push(() => renderThaiYearDropdown(instance));
+                    }
+                });
+            });
+
+            function renderThaiYearDropdown(instance) {
+                if (!instance || !instance.calendarContainer) return;
+                const currentYearAD = instance.currentYear;
+                const container = instance.calendarContainer;
+                const numInputWrapper = container.querySelector('.numInputWrapper');
+                
+                const baseYear = new Date().getFullYear();
+                let optionsHtml = '';
+                for (let y = baseYear - 5; y <= baseYear + 5; y++) {
+                    const yBE = y + 543;
+                    const isSelected = (y === currentYearAD) ? 'selected' : '';
+                    optionsHtml += `<option value="${y}" ${isSelected}>${yBE}</option>`;
+                }
+
+                if (numInputWrapper) {
+                    numInputWrapper.style.display = 'none';
+                }
+
+                let yearSelect = container.querySelector('.flatpickr-year-be-select');
+                const curMonthEl = container.querySelector('.flatpickr-current-month');
+                if (!curMonthEl) return;
+
+                if (!yearSelect) {
+                    yearSelect = document.createElement('select');
+                    yearSelect.className = 'flatpickr-year-be-select';
+                    yearSelect.setAttribute('aria-label', 'เลือกปี พ.ศ.');
+                    yearSelect.innerHTML = optionsHtml;
+                    curMonthEl.appendChild(yearSelect);
+
+                    yearSelect.addEventListener('change', function(e) {
+                        e.stopPropagation();
+                        const chosenYearAD = parseInt(this.value, 10);
+                        instance.changeYear(chosenYearAD);
+                    });
+                } else {
+                    yearSelect.innerHTML = optionsHtml;
+                    yearSelect.value = currentYearAD;
+                }
+            }
+        };
+
+        $(function() {
+            window.initThaiDatePickers(document);
+            $(document).on('shown.bs.modal', function(e) {
+                window.initThaiDatePickers(e.target);
+            });
+        });
+    </script>
 
     <?= $this->renderSection('scripts') ?>
 
@@ -767,7 +954,8 @@
                 { title: 'บันทึกชุมนุม', desc: 'จัดการกิจกรรม เช็คชื่อ และบันทึกผลชุมนุม', icon: 'bi-person-arms-up text-purple', url: '<?= base_url("club") ?>' },
                 { title: 'SKJ Check-In (เช็คชื่อเข้างาน)', desc: 'ระบบลงเวลาเข้า-ออกงานบุคลากร', icon: 'bi-clock-history text-success', url: '<?= base_url("attendance") ?>' },
                 { title: 'ระบบการลา', desc: 'ยื่นใบลา และตรวจสอบประวัติการลา', icon: 'bi-calendar-check text-primary', url: '<?= base_url("leave") ?>' },
-                { title: 'ประเมินผลการปฏิบัติงาน (PA)', desc: 'ส่งและติดตามผลการประเมิน PA', icon: 'bi-file-earmark-pdf text-danger', url: '<?= base_url("evaluation") ?>' },
+                // ปิดชั่วคราว - evaluation search
+                // { title: 'ประเมินผลการปฏิบัติงาน (PA)', desc: 'ส่งและติดตามผลการประเมิน PA', icon: 'bi-file-earmark-pdf text-danger', url: '<?= base_url("evaluation") ?>' },
                 { title: 'ประวัติการอบรมและผลงาน', desc: 'บันทึก Portfolio และเกียรติบัตร', icon: 'bi-person-workspace text-info', url: '<?= base_url("portfolio") ?>' },
                 <?php if (session()->get('pers_groupleade') !== null && session()->get('pers_groupleade') !== ''): ?>
                 { title: 'ตรวจแผนการสอน (หัวหน้าหมวด)', desc: 'อนุมัติและตรวจแผนการสอนของครูในกลุ่มสาระ', icon: 'bi-shield-check text-danger', url: '<?= base_url("assessment-head/check-plan") ?>' },

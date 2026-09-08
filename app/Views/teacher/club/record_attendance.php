@@ -33,6 +33,18 @@
         overflow: hidden;
         margin-bottom: 5rem;
     }
+    .badge-meta-pill {
+        background: #ffffff !important;
+        color: #1e293b !important;
+        padding: 0.45rem 0.95rem;
+        border-radius: 50rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e2e8f0;
+    }
     .student-avatar {
         width: 40px;
         height: 40px;
@@ -136,13 +148,18 @@
                 <h1 class="display-6 fw-bold text-white mb-2">
                     <i class="bi bi-person-check-fill me-2"></i>เช็คชื่อเข้าเรียน : สัปดาห์ที่ <?= esc($schedule->tcs_week_number) ?>
                 </h1>
-                <div class="d-flex flex-wrap gap-3 align-items-center mt-3">
-                    <div class="bg-white bg-opacity-10 px-3 py-2 rounded-pill small border border-white border-opacity-10 text-black">
-                        <i class="bi bi-calendar-event me-1"></i> วันที่ <?= esc(date('d/m/Y', strtotime($schedule->tcs_start_date))) ?>
-                    </div>
-                    <div class="bg-white bg-opacity-10 px-3 py-2 rounded-pill small border border-white border-opacity-10 text-black">
-                        <i class="bi bi-tag-fill me-1"></i> <?= esc($club->club_name) ?>
-                    </div>
+                <div class="d-flex flex-wrap gap-2 align-items-center mt-3">
+                    <span class="badge-meta-pill">
+                        <i class="bi bi-calendar-event me-1 text-primary"></i> วันที่ <?= esc(thai_date($schedule->tcs_start_date, 'short')) ?>
+                    </span>
+                    <span class="badge-meta-pill">
+                        <i class="bi bi-tag-fill me-1 text-primary"></i> <?= esc($club->club_name) ?>
+                    </span>
+                    <?php if (!empty($studyTimeInfo)): ?>
+                        <span class="badge-meta-pill">
+                            <i class="bi bi-clock-fill me-1 text-warning"></i> <?= esc($studyTimeInfo['formatted_level']) ?> (<?= esc($studyTimeInfo['study_periods_per_week_label']) ?> / <?= esc($studyTimeInfo['study_time_per_week_label']) ?>)
+                        </span>
+                    <?php endif; ?>
                 </div>
             </div>
             <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">

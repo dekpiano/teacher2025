@@ -86,7 +86,7 @@
                                                     <tr>
                                                         <td class="ps-4 fw-bold text-dark"><?= esc($t['train_name']) ?></td>
                                                         <td><small><?= esc($t['train_location']) ?></small></td>
-                                                        <td><small><?= date('d/m/Y', strtotime($t['train_start_date'])) ?></small></td>
+                                                        <td><small><?= thai_date($t['train_start_date'], 'short') ?></small></td>
                                                         <td class="text-center"><span class="badge bg-label-info"><?= esc($t['train_hours']) ?></span></td>
                                                         <td class="text-center">
                                                             <?php if (!empty($t['train_certificate'])): ?>
@@ -173,7 +173,7 @@
                                                                 <div class="avatar avatar-xs bg-label-secondary me-2 rounded-circle d-flex align-items-center justify-content-center" style="width: 24px; height: 24px;">
                                                                     <i class="bi bi-calendar-event fs-tiny"></i>
                                                                 </div>
-                                                                <span class="text-muted fs-tiny"><?= date('d M Y', strtotime($d['doc_date'])) ?></span>
+                                                                <span class="text-muted fs-tiny"><?= thai_date($d['doc_date'], 'short') ?></span>
                                                             </div>
                                                             <div class="d-flex align-items-center">
                                                                 <?php if (!empty($d['is_competition'])): ?>

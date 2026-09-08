@@ -271,7 +271,7 @@
                                     <tr>
                                         <td class="text-center"><?= $index + 1 ?></td>
                                         <td>
-                                            <div class="fw-bold"><?= date('d/m/Y', strtotime($late['att_date'])) ?></div>
+                                            <div class="fw-bold"><?= thai_date($late['att_date'], 'short') ?></div>
                                             <small class="text-muted"><?= date('l', strtotime($late['att_date'])) ?></small>
                                         </td>
                                         <td class="text-center">
@@ -319,7 +319,7 @@
                         <tbody>
                             <?php foreach ($leaves as $leave) : ?>
                                 <tr>
-                                    <td><?= $leave['created_at'] ? date('d/m/Y H:i', strtotime($leave['created_at'])) : '-' ?></td>
+                                    <td><?= $leave['created_at'] ? thai_date_and_time($leave['created_at']) . ' น.' : '-' ?></td>
                                     <td>
                                         <span class="badge bg-label-info"><?= esc($leave['type_name']) ?></span>
                                     </td>
@@ -328,8 +328,8 @@
                                         <small class="text-muted"><?= mb_strimwidth(esc($leave['detail'] ?? ''), 0, 50, "...") ?></small>
                                     </td>
                                     <td>
-                                        <div><?= date('d/m/Y', strtotime($leave['start_date'])) ?></div>
-                                        <small class="text-muted">ถึง <?= date('d/m/Y', strtotime($leave['end_date'])) ?></small>
+                                        <div><?= thai_date($leave['start_date'], 'short') ?></div>
+                                        <small class="text-muted">ถึง <?= thai_date($leave['end_date'], 'short') ?></small>
                                     </td>
                                     <td class="text-center">
                                         <span class="fw-bold"><?= number_format($leave['total_days'], 1) ?></span>
