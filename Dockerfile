@@ -22,40 +22,51 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 # Install PHP extensions
 RUN docker-php-ext-install pdo_mysql mysqli mbstring exif pcntl bcmath gd intl zip opcache
 
-# Configure Opcache for development (auto-detect file changes)
+# Configure Opcache for high performance
 RUN { \
     echo 'opcache.enable=1'; \
     echo 'opcache.memory_consumption=256'; \
     echo 'opcache.interned_strings_buffer=32'; \
-    echo 'opcache.max_accelerated_files=30000'; \
-    echo 'opcache.revalidate_freq=2'; \
+    echo 'opcache.max_accelerated_files=50000'; \
+    echo 'opcache.revalidate_freq=0'; \
     echo 'opcache.validate_timestamps=1'; \
     echo 'opcache.fast_shutdown=1'; \
     echo 'opcache.enable_cli=1'; \
     echo 'opcache.save_comments=1'; \
     echo 'opcache.enable_file_override=1'; \
+    echo 'opcache.file_cache=/tmp/opcache'; \
+    echo 'opcache.jit=tracing'; \
+    echo 'opcache.jit_buffer_size=64M'; \
     } > /usr/local/etc/php/conf.d/opcache-recommended.ini
 
-# Configure PHP for better file I/O performance
+# Configure PHP for high speed file I/O performance
 RUN { \
-    echo 'realpath_cache_size=4096K'; \
-    echo 'realpath_cache_ttl=600'; \
+    echo 'realpath_cache_size=16M'; \
+    echo 'realpath_cache_ttl=1800'; \
     echo 'max_execution_time=300'; \
     echo 'memory_limit=512M'; \
     echo 'post_max_size=100M'; \
     echo 'upload_max_filesize=100M'; \
+    echo 'output_buffering=4096'; \
+    echo 'zlib.output_compression=On'; \
+    echo 'zlib.output_compression_level=5'; \
     } > /usr/local/etc/php/conf.d/performance.ini
 
 # Create opcache file cache directory
 RUN mkdir -p /tmp/opcache && chmod 777 /tmp/opcache
 
-# Enable Apache mod_rewrite and mod_ssl
-RUN a2enmod rewrite ssl
+# Enable Apache mod_rewrite, mod_ssl, and mod_deflate
+RUN a2enmod rewrite ssl deflate
 RUN a2ensite default-ssl
 
-# Set Apache request body limit (120MB) for SSL uploads
-RUN echo 'LimitRequestBody 125829120' > /etc/apache2/conf-available/upload-limit.conf \
-    && a2enconf upload-limit
+# Set Apache request body limit (120MB) and KeepAlive
+RUN { \
+    echo 'LimitRequestBody 125829120'; \
+    echo 'KeepAlive On'; \
+    echo 'MaxKeepAliveRequests 100'; \
+    echo 'KeepAliveTimeout 5'; \
+    } > /etc/apache2/conf-available/speed-and-upload.conf \
+    && a2enconf speed-and-upload
 
 # Set working directory
 WORKDIR /var/www/html

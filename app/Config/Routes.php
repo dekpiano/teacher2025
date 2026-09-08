@@ -172,6 +172,27 @@ $routes->post('verify-email/reset-password', 'ControlTeacherVerification::resetP
 
     // Curriculum Routes
     $routes->group('curriculum', static function ($routes) {
+        // Teaching Schedule Routes
+        $routes->get('teaching-schedule', 'TeachingScheduleController::index');
+        $routes->get('teaching-schedule/my', 'TeachingScheduleController::mySchedule');
+        $routes->get('teaching-schedule/my/(:num)/(:num)', 'TeachingScheduleController::mySchedule/$1/$2');
+        $routes->get('teaching-schedule/search-subjects', 'TeachingScheduleController::searchSubjects');
+        $routes->get('teaching-schedule/(:num)/(:num)', 'TeachingScheduleController::index/$1/$2');
+        $routes->post('teaching-schedule/save', 'TeachingScheduleController::save');
+        $routes->post('teaching-schedule/delete', 'TeachingScheduleController::delete');
+        $routes->post('teaching-schedule/delete/(:any)', 'TeachingScheduleController::delete/$1');
+        $routes->get('teaching-schedule/get', 'TeachingScheduleController::get');
+        $routes->get('teaching-schedule/get/(:any)', 'TeachingScheduleController::get/$1');
+        $routes->get('teaching-schedule/get-study-plans', 'TeachingScheduleController::getStudyPlans');
+        $routes->get('teaching-schedule/get-class-room-map', 'TeachingScheduleController::getClassRoomMap');
+        $routes->get('teaching-schedule/get-teacher-extra/(:any)', 'TeachingScheduleController::getTeacherExtra/$1');
+        $routes->get('teaching-schedule/teacher/(:any)/(:num)/(:num)', 'TeachingScheduleController::viewTeacherSchedule/$1/$2/$3');
+        $routes->get('teaching-schedule/teacher/(:any)', 'TeachingScheduleController::viewTeacherSchedule/$1');
+        $routes->get('teaching-schedule/print-all/(:num)/(:num)', 'TeachingScheduleController::printAll/$1/$2');
+        $routes->get('teaching-schedule/print-all', 'TeachingScheduleController::printAll');
+        $routes->get('teaching-schedule/print/(:any)/(:num)/(:num)', 'TeachingScheduleController::printSchedule/$1/$2/$3');
+        $routes->get('teaching-schedule/print/(:any)', 'TeachingScheduleController::printSchedule/$1');
+
         $routes->get('', 'CurriculumController::index');
         $routes->get('SendPlan', 'CurriculumController::index');
         $routes->get('(:num)/(:num)', 'CurriculumController::index/$1/$2');

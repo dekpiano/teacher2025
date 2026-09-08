@@ -92,30 +92,71 @@ class Login extends BaseController
         $curl = \Config\Services::curlrequest();
 
         try {
-            // 1. Exchange code for access_token and id_token
-            $response = $curl->post('https://oauth2.googleapis.com/token', [
-                'form_params' => [
-                    'code'          => $code,
-                    'client_id'     => $config->clientId,
-                    'client_secret' => $config->clientSecret,
-                    'redirect_uri'  => base_url('login/googleCallback'),
-                    'grant_type'    => 'authorization_code',
-                ],
-            ]);
-            $tokens = json_decode($response->getBody(), true);
+            // 1. Exchange code for access_token and id_token (with retry)
+            $tokens = null;
+            $maxRetries = 3;
+            $lastException = null;
+
+            for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+                try {
+                    $response = $curl->post('https://oauth2.googleapis.com/token', [
+                        'form_params' => [
+                            'code'          => $code,
+                            'client_id'     => $config->clientId,
+                            'client_secret' => $config->clientSecret,
+                            'redirect_uri'  => base_url('login/googleCallback'),
+                            'grant_type'    => 'authorization_code',
+                        ],
+                        'timeout'          => 10,
+                        'connect_timeout'  => 5,
+                        'force_ip_resolve' => 'v4',
+                    ]);
+                    $tokens = json_decode($response->getBody(), true);
+                    break;
+                } catch (\Exception $e) {
+                    $lastException = $e;
+                    if ($attempt < $maxRetries) {
+                        usleep(300000); // Wait 0.3s before retry
+                    }
+                }
+            }
+
+            if (!$tokens && $lastException) {
+                throw $lastException;
+            }
 
             if (isset($tokens['error']) || !isset($tokens['access_token'])) {
                  $session->setFlashdata('msg', 'Google Token Error: ' . ($tokens['error_description'] ?? $tokens['error'] ?? 'ไม่ได้รับ access_token'));
                  return redirect()->to('login');
             }
 
-            // 2. Get user profile using access_token
-            $response = $curl->get('https://www.googleapis.com/oauth2/v3/userinfo', [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $tokens['access_token'],
-                ],
-            ]);
-            $userData = json_decode($response->getBody(), true);
+            // 2. Get user profile using access_token (with retry)
+            $userData = null;
+            $lastException = null;
+
+            for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+                try {
+                    $response = $curl->get('https://www.googleapis.com/oauth2/v3/userinfo', [
+                        'headers' => [
+                            'Authorization' => 'Bearer ' . $tokens['access_token'],
+                        ],
+                        'timeout'          => 10,
+                        'connect_timeout'  => 5,
+                        'force_ip_resolve' => 'v4',
+                    ]);
+                    $userData = json_decode($response->getBody(), true);
+                    break;
+                } catch (\Exception $e) {
+                    $lastException = $e;
+                    if ($attempt < $maxRetries) {
+                        usleep(300000); // Wait 0.3s before retry
+                    }
+                }
+            }
+
+            if (!$userData && $lastException) {
+                throw $lastException;
+            }
 
         } catch (\Exception $e) {
             $session->setFlashdata('msg', 'การเชื่อมต่อกับ Google ล้มเหลว: ' . $e->getMessage());

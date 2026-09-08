@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
-    <title><?= $this->renderSection('title') ?> | ระบบงานครู สกจ.9</title>
+    <title><?= $this->renderSection('title') ?: esc($title ?? '') ?> | ระบบงานครู สกจ.9</title>
 
     <meta name="description" content="ระบบบริหารจัดการข้อมูลสำหรับครู โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์ ช่วยในการจัดการงานวิชาการ งานวัดผล และงานหลักสูตร" />
 
@@ -193,7 +193,9 @@
         'portfolio' => 'ประวัติการอบรมและผลงาน',
         'assessment-head' => 'หัวหน้ากลุ่มสาระ',
         'check-plan' => 'ตรวจแผนการสอน',
-        'check-score' => 'ตรวจสอบคะแนน'
+        'check-score' => 'ตรวจสอบคะแนน',
+        'teaching-schedule' => 'จัดตารางสอนของกลุ่มสาระ',
+        'my' => 'ตารางสอนรายบุคคล'
     ];
 ?>
                 <ul class="menu-inner py-1">
@@ -226,13 +228,13 @@
                     </li>
 
                     <!-- งานหลักสูตร -->
-                     <li class="menu-item <?= is_open_segment([['curriculum'], ['research']], $segments) ?>">
+                     <li class="menu-item <?= is_open_segment([['curriculum'], ['research']], $segments) && !in_array('teaching-schedule', $segments) ? 'open active' : '' ?>">
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
                             <i class="menu-icon tf-icons bi-book-fill"></i>
                             <div data-i18n="งานหลักสูตร">งานหลักสูตร</div>
                         </a>
                         <ul class="menu-sub">
-                            <li class="menu-item <?= is_active_segment(['curriculum'], $segments) && !in_array('download-plan', $segments) ? 'active' : '' ?>">
+                            <li class="menu-item <?= is_active_segment(['curriculum'], $segments) && !in_array('download-plan', $segments) && !in_array('teaching-schedule', $segments) ? 'active' : '' ?>">
                                 <a href="<?= base_url('curriculum') ?>" class="menu-link">
                                     <div data-i18n="ส่งแผนการสอน">ส่งแผนการสอน</div>
                                 </a>
@@ -339,7 +341,7 @@
                     <li class="menu-item <?= is_open_segment([['assessment-head']], $segments) ?>">
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
                             <i class="menu-icon tf-icons bi-shield-check"></i>
-                            <div data-i18n="เมนูหัวหน้ากลุ่มสาระ">เมนูหัวหน้ากลุ่มสาระ</div>
+                            <div data-i18n="ตรวจงานกลุ่มสาระ">ตรวจงานกลุ่มสาระ</div>
                         </a>
                         <ul class="menu-sub">
                             <li class="menu-item <?= is_active_segment(['assessment-head', 'check-plan'], $segments) || is_active_segment(['assessment-head', 'check-plan-detail'], $segments) ? 'active' : '' ?>">
@@ -350,6 +352,26 @@
                             <li class="menu-item <?= is_active_segment(['assessment-head', 'check-score'], $segments) || is_active_segment(['assessment-head', 'check-score-detail'], $segments) || is_active_segment(['assessment-head', 'check-score-student'], $segments) ? 'active' : '' ?>">
                                 <a href="<?= base_url('assessment-head/check-score') ?>" class="menu-link">
                                     <div data-i18n="ตรวจสอบคะแนน">ตรวจสอบคะแนน</div>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- จัดตารางสอนของกลุ่มสาระ (เมนูใหญ่) -->
+                    <li class="menu-item <?= is_open_segment([['curriculum', 'teaching-schedule']], $segments) ?>">
+                        <a href="javascript:void(0);" class="menu-link menu-toggle">
+                            <i class="menu-icon tf-icons bi-calendar3"></i>
+                            <div data-i18n="จัดตารางสอนของกลุ่มสาระ">จัดตารางสอนของกลุ่มสาระ</div>
+                        </a>
+                        <ul class="menu-sub">
+                            <li class="menu-item <?= is_active_segment(['curriculum', 'teaching-schedule'], $segments) && !in_array('my', $segments) && !in_array('teacher', $segments) ? 'active' : '' ?>">
+                                <a href="<?= base_url('curriculum/teaching-schedule') ?>" class="menu-link">
+                                    <div data-i18n="ตารางสอนรวม">ตารางสอนรวม</div>
+                                </a>
+                            </li>
+                            <li class="menu-item <?= is_active_segment(['curriculum', 'teaching-schedule'], $segments) && (in_array('my', $segments) || in_array('teacher', $segments)) ? 'active' : '' ?>">
+                                <a href="<?= base_url('curriculum/teaching-schedule/my') ?>" class="menu-link">
+                                    <div data-i18n="ตารางสอนรายบุคคล">ตารางสอนรายบุคคล</div>
                                 </a>
                             </li>
                         </ul>
