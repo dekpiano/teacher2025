@@ -136,3 +136,6 @@ Based on the controllers and views, the application appears to have the followin
 - **Rich Components:** Comes with a rich set of pre-built components, cards, forms, tables, and UI elements that can be readily used.
 - **Iconography:** Primarily uses **Boxicons** for a consistent and rich set of icons. The project also integrates **Bootstrap Icons**.
 - **Cross-Browser Compatibility:** Ensures consistent performance and appearance across modern web browsers.
+
+## 7. Git Workflow & Branching Strategy
+- **Rule:** เมื่อจะเริ่มพัฒนาฟีเจอร์ใหม่ (Feature), แก้ไขข้อผิดพลาดเฉพาะจุด (Bugfix), หรือปรับปรุงโครงสร้างใหญ่ (Major Refactor) ให้พิจารณาและแตก Git Branch ใหม่เสมอ (เช่น `feature/...`, `fix/...`) เพื่อความปลอดภัยและแยกส่วนการพัฒนาออกจากกิ่งหลักอย่างเป็นระเบียบ

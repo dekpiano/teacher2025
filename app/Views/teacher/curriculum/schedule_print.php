@@ -6,10 +6,48 @@
     <title><?= esc($title ?? 'ข้อมูลการจัดตารางสอนรายบุคคล') ?> - <?= esc($teacher->pers_prefix . $teacher->pers_firstname . ' ' . $teacher->pers_lastname) ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
     <style>
+        /* TH Sarabun PSK / New Webfont (รองรับทั้งเครื่องที่มีฟอนต์และเครื่องที่ไม่มีผ่าน CDN) */
+        @font-face {
+            font-family: 'THSarabunPSK';
+            src: local('TH Sarabun PSK'), local('THSarabunPSK'), local('TH Sarabun New'), local('THSarabunNew'),
+                 url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@v1.0.0/fonts/THSarabunNew/THSarabunNew.woff2') format('woff2'),
+                 url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@v1.0.0/fonts/THSarabunNew/THSarabunNew.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'THSarabunPSK';
+            src: local('TH Sarabun PSK Bold'), local('THSarabunPSK-Bold'), local('TH Sarabun New Bold'), local('THSarabunNew-Bold'),
+                 url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@v1.0.0/fonts/THSarabunNew/THSarabunNew-Bold.woff2') format('woff2'),
+                 url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@v1.0.0/fonts/THSarabunNew/THSarabunNew-Bold.ttf') format('truetype');
+            font-weight: bold;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'TH Sarabun PSK';
+            src: local('TH Sarabun PSK'), local('THSarabunPSK'), local('TH Sarabun New'), local('THSarabunNew'),
+                 url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@v1.0.0/fonts/THSarabunNew/THSarabunNew.woff2') format('woff2'),
+                 url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@v1.0.0/fonts/THSarabunNew/THSarabunNew.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'TH Sarabun PSK';
+            src: local('TH Sarabun PSK Bold'), local('THSarabunPSK-Bold'), local('TH Sarabun New Bold'), local('THSarabunNew-Bold'),
+                 url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@v1.0.0/fonts/THSarabunNew/THSarabunNew-Bold.woff2') format('woff2'),
+                 url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@v1.0.0/fonts/THSarabunNew/THSarabunNew-Bold.ttf') format('truetype');
+            font-weight: bold;
+            font-style: normal;
+            font-display: swap;
+        }
+
         @page {
             size: A4 portrait;
             margin: 8mm 12mm 8mm 12mm;
@@ -22,9 +60,9 @@
         }
 
         body {
-            font-family: 'Sarabun', 'TH Sarabun New', sans-serif;
-            font-size: 13.5px;
-            line-height: 1.3;
+            font-family: 'THSarabunPSK', 'TH Sarabun PSK', 'TH Sarabun New', 'Sarabun', sans-serif;
+            font-size: 15pt;
+            line-height: 1.25;
             color: #000;
             background: #f4f6f9;
             margin: 0;
@@ -49,13 +87,14 @@
             border: none;
             padding: 8px 18px;
             border-radius: 6px;
-            font-size: 15px;
+            font-size: 14pt;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             gap: 8px;
             font-weight: 500;
             text-decoration: none;
+            font-family: inherit;
         }
         .btn-print:hover {
             background-color: #0b5ed7;
@@ -68,9 +107,10 @@
             border: none;
             padding: 8px 16px;
             border-radius: 6px;
-            font-size: 15px;
+            font-size: 14pt;
             cursor: pointer;
             text-decoration: none;
+            font-family: inherit;
         }
         .btn-close-win:hover {
             background-color: #5c636a;
@@ -92,19 +132,19 @@
         }
 
         .doc-title {
-            font-size: 17px;
+            font-size: 18pt;
             font-weight: 700;
             margin: 0 0 3px 0;
         }
 
         .school-name {
-            font-size: 15.5px;
+            font-size: 16pt;
             font-weight: 700;
             margin: 0 0 4px 0;
         }
 
         .meta-line {
-            font-size: 13.5px;
+            font-size: 15pt;
             display: flex;
             justify-content: center;
             gap: 20px;
@@ -115,7 +155,7 @@
         /* Tables */
         .table-section-title {
             font-weight: 700;
-            font-size: 13.5px;
+            font-size: 15pt;
             margin: 8px 0 3px 0;
         }
 
@@ -123,13 +163,13 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 6px;
-            font-size: 12.5px;
+            font-size: 14pt;
         }
 
         table.schedule-table th, 
         table.schedule-table td {
             border: 1px solid #000;
-            padding: 3px 4px;
+            padding: 2px 4px;
             vertical-align: middle;
         }
 
@@ -137,6 +177,7 @@
             background-color: #f1f3f5;
             font-weight: 700;
             text-align: center;
+            font-size: 14pt;
         }
 
         .subject-name-cell {
@@ -156,7 +197,7 @@
             border: 1px solid #000;
             padding: 4px 10px;
             margin: 6px 0 8px 0;
-            font-size: 13.5px;
+            font-size: 15pt;
             font-weight: 700;
             text-align: right;
             background-color: #f8f9fa;
@@ -170,14 +211,15 @@
 
         .duty-title {
             font-weight: 700;
-            font-size: 13.5px;
+            font-size: 16pt;
             margin-bottom: 2px;
         }
 
         .duty-list {
             margin: 0;
-            padding-left: 22px;
-            font-size: 13px;
+            padding-left: 24px;
+            font-size: 15pt;
+            line-height: 1.35;
         }
 
         .duty-list li {
@@ -186,6 +228,7 @@
 
         .duty-blank-line {
             margin-bottom: 2px;
+            font-size: 15pt;
             color: #333;
         }
 
@@ -193,38 +236,41 @@
         .signatures-vertical-container {
             margin-top: 14px;
             margin-left: auto;
-            width: 440px;
+            width: 480px;
             max-width: 100%;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 14px;
             page-break-inside: avoid;
-            font-size: 13px;
+            font-size: 15pt;
         }
 
         .sig-row {
             display: flex;
             align-items: flex-end;
             white-space: nowrap;
+            font-size: 15pt;
         }
 
         .sig-lead {
             font-weight: normal;
             white-space: nowrap;
+            font-size: 15pt;
         }
 
         .sig-dots {
             flex: 1;
             border-bottom: 1px dotted #000;
-            margin: 0 8px 3px 4px;
+            margin: 0 8px 4px 4px;
             height: 1px;
         }
 
         .sig-role {
-            width: 165px;
+            width: 195px;
             text-align: left;
             white-space: nowrap;
             font-weight: normal;
+            font-size: 15pt;
         }
 
         /* Print Media Styles */
@@ -327,11 +373,11 @@
                             <td class="text-center fw-bold"><?= esc($sub['subject_code']) ?></td>
                             <?php 
                                 $subNameLen = mb_strlen($sub['subject_name'] ?? '');
-                                $fontSize = '12px';
+                                $fontSize = '14pt';
                                 if ($subNameLen > 35) {
-                                    $fontSize = '10px';
+                                    $fontSize = '12pt';
                                 } elseif ($subNameLen > 25) {
-                                    $fontSize = '11px';
+                                    $fontSize = '13pt';
                                 }
                             ?>
                             <td class="text-start subject-name-cell" style="font-size: <?= $fontSize ?>;" title="<?= esc($sub['subject_name']) ?>">
@@ -344,7 +390,7 @@
                             <td class="text-center"><?= esc($sub['grade_level']) ?></td>
                             <td class="text-center"><?= esc($sub['room_text']) ?></td>
                             <td class="text-center fw-bold"><?= $sub['total_weekly_hours'] ?></td>
-                            <td class="text-center" style="font-size: 11.5px;"><?= esc($sub['final_remark']) ?></td>
+                            <td class="text-center" style="font-size: 13pt;"><?= esc($sub['final_remark']) ?></td>
                         </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
@@ -402,7 +448,7 @@
                 <!-- Table 2 Summary Row -->
                 <tr class="fw-bold" style="background-color: #fafafa;">
                     <td colspan="4" class="text-center">รวม ( <?= count($activities) ?> กิจกรรม )</td>
-                    <td class="text-center" style="font-size: 14px;"><?= $total_activity_weekly_hours ?></td>
+                    <td class="text-center" style="font-size: 14pt;"><?= $total_activity_weekly_hours ?></td>
                     <td class="text-center">-</td>
                 </tr>
             </tbody>
@@ -410,7 +456,7 @@
 
         <!-- Grand Total Box -->
         <div class="grand-total-box">
-            รวมชั่วโมงทั้งสิ้น &nbsp;&nbsp;<span style="font-size: 16px; text-decoration: underline;"><?= $grand_total_weekly_hours ?></span>&nbsp;&nbsp; ชั่วโมง / สัปดาห์
+            รวมชั่วโมงทั้งสิ้น &nbsp;&nbsp;<span style="font-size: 16pt; text-decoration: underline;"><?= $grand_total_weekly_hours ?></span>&nbsp;&nbsp; ชั่วโมง / สัปดาห์
         </div>
 
         <!-- Special Duties Section -->

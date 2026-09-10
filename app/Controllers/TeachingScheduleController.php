@@ -186,58 +186,116 @@ class TeachingScheduleController extends BaseController
 
         // Get user's learning department from database using person_id
         $person_id = $this->session->get('person_id');
-        $user_personnel = $this->db_personnel->table('tb_personnel')->select('pers_learning')->where('pers_id', $person_id)->get()->getRow();
-        $pers_learning = $user_personnel ? $user_personnel->pers_learning : '';
+        $user_personnel = $this->db_personnel->table('tb_personnel')->select('pers_learning, pers_groupleade, pers_position')->where('pers_id', $person_id)->get()->getRow();
+        $pers_learning = $user_personnel ? trim((string)$user_personnel->pers_learning) : '';
 
-        // Fetch teachers list for the dropdown (only in the same learning department and currently active)
-        $data['teachers'] = $this->db_personnel->table('tb_personnel')
-                                ->select('pers_id, pers_prefix, pers_firstname, pers_lastname, pers_learning')
-                                ->where('pers_position >=', 'posi_003')
-                                ->where('pers_position <=', 'posi_006')
-                                ->where('pers_learning', $pers_learning)
-                                ->where('pers_status', 'กำลังใช้งาน')
-                                ->orderBy('pers_learning', 'ASC')
-                                ->orderBy('pers_firstname', 'ASC')
-                                ->get()->getResultArray();
+        // Fetch Learning Group Name
+        $learningName = 'กลุ่มสาระการเรียนรู้';
+        if ($this->db_skj && !empty($pers_learning)) {
+            $learRow = $this->db_skj->table('tb_learning')->where('lear_id', $pers_learning)->get()->getRow();
+            if ($learRow && !empty($learRow->lear_namethai)) {
+                $learningName = $learRow->lear_namethai;
+            }
+        }
+        $data['learning_name'] = $learningName;
+        $data['pers_learning'] = $pers_learning;
 
-        // Fetch schedules
-        $schedules = $this->teachingScheduleModel->getSchedulesByTerm($year, $term);
+        // Fetch teachers list for the dropdown and table (strictly in the same learning department and currently active)
+        $data['teachers'] = !empty($pers_learning)
+            ? $this->db_personnel->table('tb_personnel')
+                ->select('pers_id, pers_prefix, pers_firstname, pers_lastname, pers_learning, pers_groupleade, pers_numberGroup, pers_img')
+                ->where('pers_learning', $pers_learning)
+                ->where('pers_status', 'กำลังใช้งาน')
+                ->orderBy("CASE WHEN pers_groupleade LIKE '%หัวหน้ากลุ่มสาระ%' OR pers_groupleade = '1' THEN 0 ELSE 1 END", 'ASC', false)
+                ->orderBy('pers_numberGroup', 'ASC')
+                ->orderBy('pers_firstname', 'ASC')
+                ->get()->getResultArray()
+            : [];
 
-        // Fetch activities for this year and term
-        $activities = $this->db->table('tb_teaching_schedule_activity')
-            ->where('year', $year)
-            ->where('term', $term)
-            ->orderBy('activity_id', 'ASC')
-            ->get()->getResultArray();
+        $deptTeacherIds = !empty($data['teachers']) ? array_column($data['teachers'], 'pers_id') : [];
+
+        // Fetch schedules strictly for this learning department
+        $schedules = !empty($pers_learning)
+            ? $this->teachingScheduleModel->getSchedulesByTerm($year, $term, $pers_learning)
+            : [];
+
+        // Fetch activities strictly for teachers in this learning department
+        $activities = [];
+        if (!empty($deptTeacherIds)) {
+            $activities = $this->db->table('tb_teaching_schedule_activity')
+                ->where('year', $year)
+                ->where('term', $term)
+                ->whereIn('teacher_id', $deptTeacherIds)
+                ->orderBy('activity_id', 'ASC')
+                ->get()->getResultArray();
+        }
         $teacherActivities = [];
         foreach ($activities as $act) {
             $teacherActivities[$act['teacher_id']][] = $act;
         }
 
-        // Fetch duties for this year and term
-        $duties = $this->db->table('tb_teaching_schedule_duty')
-            ->where('year', $year)
-            ->where('term', $term)
-            ->orderBy('duty_order', 'ASC')
-            ->orderBy('duty_id', 'ASC')
-            ->get()->getResultArray();
+        // Fetch duties strictly for teachers in this learning department
+        $duties = [];
+        if (!empty($deptTeacherIds)) {
+            $duties = $this->db->table('tb_teaching_schedule_duty')
+                ->where('year', $year)
+                ->where('term', $term)
+                ->whereIn('teacher_id', $deptTeacherIds)
+                ->orderBy('duty_order', 'ASC')
+                ->orderBy('duty_id', 'ASC')
+                ->get()->getResultArray();
+        }
         $teacherDuties = [];
         foreach ($duties as $dt) {
             $teacherDuties[$dt['teacher_id']][] = $dt;
         }
         
         // Group schedules by teacher, then group by subject (subject_code + grade_level)
+        // Initialize all active teachers in this department so the department head sees every teacher and can add subjects
         $groupedSchedules = [];
+        foreach ($data['teachers'] as $tch) {
+            $tId = $tch['pers_id'];
+            $isLeader = (!empty($tch['pers_groupleade']) && (strpos($tch['pers_groupleade'], 'หัวหน้ากลุ่มสาระ') !== false || $tch['pers_groupleade'] == '1'));
+            $groupedSchedules[$tId] = [
+                'teacher_id'                 => $tId,
+                'pers_prefix'                => $tch['pers_prefix'] ?? '',
+                'pers_firstname'             => $tch['pers_firstname'] ?? '',
+                'pers_lastname'              => $tch['pers_lastname'] ?? '',
+                'pers_img'                   => $tch['pers_img'] ?? '',
+                'teacher_name'               => trim(($tch['pers_prefix'] ?? '') . ($tch['pers_firstname'] ?? '') . ' ' . ($tch['pers_lastname'] ?? '')),
+                'is_leader'                  => $isLeader,
+                'number_group'               => $tch['pers_numberGroup'] ?? 0,
+                'subjects'                   => [],
+                'schedules'                  => [],
+                'total_weekly_hours'         => 0,
+                'total_rooms'                => 0,
+                'activities'                 => $teacherActivities[$tId] ?? [],
+                'duties'                     => $teacherDuties[$tId] ?? [],
+                'total_subject_hours'        => 0,
+                'total_activity_weekly_hours'=> 0,
+                'grand_total_weekly_hours'   => 0
+            ];
+        }
+
         foreach ($schedules as $schedule) {
             $teacherId = $schedule['teacher_id'];
             if (!isset($groupedSchedules[$teacherId])) {
                 $groupedSchedules[$teacherId] = [
-                    'teacher_id'         => $teacherId,
-                    'teacher_name'       => trim($schedule['pers_prefix'] . $schedule['pers_firstname'] . ' ' . $schedule['pers_lastname']),
-                    'subjects'           => [],
-                    'schedules'          => [],
-                    'total_weekly_hours' => 0,
-                    'total_rooms'        => 0
+                    'teacher_id'                 => $teacherId,
+                    'pers_prefix'                => $schedule['pers_prefix'] ?? '',
+                    'pers_firstname'             => $schedule['pers_firstname'] ?? '',
+                    'pers_lastname'              => $schedule['pers_lastname'] ?? '',
+                    'pers_img'                   => $schedule['pers_img'] ?? '',
+                    'teacher_name'               => trim(($schedule['pers_prefix'] ?? '') . ($schedule['pers_firstname'] ?? '') . ' ' . ($schedule['pers_lastname'] ?? '')),
+                    'subjects'                   => [],
+                    'schedules'                  => [],
+                    'total_weekly_hours'         => 0,
+                    'total_rooms'                => 0,
+                    'activities'                 => $teacherActivities[$teacherId] ?? [],
+                    'duties'                     => $teacherDuties[$teacherId] ?? [],
+                    'total_subject_hours'        => 0,
+                    'total_activity_weekly_hours'=> 0,
+                    'grand_total_weekly_hours'   => 0
                 ];
             }
 
@@ -318,38 +376,6 @@ class TeachingScheduleController extends BaseController
             $tData['grand_total_weekly_hours'] = $tData['total_subject_hours'] + $tData['total_activity_weekly_hours'];
         }
         unset($tData);
-
-        // Also include teachers who have activities or duties but no subjects yet
-        $allExtraTeachers = array_unique(array_merge(array_keys($teacherActivities), array_keys($teacherDuties)));
-        foreach ($allExtraTeachers as $extraTId) {
-            if (!isset($groupedSchedules[$extraTId])) {
-                $tName = $extraTId;
-                foreach ($data['teachers'] as $tch) {
-                    if ($tch['pers_id'] === $extraTId) {
-                        $tName = trim($tch['pers_prefix'] . $tch['pers_firstname'] . ' ' . $tch['pers_lastname']);
-                        break;
-                    }
-                }
-                $actList = $teacherActivities[$extraTId] ?? [];
-                $actHours = 0;
-                foreach ($actList as $act) {
-                    $actHours += (float)($act['hours_per_week'] ?? 0);
-                }
-                $groupedSchedules[$extraTId] = [
-                    'teacher_id'                 => $extraTId,
-                    'teacher_name'               => $tName,
-                    'subjects'                   => [],
-                    'schedules'                  => [],
-                    'total_weekly_hours'         => 0,
-                    'total_rooms'                => 0,
-                    'activities'                 => $actList,
-                    'duties'                     => $teacherDuties[$extraTId] ?? [],
-                    'total_subject_hours'        => 0,
-                    'total_activity_weekly_hours'=> $actHours,
-                    'grand_total_weekly_hours'   => $actHours,
-                ];
-            }
-        }
 
         $data['groupedSchedules'] = $groupedSchedules;
 
@@ -1171,7 +1197,8 @@ class TeachingScheduleController extends BaseController
 
             $remarkParts = [];
             $uniquePlans = array_values(array_unique(array_filter($sub['study_plans'])));
-            if (!empty($uniquePlans)) {
+            // ในกรณีที่มีห้องเรียนมากกว่า 1 ห้อง ไม่ต้องแสดงแผนการเรียนในหมายเหตุ
+            if ($sub['room_count'] <= 1 && count($sub['rooms'] ?? []) <= 1 && !empty($uniquePlans)) {
                 $remarkParts[] = implode(', ', $uniquePlans);
             }
             if (!empty($sub['remarks'])) {
@@ -1292,37 +1319,66 @@ class TeachingScheduleController extends BaseController
         }
 
         // Fetch teachers list in the department
-        $teachers = $this->db_personnel->table('tb_personnel')
-                                ->select('pers_id, pers_prefix, pers_firstname, pers_lastname, pers_learning')
-                                ->where('pers_position >=', 'posi_003')
-                                ->where('pers_position <=', 'posi_006')
-                                ->where('pers_learning', $pers_learning)
-                                ->where('pers_status', 'กำลังใช้งาน')
-                                ->orderBy('pers_firstname', 'ASC')
-                                ->get()->getResultArray();
+        $teachers = !empty($pers_learning)
+            ? $this->db_personnel->table('tb_personnel')
+                ->select('pers_id, pers_prefix, pers_firstname, pers_lastname, pers_learning, pers_groupleade, pers_numberGroup, pers_img')
+                ->where('pers_learning', $pers_learning)
+                ->where('pers_status', 'กำลังใช้งาน')
+                ->orderBy("CASE WHEN pers_groupleade LIKE '%หัวหน้ากลุ่มสาระ%' OR pers_groupleade = '1' THEN 0 ELSE 1 END", 'ASC', false)
+                ->orderBy('pers_numberGroup', 'ASC')
+                ->orderBy('pers_firstname', 'ASC')
+                ->get()->getResultArray()
+            : [];
 
-        // Fetch schedules
-        $schedules = $this->teachingScheduleModel->getSchedulesByTerm($year, $term);
+        $deptTeacherIds = !empty($teachers) ? array_column($teachers, 'pers_id') : [];
 
-        // Fetch activities
-        $activities = $this->db->table('tb_teaching_schedule_activity')
-            ->where('year', $year)
-            ->where('term', $term)
-            ->orderBy('activity_id', 'ASC')
-            ->get()->getResultArray();
+        // Fetch schedules strictly for this learning department
+        $schedules = !empty($pers_learning)
+            ? $this->teachingScheduleModel->getSchedulesByTerm($year, $term, $pers_learning)
+            : [];
+
+        // Fetch activities strictly for teachers in this department
+        $activities = [];
+        if (!empty($deptTeacherIds)) {
+            $activities = $this->db->table('tb_teaching_schedule_activity')
+                ->where('year', $year)
+                ->where('term', $term)
+                ->whereIn('teacher_id', $deptTeacherIds)
+                ->orderBy('activity_id', 'ASC')
+                ->get()->getResultArray();
+        }
         $teacherActivities = [];
         foreach ($activities as $act) {
             $teacherActivities[$act['teacher_id']][] = $act;
         }
 
-        // Group schedules by teacher, then by subject
+        // Group schedules by teacher (preserving the sorted teacher order), then by subject
         $groupedSchedules = [];
+        foreach ($teachers as $t) {
+            $tId = $t['pers_id'];
+            $groupedSchedules[$tId] = [
+                'teacher_id'         => $tId,
+                'pers_prefix'        => $t['pers_prefix'] ?? '',
+                'pers_firstname'     => $t['pers_firstname'] ?? '',
+                'pers_lastname'      => $t['pers_lastname'] ?? '',
+                'pers_img'           => $t['pers_img'] ?? '',
+                'teacher_name'       => trim(($t['pers_prefix'] ?? '') . ($t['pers_firstname'] ?? '') . ' ' . ($t['pers_lastname'] ?? '')),
+                'subjects'           => [],
+                'total_weekly_hours' => 0,
+                'total_rooms'        => 0
+            ];
+        }
+
         foreach ($schedules as $schedule) {
             $teacherId = $schedule['teacher_id'];
             if (!isset($groupedSchedules[$teacherId])) {
                 $groupedSchedules[$teacherId] = [
                     'teacher_id'         => $teacherId,
-                    'teacher_name'       => trim($schedule['pers_prefix'] . $schedule['pers_firstname'] . ' ' . $schedule['pers_lastname']),
+                    'pers_prefix'        => $schedule['pers_prefix'] ?? '',
+                    'pers_firstname'     => $schedule['pers_firstname'] ?? '',
+                    'pers_lastname'      => $schedule['pers_lastname'] ?? '',
+                    'pers_img'           => $schedule['pers_img'] ?? '',
+                    'teacher_name'       => trim(($schedule['pers_prefix'] ?? '') . ($schedule['pers_firstname'] ?? '') . ' ' . ($schedule['pers_lastname'] ?? '')),
                     'subjects'           => [],
                     'total_weekly_hours' => 0,
                     'total_rooms'        => 0

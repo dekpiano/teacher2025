@@ -19,9 +19,16 @@
                                     <i class="bi bi-calendar3 fs-4"></i>
                                 </span>
                             </div>
-                            <h1 class="display-6 fw-bold mb-0 text-white">จัดตารางสอนของกลุ่มสาระ</h1>
+                            <div>
+                                <h1 class="display-6 fw-bold mb-0 text-white">จัดตารางสอนของกลุ่มสาระ</h1>
+                                <?php if (!empty($learning_name)): ?>
+                                    <div class="badge bg-white text-primary fs-6 fw-bold mt-1 px-3 py-1 rounded-pill">
+                                        <i class="bi bi-bookmark-check-fill me-1"></i> <?= esc($learning_name) ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
                         </div>
-                        <p class="opacity-75 mb-0">ระบบกำหนดรายวิชา ชั้น ห้อง และชั่วโมงสอน สำหรับครูแต่ละท่าน ประจำภาคเรียนที่ <?= esc($current_term) ?> ปีการศึกษา <?= esc($current_year) ?></p>
+                        <p class="opacity-75 mb-0">ระบบกำหนดรายวิชา ชั้น ห้อง และชั่วโมงสอน สำหรับครู<?= !empty($learning_name) ? 'ใน' . esc($learning_name) : '' ?> ประจำภาคเรียนที่ <?= esc($current_term) ?> ปีการศึกษา <?= esc($current_year) ?></p>
                     </div>
                 </div>
             </div>
@@ -48,7 +55,9 @@
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-header border-bottom bg-white d-flex justify-content-between align-items-center py-3">
             <div class="d-flex align-items-center gap-2">
-                <h5 class="mb-0 fw-bold"><i class="bi bi-list-columns me-2 text-primary"></i>ข้อมูลการจัดตารางสอน</h5>
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-list-columns me-2 text-primary"></i>ข้อมูลการจัดตารางสอน <?= !empty($learning_name) ? '<span class="text-primary">(' . esc($learning_name) . ')</span>' : '' ?>
+                </h5>
                 <?php if ($isSystemOpen): ?>
                     <span class="badge bg-label-success rounded-pill"><i class="bi bi-check-circle me-1"></i>ระบบเปิด</span>
                 <?php else: ?>
@@ -71,23 +80,23 @@
             </div>
         </div>
         <div class="card-body p-0">
-            <div class="table-responsive text-nowrap">
-                <table class="table table-hover table-bordered mb-0" style="min-width: 1200px;">
+            <div class="w-100" style="overflow-x: hidden;">
+                <table class="table table-hover table-bordered table-sm mb-0 align-middle" style="table-layout: fixed; width: 100%; word-break: break-word; font-size: 0.84rem;">
                     <thead class="table-light text-center align-middle">
                         <tr>
-                            <th width="4%">ที่</th>
-                            <th width="14%">ครูผู้สอน</th>
-                            <th width="9%">รหัสวิชา</th>
-                            <th width="17%">รายวิชา</th>
-                            <th width="8%">ประเภท</th>
-                            <th width="6%">หน่วยกิต</th>
-                            <th width="7%">ชม./สัปดาห์</th>
-                            <th width="6%">ชั้น</th>
-                            <th width="6%">ห้อง</th>
-                            <th width="9%">แผนที่เรียน</th>
-                            <th width="5%">รวม</th>
-                            <th width="7%">หมายเหตุ</th>
-                            <th width="8%">จัดการ</th>
+                            <th style="width: 3%;" class="text-center p-1">ที่</th>
+                            <th style="width: 15%;" class="p-2">ครูผู้สอน</th>
+                            <th style="width: 7%;" class="text-center p-1">รหัสวิชา</th>
+                            <th style="width: 17%;" class="p-2">รายวิชา</th>
+                            <th style="width: 6.5%;" class="text-center p-1">ประเภท</th>
+                            <th style="width: 5%;" class="text-center p-1">หน่วยกิต</th>
+                            <th style="width: 6.5%;" class="text-center p-1">ชม./สัปดาห์</th>
+                            <th style="width: 5%;" class="text-center p-1">ชั้น</th>
+                            <th style="width: 7%;" class="text-center p-1">ห้อง</th>
+                            <th style="width: 9%;" class="text-center p-1">แผนที่เรียน</th>
+                            <th style="width: 5%;" class="text-center p-1">รวม</th>
+                            <th style="width: 8%;" class="p-2">หมายเหตุ</th>
+                            <th style="width: 6%;" class="text-center p-1">จัดการ</th>
                         </tr>
                     </thead>
                     <tbody class="table-border-bottom-0 align-middle">
@@ -108,41 +117,62 @@
                                 ?>
                                 <?php if (empty($subjects)): ?>
                                     <tr>
-                                        <td class="text-center fw-bold"><?= $teacherIndex++ ?></td>
-                                        <td class="align-top">
-                                            <div class="fw-bold text-dark fs-6"><?= esc($data['teacher_name']) ?></div>
-                                            <div class="mt-1 d-flex flex-column gap-1">
-                                                <div class="small text-muted d-flex align-items-center gap-1">
-                                                    <i class="bi bi-flag text-info"></i> กิจกรรม <?= $data['total_activity_weekly_hours'] ?> คาบ
+                                        <td class="text-center fw-bold p-1"><?= $teacherIndex++ ?></td>
+                                        <td class="align-top p-2">
+                                            <?php 
+                                                $teacherImg = !empty($data['pers_img']) 
+                                                    ? "https://personnel.skj.ac.th/uploads/admin/Personnal/" . esc($data['pers_img']) 
+                                                    : 'https://skj.nsnpao.go.th/uploads/academic/competitions/images/default-avatar.png';
+                                            ?>
+                                            <div class="d-flex align-items-start gap-2">
+                                                <img src="<?= $teacherImg ?>" 
+                                                     onerror="this.onerror=null;this.src='https://skj.nsnpao.go.th/uploads/academic/competitions/images/default-avatar.png';" 
+                                                     alt="<?= esc($data['teacher_name']) ?>" 
+                                                     class="rounded-circle shadow-xs border flex-shrink-0" 
+                                                     style="width: 36px; height: 36px; object-fit: cover;">
+                                                <div class="flex-grow-1 min-w-0">
+                                                    <div class="d-flex align-items-center flex-wrap gap-1">
+                                                        <span class="fw-bold text-dark" style="font-size: 0.88rem;"><?= esc($data['teacher_name']) ?></span>
+                                                        <?php if (!empty($data['is_leader'])): ?>
+                                                            <span class="badge bg-label-primary rounded-pill fw-bold" style="font-size: 0.68rem; padding: 2px 6px;">
+                                                                <i class="bi bi-star-fill text-warning me-1"></i>หัวหน้ากลุ่มสาระ
+                                                            </span>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                    <div class="mt-1 d-flex flex-column gap-1">
+                                                        <div class="small text-muted d-flex align-items-center gap-1" style="font-size: 0.75rem;">
+                                                            <i class="bi bi-flag text-info"></i> กิจกรรม <?= $data['total_activity_weekly_hours'] ?> คาบ
+                                                        </div>
+                                                        <div>
+                                                            <span class="badge bg-label-success rounded-pill fw-bold" style="font-size: 0.72rem;">
+                                                                <i class="bi bi-clock-history me-1"></i>รวม <?= $data['grand_total_weekly_hours'] ?> คาบ/สัปดาห์
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-flex flex-wrap gap-1 mt-2">
+                                                        <a href="<?= base_url('curriculum/teaching-schedule/teacher/' . $teacherId . '/' . $current_year . '/' . $current_term) ?>" class="btn btn-xs btn-outline-info py-1 px-2" title="ดูข้อมูลตารางสอน">
+                                                            <i class="bi bi-eye"></i> ดูข้อมูล
+                                                        </a>
+                                                        <a href="<?= base_url('curriculum/teaching-schedule/print/' . $teacherId . '/' . $current_year . '/' . $current_term) ?>" target="_blank" class="btn btn-xs btn-outline-primary py-1 px-2" title="พิมพ์ตารางสอน">
+                                                            <i class="bi bi-printer"></i> พิมพ์
+                                                        </a>
+                                                        <button type="button" class="btn btn-xs btn-outline-secondary py-1 px-2" onclick="openTeacherExtraModal('<?= esc($teacherId) ?>', '<?= esc($data['teacher_name']) ?>')" title="จัดการกิจกรรมและหน้าที่พิเศษ">
+                                                            <i class="bi bi-gear"></i> พิเศษ
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <span class="badge bg-label-success rounded-pill fw-bold" style="font-size: 0.76rem;">
-                                                        <i class="bi bi-clock-history me-1"></i>รวม <?= $data['grand_total_weekly_hours'] ?> คาบ/สัปดาห์
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="btn-group btn-group-xs mt-2" role="group">
-                                                <a href="<?= base_url('curriculum/teaching-schedule/teacher/' . $teacherId . '/' . $current_year . '/' . $current_term) ?>" class="btn btn-xs btn-outline-info" title="ดูข้อมูลตารางสอน">
-                                                    <i class="bi bi-eye me-1"></i>ดูข้อมูล
-                                                </a>
-                                                <a href="<?= base_url('curriculum/teaching-schedule/print/' . $teacherId . '/' . $current_year . '/' . $current_term) ?>" target="_blank" class="btn btn-xs btn-outline-primary" title="พิมพ์ตารางสอน">
-                                                    <i class="bi bi-printer me-1"></i>พิมพ์
-                                                </a>
-                                                <button type="button" class="btn btn-xs btn-outline-secondary" onclick="openTeacherExtraModal('<?= esc($teacherId) ?>', '<?= esc($data['teacher_name']) ?>')" title="จัดการกิจกรรมและหน้าที่พิเศษ">
-                                                    <i class="bi bi-gear me-1"></i>หน้าที่พิเศษ
-                                                </button>
                                             </div>
                                         </td>
-                                        <td colspan="10" class="text-center text-muted py-3">
+                                        <td colspan="10" class="text-center text-muted py-3 small">
                                             <em>- ยังไม่มีรายวิชาที่สอน (มีกิจกรรม <?= count($data['activities'] ?? []) ?> รายการ, หน้าที่พิเศษ <?= count($data['duties'] ?? []) ?> รายการ) -</em>
                                         </td>
-                                        <td class="text-center">
+                                        <td class="text-center p-1">
                                             <?php if ($isSystemOpen): ?>
-                                                <button type="button" class="btn btn-sm btn-primary rounded-pill" onclick="openAddModalForTeacher('<?= esc($teacherId) ?>')">
+                                                <button type="button" class="btn btn-xs btn-primary rounded-pill px-2 py-1" onclick="openAddModalForTeacher('<?= esc($teacherId) ?>')">
                                                     <i class="bi bi-plus-lg me-1"></i>เพิ่มวิชา
                                                 </button>
                                             <?php else: ?>
-                                                <span class="badge bg-label-secondary"><i class="bi bi-lock-fill me-1"></i>ปิด</span>
+                                                <span class="badge bg-label-secondary" style="font-size: 0.7rem;"><i class="bi bi-lock-fill me-1"></i>ปิด</span>
                                             <?php endif; ?>
                                         </td>
                                     </tr>
@@ -150,112 +180,135 @@
                                     <?php foreach ($subjects as $index => $row): ?>
                                         <tr>
                                             <?php if ($first): ?>
-                                                <td class="text-center fw-bold" rowspan="<?= $rowspan ?>"><?= $teacherIndex++ ?></td>
-                                                <td rowspan="<?= $rowspan ?>" class="align-top">
-                                                    <div class="fw-bold text-dark fs-6"><?= esc($data['teacher_name']) ?></div>
-                                                    
-                                                    <!-- สรุปภาระงานแบบกระชับ -->
-                                                    <div class="mt-1 d-flex flex-column gap-1">
-                                                        <div class="small text-muted d-flex align-items-center gap-1">
-                                                            <i class="bi bi-book text-primary"></i> สอน <?= count($subjects) ?> วิชา (<?= $data['total_subject_hours'] ?> คาบ)
-                                                            <?php if (!empty($data['total_activity_weekly_hours'])): ?>
-                                                                <span class="text-secondary">•</span> <i class="bi bi-flag text-info"></i> กิจกรรม <?= $data['total_activity_weekly_hours'] ?>
+                                                <td class="text-center fw-bold p-1" rowspan="<?= $rowspan ?>"><?= $teacherIndex++ ?></td>
+                                                <td rowspan="<?= $rowspan ?>" class="align-top p-2">
+                                                    <?php 
+                                                        $teacherImg = !empty($data['pers_img']) 
+                                                            ? "https://personnel.skj.ac.th/uploads/admin/Personnal/" . esc($data['pers_img']) 
+                                                            : 'https://skj.nsnpao.go.th/uploads/academic/competitions/images/default-avatar.png';
+                                                    ?>
+                                                    <div class="d-flex align-items-start gap-2">
+                                                        <img src="<?= $teacherImg ?>" 
+                                                             onerror="this.onerror=null;this.src='https://skj.nsnpao.go.th/uploads/academic/competitions/images/default-avatar.png';" 
+                                                             alt="<?= esc($data['teacher_name']) ?>" 
+                                                             class="rounded-circle shadow-xs border flex-shrink-0" 
+                                                             style="width: 36px; height: 36px; object-fit: cover;">
+                                                        <div class="flex-grow-1 min-w-0">
+                                                            <div class="d-flex align-items-center flex-wrap gap-1">
+                                                                <span class="fw-bold text-dark" style="font-size: 0.88rem;"><?= esc($data['teacher_name']) ?></span>
+                                                                <?php if (!empty($data['is_leader'])): ?>
+                                                                    <span class="badge bg-label-primary rounded-pill fw-bold" style="font-size: 0.68rem; padding: 2px 6px;">
+                                                                        <i class="bi bi-star-fill text-warning me-1"></i>หัวหน้ากลุ่มสาระ
+                                                                    </span>
+                                                                <?php endif; ?>
+                                                            </div>
+                                                            
+                                                            <!-- สรุปภาระงานแบบกระชับ -->
+                                                            <div class="mt-1 d-flex flex-column gap-1">
+                                                                <div class="small text-muted d-flex align-items-center gap-1" style="font-size: 0.75rem;">
+                                                                    <i class="bi bi-book text-primary"></i> สอน <?= count($subjects) ?> วิชา (<?= $data['total_subject_hours'] ?> คาบ)
+                                                                    <?php if (!empty($data['total_activity_weekly_hours'])): ?>
+                                                                        <span class="text-secondary">•</span> <i class="bi bi-flag text-info"></i> กิจกรรม <?= $data['total_activity_weekly_hours'] ?>
+                                                                    <?php endif; ?>
+                                                                </div>
+                                                                <div>
+                                                                    <span class="badge bg-label-success rounded-pill fw-bold" style="font-size: 0.72rem;">
+                                                                        <i class="bi bi-clock-history me-1"></i>รวม <?= $data['grand_total_weekly_hours'] ?> คาบ/สัปดาห์
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+
+                                                            <?php if (!empty($data['duties'])): ?>
+                                                                <div class="text-muted small mt-1 text-truncate" style="max-width: 180px; font-size: 0.72rem;" title="<?= esc(implode(', ', array_column($data['duties'], 'duty_name'))) ?>">
+                                                                    <i class="bi bi-award text-warning me-1"></i><?= esc($data['duties'][0]['duty_name']) ?><?= count($data['duties']) > 1 ? ' ...' : '' ?>
+                                                                </div>
                                                             <?php endif; ?>
-                                                        </div>
-                                                        <div>
-                                                            <span class="badge bg-label-success rounded-pill fw-bold" style="font-size: 0.76rem;">
-                                                                <i class="bi bi-clock-history me-1"></i>รวม <?= $data['grand_total_weekly_hours'] ?> คาบ/สัปดาห์
-                                                            </span>
-                                                        </div>
-                                                    </div>
 
-                                                    <?php if (!empty($data['duties'])): ?>
-                                                        <div class="text-muted small mt-1 text-truncate" style="max-width: 220px;" title="<?= esc(implode(', ', array_column($data['duties'], 'duty_name'))) ?>">
-                                                            <i class="bi bi-award text-warning me-1"></i><?= esc($data['duties'][0]['duty_name']) ?><?= count($data['duties']) > 1 ? ' ...' : '' ?>
+                                                            <!-- ปุ่มจัดการขนาดกะทัดรัด -->
+                                                            <div class="d-flex flex-wrap gap-1 mt-2">
+                                                                <a href="<?= base_url('curriculum/teaching-schedule/teacher/' . $teacherId . '/' . $current_year . '/' . $current_term) ?>" class="btn btn-xs btn-outline-info py-1 px-2" title="ดูข้อมูลตารางสอน">
+                                                                    <i class="bi bi-eye"></i> ดูข้อมูล
+                                                                </a>
+                                                                <a href="<?= base_url('curriculum/teaching-schedule/print/' . $teacherId . '/' . $current_year . '/' . $current_term) ?>" target="_blank" class="btn btn-xs btn-outline-primary py-1 px-2" title="พิมพ์ตารางสอน">
+                                                                    <i class="bi bi-printer"></i> พิมพ์
+                                                                </a>
+                                                                <?php if ($isSystemOpen): ?>
+                                                                    <button type="button" class="btn btn-xs btn-outline-secondary py-1 px-2" onclick="openTeacherExtraModal('<?= esc($teacherId) ?>', '<?= esc($data['teacher_name']) ?>')" title="จัดการกิจกรรมและหน้าที่พิเศษ">
+                                                                        <i class="bi bi-gear"></i> พิเศษ
+                                                                    </button>
+                                                                <?php endif; ?>
+                                                            </div>
                                                         </div>
-                                                    <?php endif; ?>
-
-                                                    <!-- ปุ่มจัดการขนาดกะทัดรัด -->
-                                                    <div class="btn-group btn-group-xs mt-2" role="group">
-                                                        <a href="<?= base_url('curriculum/teaching-schedule/teacher/' . $teacherId . '/' . $current_year . '/' . $current_term) ?>" class="btn btn-xs btn-outline-info" title="ดูข้อมูลตารางสอน">
-                                                            <i class="bi bi-eye me-1"></i>ดูข้อมูล
-                                                        </a>
-                                                        <a href="<?= base_url('curriculum/teaching-schedule/print/' . $teacherId . '/' . $current_year . '/' . $current_term) ?>" target="_blank" class="btn btn-xs btn-outline-primary" title="พิมพ์ตารางสอน">
-                                                            <i class="bi bi-printer me-1"></i>พิมพ์
-                                                        </a>
-                                                        <?php if ($isSystemOpen): ?>
-                                                            <button type="button" class="btn btn-xs btn-outline-secondary" onclick="openTeacherExtraModal('<?= esc($teacherId) ?>', '<?= esc($data['teacher_name']) ?>')" title="จัดการกิจกรรมและหน้าที่พิเศษ">
-                                                                <i class="bi bi-gear me-1"></i>หน้าที่พิเศษ
-                                                            </button>
-                                                        <?php endif; ?>
                                                     </div>
                                                 </td>
                                             <?php endif; ?>
-                                            <td class="text-center fw-bold text-primary"><?= esc($row['subject_code']) ?></td>
-                                            <td class="fw-medium"><?= esc($row['subject_name']) ?></td>
-                                            <td class="text-center">
-                                                <span class="badge <?= ($row['subject_type'] === 'เพิ่มเติม') ? 'bg-label-info' : 'bg-label-secondary' ?>">
+                                            <td class="text-center fw-bold text-primary p-1 text-break"><?= esc($row['subject_code']) ?></td>
+                                            <td class="fw-medium p-2 text-break"><?= esc($row['subject_name']) ?></td>
+                                            <td class="text-center p-1">
+                                                <span class="badge <?= ($row['subject_type'] === 'เพิ่มเติม') ? 'bg-label-info' : 'bg-label-secondary' ?>" style="font-size: 0.72rem; padding: 3px 6px;">
                                                     <?= esc($row['subject_type']) ?>
                                                 </span>
                                             </td>
-                                            <td class="text-center"><?= esc($row['credit']) ?></td>
-                                            <td class="text-center">
-                                                <span class="fw-bold fs-6"><?= esc($row['hours_per_week']) ?></span>
+                                            <td class="text-center p-1"><?= esc($row['credit']) ?></td>
+                                            <td class="text-center p-1">
+                                                <span class="fw-bold"><?= esc($row['hours_per_week']) ?></span>
                                                 <?php if ($row['room_count'] > 1): ?>
-                                                    <div class="text-primary small fw-semibold" style="font-size: 0.72rem;">(รวม <?= $row['total_weekly_hours'] ?> คาบ)</div>
+                                                    <div class="text-primary small fw-semibold" style="font-size: 0.7rem;">(<?= $row['total_weekly_hours'] ?> คาบ)</div>
                                                 <?php endif; ?>
                                             </td>
-                                            <td class="text-center fw-semibold"><?= esc($row['grade_level']) ?></td>
+                                            <td class="text-center fw-semibold p-1"><?= esc($row['grade_level']) ?></td>
 
                                             <!-- กลุ่มห้องที่สอนวิชานี้ -->
-                                            <td class="text-center">
+                                            <td class="text-center p-1">
                                                 <?php 
                                                     $displayRoom = !empty($row['room_range_text']) ? $row['room_range_text'] : (!empty($row['rooms']) ? implode(', ', $row['rooms']) : '-');
                                                 ?>
-                                                <span class="badge bg-primary fw-bold px-2 py-1 shadow-xs">
-                                                    <i class="bi bi-door-open me-1"></i>ห้อง <?= esc($displayRoom) ?>
+                                                <span class="badge bg-primary fw-bold text-wrap" style="font-size: 0.72rem; padding: 3px 6px;">
+                                                    <?= esc($displayRoom) ?>
                                                 </span>
                                             </td>
 
                                             <!-- แผนที่เรียน -->
-                                            <td class="text-center">
-                                                <?php if (empty($row['distinct_plans'])): ?>
+                                            <td class="text-center p-1">
+                                                <?php if ($row['room_count'] > 1 || count($row['rooms'] ?? []) > 1 || empty($row['distinct_plans'])): ?>
                                                     <span class="text-muted">-</span>
                                                 <?php else: ?>
                                                     <div class="d-flex flex-wrap gap-1 justify-content-center">
                                                         <?php foreach ($row['distinct_plans'] as $p): ?>
-                                                            <span class="badge bg-label-info px-2 py-1"><?= esc($p) ?></span>
+                                                            <span class="badge bg-label-info text-wrap" style="font-size: 0.7rem; padding: 2px 5px;"><?= esc($p) ?></span>
                                                         <?php endforeach; ?>
                                                     </div>
                                                 <?php endif; ?>
                                             </td>
 
                                             <!-- รวม ชม. -->
-                                            <td class="text-center fw-bold">
+                                            <td class="text-center fw-bold p-1">
                                                 <?= esc($row['total_hours']) ?>
                                                 <?php if ($row['room_count'] > 1 && !empty($row['single_total_hours'])): ?>
-                                                    <div class="text-muted small fw-normal" style="font-size: 0.7rem;">(<?= $row['single_total_hours'] ?> ชม./ห้อง)</div>
+                                                    <div class="text-muted small fw-normal" style="font-size: 0.68rem;">(<?= $row['single_total_hours'] ?>/ห้อง)</div>
                                                 <?php endif; ?>
                                             </td>
 
                                             <!-- หมายเหตุ -->
-                                            <td>
+                                            <td class="p-2 small text-break">
                                                 <?= !empty($row['remarks']) ? esc(implode(', ', $row['remarks'])) : '<span class="text-muted">-</span>' ?>
                                             </td>
 
                                             <!-- จัดการ -->
-                                            <td class="text-center">
+                                            <td class="text-center p-1">
                                                 <?php if ($isSystemOpen): ?>
-                                                    <button type="button" class="btn btn-icon btn-sm btn-outline-warning rounded-pill me-1" 
-                                                            onclick="editSchedule('<?= implode(',', $row['schedule_ids']) ?>')" title="แก้ไขรายวิชานี้">
-                                                        <i class="bi bi-pencil"></i>
-                                                    </button>
-                                                    <button type="button" class="btn btn-icon btn-sm btn-outline-danger rounded-pill" 
-                                                            onclick="deleteSchedule('<?= implode(',', $row['schedule_ids']) ?>', '<?= esc($row['subject_code']) ?>', '<?= esc($row['room_range_text'] ?: $row['room_text']) ?>')" title="ลบรายวิชานี้">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
+                                                    <div class="d-inline-flex gap-1 justify-content-center">
+                                                        <button type="button" class="btn btn-icon btn-xs btn-outline-warning rounded-pill" 
+                                                                onclick="editSchedule('<?= implode(',', $row['schedule_ids']) ?>')" title="แก้ไขรายวิชานี้">
+                                                            <i class="bi bi-pencil"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-icon btn-xs btn-outline-danger rounded-pill" 
+                                                                onclick="deleteSchedule('<?= implode(',', $row['schedule_ids']) ?>', '<?= esc($row['subject_code']) ?>', '<?= esc($row['room_range_text'] ?: $row['room_text']) ?>')" title="ลบรายวิชานี้">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </div>
                                                 <?php else: ?>
-                                                    <span class="badge bg-label-secondary"><i class="bi bi-lock-fill me-1"></i>ปิด</span>
+                                                    <span class="badge bg-label-secondary" style="font-size: 0.7rem;"><i class="bi bi-lock-fill me-1"></i>ปิด</span>
                                                 <?php endif; ?>
                                             </td>
                                         </tr>
@@ -508,6 +561,36 @@
         padding: 0.2rem 0.6rem;
         font-size: 0.75rem;
         border-radius: 0.35rem;
+    }
+    /* Fixed 100% table layout - แสดงผลในหน้าเดียว ไม่มีเลื่อนซ้ายขวา */
+    .table-schedule-main {
+        width: 100% !important;
+        table-layout: fixed !important;
+        border-collapse: collapse;
+    }
+    .table-schedule-main th,
+    .table-schedule-main td {
+        padding: 0.45rem 0.32rem !important;
+        vertical-align: middle;
+        word-break: break-word;
+        overflow-wrap: break-word;
+        font-size: 0.82rem;
+    }
+    .table-schedule-main th {
+        font-size: 0.80rem;
+        font-weight: 700;
+        white-space: normal;
+        background-color: #f8f9fa !important;
+    }
+    .table-schedule-main .badge {
+        white-space: normal;
+        font-size: 0.70rem;
+        padding: 0.2rem 0.35rem;
+        line-height: 1.2;
+    }
+    .table-schedule-main .btn-group-xs .btn {
+        padding: 0.15rem 0.35rem;
+        font-size: 0.70rem;
     }
 </style>
 
