@@ -82,11 +82,15 @@
     <div class="manage-header shadow-sm">
         <div class="row align-items-center text-start">
             <div class="col-lg-7">
+                <?php 
+                    $isScout = !empty($isScout) || \App\Models\ClubModel::isScoutClub($club->club_name);
+                    $routePrefix = !empty($routePrefix) ? $routePrefix : ($isScout ? 'scout' : 'club');
+                ?>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb breadcrumb-light mb-2">
                         <li class="breadcrumb-item"><a href="<?= site_url('home') ?>" class="text-white opacity-75">หน้าหลัก</a></li>
-                        <li class="breadcrumb-item"><a href="<?= site_url('club') ?>" class="text-white opacity-75">ชุมนุม</a></li>
-                        <li class="breadcrumb-item active text-white" aria-current="page">จัดการชุมนุม</li>
+                        <li class="breadcrumb-item"><a href="<?= site_url($routePrefix) ?>" class="text-white opacity-75"><?= $isScout ? 'ลูกเสือ' : 'ชุมนุม' ?></a></li>
+                        <li class="breadcrumb-item active text-white" aria-current="page"><?= $isScout ? 'จัดการกองลูกเสือ' : 'จัดการชุมนุม' ?></li>
                     </ol>
                 </nav>
                 <h2 class="fw-bold mb-1 text-white"><?= esc($club->club_name) ?></h2>
@@ -120,7 +124,7 @@
                     </button>
                     
                     <div class="btn-group shadow-sm rounded-pill overflow-hidden bg-white p-1">
-                        <a href="<?= site_url('club/manual') ?>" class="btn btn-white border-0 rounded-pill px-3 py-2 text-primary fw-bold small">
+                        <a href="<?= site_url($routePrefix . '/manual') ?>" class="btn btn-white border-0 rounded-pill px-3 py-2 text-primary fw-bold small">
                             <i class="bi bi-book-half me-2"></i> คู่มือ
                         </a>
                         <button type="button" class="btn btn-white border-0 rounded-pill px-3 py-2 text-muted" data-bs-toggle="modal" data-bs-target="#clubHelpModal">
@@ -205,14 +209,14 @@
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 text-start">
                     <h5 class="fw-bold mb-0 text-primary">เมนูจัดการกิจกรรม</h5>
                     <div class="d-flex flex-wrap gap-2">
-                        <a href="<?= site_url('club/schedule/' . $club->club_id) ?>" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm d-flex align-items-center">
-                            <span class="bg-white bg-opacity-20 rounded-circle p-1 me-2"><i class="bi bi-calendar-event fs-6"></i></span> 
+                        <a href="<?= site_url($routePrefix . '/schedule/' . $club->club_id) ?>" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm d-flex align-items-center">
+                            <i class="bi bi-calendar-check me-2"></i> 
                             <span>เช็คชื่อนักเรียน</span>
                         </a>
-                        <a href="<?= site_url('club/objectives/' . $club->club_id) ?>" class="btn btn-outline-secondary rounded-pill px-4 py-2 d-flex align-items-center">
+                        <a href="<?= site_url($routePrefix . '/objectives/' . $club->club_id) ?>" class="btn btn-outline-secondary rounded-pill px-4 py-2 d-flex align-items-center">
                             <i class="bi bi-list-check me-2"></i> ประเมินผล
                         </a>
-                        <a href="<?= site_url('club/activities/' . $club->club_id) ?>" class="btn btn-outline-info rounded-pill px-4 py-2 d-flex align-items-center">
+                        <a href="<?= site_url($routePrefix . '/activities/' . $club->club_id) ?>" class="btn btn-outline-info rounded-pill px-4 py-2 d-flex align-items-center">
                             <i class="bi bi-bar-chart-line me-2"></i> รายงานผล
                         </a>
                     </div>
@@ -259,7 +263,7 @@
                                                         data-currentrole="<?= esc($member->member_role) ?>">
                                                     <i class="bi bi-shield-lock me-1"></i> บทบาท
                                                 </button>
-                                                <form action="<?= site_url('club/removeMember/' . $club->club_id . '/' . $member->StudentID) ?>" method="post" class="remove-member-form">
+                                                <form action="<?= site_url($routePrefix . '/removeMember/' . $club->club_id . '/' . $member->StudentID) ?>" method="post" class="remove-member-form">
                                                     <?= csrf_field() ?>
                                                     <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
                                                         <i class="bi bi-person-x me-1"></i> ลบ
@@ -273,7 +277,7 @@
                                 <tr>
                                     <td colspan="6" class="text-center py-5">
                                         <div class="text-muted opacity-50 mb-3"><i class="bi bi-person-dash" style="font-size: 3rem;"></i></div>
-                                        <p class="mb-0">ยังไม่มีนักเรียนสมัครเข้าเป็นสมาชิกในชุมนุมนี้</p>
+                                        <p class="mb-0">ยังไม่มีนักเรียนสมัครเข้าเป็นสมาชิกใน<?= $isScout ? 'กองลูกเสือนี้' : 'ชุมนุมนี้' ?></p>
                                     </td>
                                 </tr>
                             <?php endif; ?>
@@ -290,16 +294,16 @@
 <div class="modal fade" id="editClubModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-            <form action="<?= site_url('club/update/' . $club->club_id) ?>" method="post">
+            <form action="<?= site_url($routePrefix . '/update/' . $club->club_id) ?>" method="post">
                 <?= csrf_field() ?>
                 <div class="modal-header bg-primary text-white border-0 py-3">
-                    <h5 class="modal-title fw-bold text-white"><i class="bi bi-pencil-square me-2"></i>แก้ไขข้อมูลชุมนุม</h5>
+                    <h5 class="modal-title fw-bold text-white"><i class="bi bi-pencil-square me-2"></i>แก้ไขข้อมูล<?= $isScout ? 'กองลูกเสือ' : 'ชุมนุม' ?></h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4 text-start">
                     <div class="form-floating mb-3">
                         <input type="text" class="form-control" id="club_name" name="club_name" value="<?= esc($club->club_name) ?>" required>
-                        <label for="club_name">ชื่อชุมนุม</label>
+                        <label for="club_name">ชื่อ<?= $isScout ? 'กองลูกเสือ' : 'ชุมนุม' ?></label>
                     </div>
                     <div class="form-floating mb-3">
                         <textarea class="form-control" id="club_description" name="club_description" style="height: 100px"><?= esc($club->club_description) ?></textarea>
@@ -346,7 +350,7 @@
 <div class="modal fade" id="assignRoleModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-            <form action="<?= site_url('club/updateMemberRole/' . $club->club_id) ?>" method="post">
+            <form action="<?= site_url($routePrefix . '/updateMemberRole/' . $club->club_id) ?>" method="post">
                 <?= csrf_field() ?>
                 <div class="modal-header bg-warning text-dark border-0">
                     <h5 class="modal-title fw-bold"><i class="bi bi-person-badge me-2"></i>บทบาทสมาชิก</h5>
@@ -357,7 +361,7 @@
                     <label class="form-label small fw-bold text-muted">เลือกบทบาทในทีม</label>
                     <select class="form-select py-2" id="member_role" name="member_role">
                         <option value="Member">สมาชิกทั่วไป</option>
-                        <option value="Leader">หัวหน้าชุมนุม</option>
+                        <option value="Leader"><?= $isScout ? 'นายหมู่ / หัวหน้า' : 'หัวหน้าชุมนุม' ?></option>
                     </select>
                 </div>
                 <div class="modal-footer border-0 p-4 pt-0">

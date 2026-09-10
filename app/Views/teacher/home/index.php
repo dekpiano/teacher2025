@@ -782,8 +782,17 @@
                         <a href="<?= base_url('club') ?>" class="luxe-card">
                             <i class="bi bi-people card-icon"></i>
                             <div class="card-text">
-                                <h6>กิจกรรมชุมนุม</h6>
-                                <p>บันทึกเวลาเรียนและกิจกรรมชมรม</p>
+                                <h6>บันทึกชุมนุม</h6>
+                                <p>บันทึกเวลาเรียนและกิจกรรมชุมนุม</p>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <a href="<?= base_url('scout') ?>" class="luxe-card">
+                            <i class="bi bi-compass card-icon"></i>
+                            <div class="card-text">
+                                <h6>ลูกเสือ</h6>
+                                <p>บันทึกเวลาเรียนและกิจกรรมลูกเสือ - เนตรนารี</p>
                             </div>
                         </a>
                     </div>

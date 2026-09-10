@@ -137,11 +137,15 @@
     <div class="attendance-header shadow-lg">
         <div class="row align-items-center text-start">
             <div class="col-lg-8">
+                <?php 
+                    $isScout = !empty($isScout) || \App\Models\ClubModel::isScoutClub($club->club_name);
+                    $routePrefix = !empty($routePrefix) ? $routePrefix : ($isScout ? 'scout' : 'club');
+                ?>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb breadcrumb-light mb-2">
                         <li class="breadcrumb-item"><a href="<?= site_url('home') ?>" class="text-white opacity-75">หน้าหลัก</a></li>
-                        <li class="breadcrumb-item"><a href="<?= site_url('club') ?>" class="text-white opacity-75">ชุมนุม</a></li>
-                        <li class="breadcrumb-item"><a href="<?= site_url('club/schedule/' . $club->club_id) ?>" class="text-white opacity-75">ตารางกิจกรรม</a></li>
+                        <li class="breadcrumb-item"><a href="<?= site_url($routePrefix) ?>" class="text-white opacity-75"><?= $isScout ? 'ลูกเสือ' : 'ชุมนุม' ?></a></li>
+                        <li class="breadcrumb-item"><a href="<?= site_url($routePrefix . '/schedule/' . $club->club_id) ?>" class="text-white opacity-75"><?= $isScout ? 'ตารางกิจกรรมลูกเสือ' : 'ตารางกิจกรรม' ?></a></li>
                         <li class="breadcrumb-item active text-white" aria-current="page">บันทึกการเข้าเรียน</li>
                     </ol>
                 </nav>
@@ -150,7 +154,7 @@
                 </h1>
                 <div class="d-flex flex-wrap gap-2 align-items-center mt-3">
                     <span class="badge-meta-pill">
-                        <i class="bi bi-calendar-event me-1 text-primary"></i> วันที่ <?= esc(thai_date($schedule->tcs_start_date, 'short')) ?>
+                        <i class="bi bi-calendar-check me-1 text-primary"></i> วันที่ <?= esc(thai_date($schedule->tcs_start_date, 'short')) ?>
                     </span>
                     <span class="badge-meta-pill">
                         <i class="bi bi-tag-fill me-1 text-primary"></i> <?= esc($club->club_name) ?>
@@ -198,7 +202,7 @@
     </div>
 
     <!-- Attendance Form -->
-    <form action="<?= site_url('club/saveAttendance/' . $club->club_id . '/' . $schedule->tcs_schedule_id) ?>" method="post" id="attendanceForm">
+    <form action="<?= site_url($routePrefix . '/saveAttendance/' . $club->club_id . '/' . $schedule->tcs_schedule_id) ?>" method="post" id="attendanceForm">
         <?= csrf_field() ?>
         <div class="card table-card shadow-sm">
             <div class="card-body p-0">
@@ -261,8 +265,8 @@
                 <?php else: ?>
                     <div class="text-center py-5">
                         <i class="bi bi-people text-muted opacity-25" style="font-size: 4rem;"></i>
-                        <h5 class="mt-3 text-muted">ไม่พบสมาชิกในชุมนุม</h5>
-                        <p class="text-muted small">กรุณาเพิ่มสมาชิกในหน้ารายชื่อชุมนุมก่อน</p>
+                        <h5 class="mt-3 text-muted">ไม่พบสมาชิกใน<?= $isScout ? 'กองลูกเสือ' : 'ชุมนุม' ?></h5>
+                        <p class="text-muted small">กรุณาเพิ่มสมาชิกในหน้ารายชื่อ<?= $isScout ? 'กองลูกเสือ' : 'ชุมนุม' ?>ก่อน</p>
                     </div>
                 <?php endif; ?>
             </div>
@@ -271,7 +275,7 @@
         <!-- Floating Save Bar -->
         <div class="floating-save-bar">
             <div class="d-flex align-items-center">
-                <a href="<?= site_url('club/schedule/' . $club->club_id) ?>" class="text-muted text-decoration-none smallest fw-bold me-4">
+                <a href="<?= site_url($routePrefix . '/schedule/' . $club->club_id) ?>" class="text-muted text-decoration-none smallest fw-bold me-4">
                     <i class="bi bi-arrow-left me-1"></i> ย้อนกลับ
                 </a>
                 <div class="vr me-4 opacity-10"></div>

@@ -23,12 +23,35 @@ class ClubModel extends Model
     ];
 
     /**
+     * Checks if a club/activity name belongs to scout activities.
+     *
+     * @param string|null $clubName
+     * @return bool
+     */
+    public static function isScoutClub(?string $clubName): bool
+    {
+        if (empty($clubName)) {
+            return false;
+        }
+        $keywords = ['ลูกเสือ', 'เนตรนารี', 'ยุวกาชาด', 'ผู้บำเพ็ญประโยชน์', 'นศท', 'รักษาดินแดน', 'รด.'];
+        foreach ($keywords as $kw) {
+            if (mb_stripos($clubName, $kw) !== false) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Fetches all clubs advised by a specific teacher.
      *
      * @param string $teacherId The ID of the teacher.
+     * @param string|null $year
+     * @param string|null $term
+     * @param string|null $type 'club' for regular clubs, 'scout' for scout activities, null for all
      * @return array An array of club objects.
      */
-    public function getClubsByTeacher(string $teacherId, ?string $year = null, ?string $term = null): array
+    public function getClubsByTeacher(string $teacherId, ?string $year = null, ?string $term = null, ?string $type = null): array
     {
         $builder = $this->select('tb_clubs.*, COUNT(tcm.member_student_id) AS member_count')
                         ->join('tb_club_members tcm', 'tcm.member_club_id = tb_clubs.club_id AND tcm.member_status = "active"', 'left')
@@ -44,6 +67,25 @@ class ClubModel extends Model
         }
         if ($term) {
             $builder->where('club_trem', $term);
+        }
+
+        $scoutKeywords = ['ลูกเสือ', 'เนตรนารี', 'ยุวกาชาด', 'ผู้บำเพ็ญประโยชน์', 'นศท', 'รักษาดินแดน', 'รด.'];
+        if ($type === 'scout') {
+            $builder->groupStart();
+            foreach ($scoutKeywords as $i => $kw) {
+                if ($i === 0) {
+                    $builder->like('club_name', $kw);
+                } else {
+                    $builder->orLike('club_name', $kw);
+                }
+            }
+            $builder->groupEnd();
+        } elseif ($type === 'club') {
+            $builder->groupStart();
+            foreach ($scoutKeywords as $kw) {
+                $builder->notLike('club_name', $kw);
+            }
+            $builder->groupEnd();
         }
         
         $builder->groupBy('tb_clubs.club_id'); // Group by club_id to get correct counts
@@ -216,9 +258,7 @@ class ClubModel extends Model
     /**
      * Saves or updates an attendance record.
      *
-     * @param int $scheduleId The ID of the schedule.
-     * @param int $studentId The ID of the student.
-     * @param string $status The attendance status.
+     * @param array $data The attendance record data.
      * @return bool
      */
     public function saveScheduleAttendance(array $data): bool

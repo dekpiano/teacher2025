@@ -202,23 +202,27 @@
     <div class="objectives-header shadow-lg">
         <div class="row align-items-center text-start">
             <div class="col-lg-7">
+                <?php 
+                    $isScout = !empty($isScout) || \App\Models\ClubModel::isScoutClub($club->club_name);
+                    $routePrefix = !empty($routePrefix) ? $routePrefix : ($isScout ? 'scout' : 'club');
+                ?>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb breadcrumb-light mb-2">
                         <li class="breadcrumb-item"><a href="<?= site_url('home') ?>" class="text-white text-decoration-none">หน้าหลัก</a></li>
-                        <li class="breadcrumb-item"><a href="<?= site_url('club') ?>" class="text-white text-decoration-none">ชุมนุม</a></li>
-                        <li class="breadcrumb-item"><a href="<?= site_url('club/manage/' . $club->club_id) ?>" class="text-white text-decoration-none">จัดการชุมนุม</a></li>
-                        <li class="breadcrumb-item active text-white fw-bold" aria-current="page">ประเมินผลกิจกรรม</li>
+                        <li class="breadcrumb-item"><a href="<?= site_url($routePrefix) ?>" class="text-white text-decoration-none"><?= $isScout ? 'ลูกเสือ' : 'ชุมนุม' ?></a></li>
+                        <li class="breadcrumb-item"><a href="<?= site_url($routePrefix . '/manage/' . $club->club_id) ?>" class="text-white text-decoration-none"><?= $isScout ? 'จัดการกองลูกเสือ' : 'จัดการชุมนุม' ?></a></li>
+                        <li class="breadcrumb-item active text-white fw-bold" aria-current="page"><?= $isScout ? 'ประเมินผลกิจกรรมลูกเสือ' : 'ประเมินผลกิจกรรม' ?></li>
                     </ol>
                 </nav>
                 <h1 class="display-6 fw-bold text-white mb-2">
-                    <i class="bi bi-journal-check me-2"></i>ประเมินผลกิจกรรมชุมนุม
+                    <i class="bi bi-journal-check me-2"></i><?= $isScout ? 'ประเมินผลกิจกรรมลูกเสือ' : 'ประเมินผลกิจกรรมชุมนุม' ?>
                 </h1>
                 <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
                     <span class="badge rounded-pill badge-club-name">
                         <i class="bi bi-tag-fill me-1 text-primary"></i> <?= esc($club->club_name) ?>
                     </span>
                     <span class="badge rounded-pill badge-meta-pill">
-                        <i class="bi bi-calendar-event me-1 text-primary"></i> ปีการศึกษา <?= esc($club->club_year) ?> ภาคเรียนที่ <?= esc($club->club_trem) ?>
+                        <i class="bi bi-calendar-check me-1 text-primary"></i> ปีการศึกษา <?= esc($club->club_year) ?> ภาคเรียนที่ <?= esc($club->club_trem) ?>
                     </span>
                     <span class="badge rounded-pill badge-meta-pill">
                         <i class="bi bi-mortarboard me-1 text-success"></i> <?= esc($studyTimeInfo['formatted_level'] ?? $club->club_level) ?>
@@ -235,7 +239,7 @@
                     </button>
                     
                     <div class="btn-group shadow-sm rounded-pill overflow-hidden bg-white p-1">
-                        <a href="<?= site_url('club/manual') ?>" class="btn btn-white-icon rounded-pill px-3 py-2 text-primary fw-bold small">
+                        <a href="<?= site_url($routePrefix . '/manual') ?>" class="btn btn-white-icon rounded-pill px-3 py-2 text-primary fw-bold small">
                             <i class="bi bi-book-half me-2"></i> คู่มือ
                         </a>
                         <button type="button" class="btn btn-white-icon rounded-pill px-3 py-2 text-muted" data-bs-toggle="modal" data-bs-target="#clubHelpModal">
@@ -249,7 +253,7 @@
 
     <!-- Main Content -->
     <?php if (!empty($objectives)): ?>
-        <form action="<?= site_url('club/saveObjectives/' . $club->club_id) ?>" method="post" id="objectivesForm">
+        <form action="<?= site_url($routePrefix . '/saveObjectives/' . $club->club_id) ?>" method="post" id="objectivesForm">
             <?= csrf_field() ?>
             <div class="card table-card shadow-sm">
                 <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
@@ -330,7 +334,7 @@
             <!-- Floating Save Bar -->
             <div class="floating-save-bar">
                 <div class="d-flex align-items-center">
-                    <a href="<?= site_url('club/manage/' . $club->club_id) ?>" class="text-muted text-decoration-none smallest fw-bold me-4">
+                    <a href="<?= site_url($routePrefix . '/manage/' . $club->club_id) ?>" class="text-muted text-decoration-none smallest fw-bold me-4">
                         <i class="bi bi-arrow-left me-1"></i> ย้อนกลับ
                     </a>
                     <div class="vr me-4 opacity-10"></div>
@@ -354,7 +358,7 @@
         <div class="card shadow-sm rounded-4 border-0 p-5 text-center">
             <i class="bi bi-journal-x text-muted opacity-25" style="font-size: 5rem;"></i>
             <h4 class="mt-4 fw-bold text-dark">ยังไม่มีการกำหนดจุดประสงค์</h4>
-            <p class="text-muted">คุณครูจำเป็นต้องกำหนดจุดประสงค์ของกิจกรรมชุมนุมก่อน จึงจะสามารถประเมินผลนักเรียนได้ครับ</p>
+            <p class="text-muted">คุณครูจำเป็นต้องกำหนดจุดประสงค์ของกิจกรรม<?= $isScout ? 'ลูกเสือ' : 'ชุมนุม' ?>ก่อน จึงจะสามารถประเมินผลนักเรียนได้ครับ</p>
             <div class="mt-3">
                 <button type="button" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#manageObjectivesModal">
                     <i class="bi bi-plus-circle me-2"></i> เริ่มกำหนดจุดประสงค์
@@ -371,12 +375,12 @@
             <div class="modal-header bg-primary py-4 border-0">
                 <div class="text-start">
                     <h4 class="modal-title fw-bold text-white" id="manageObjectivesModalLabel">จัดการจุดประสงค์</h4>
-                    <p class="text-white text-opacity-75 small mb-0">เพิ่มหรือแก้ไขเกณฑ์การประเมินกิจกรรมชุมนุม</p>
+                    <p class="text-white text-opacity-75 small mb-0">เพิ่มหรือแก้ไขเกณฑ์การประเมินกิจกรรม<?= $isScout ? 'ลูกเสือ' : 'ชุมนุม' ?></p>
                 </div>
                 <button type="button" class="btn-close btn-close-white closeModalAndReload" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4 text-start">
-                <form action="<?= site_url('club/saveObjectiveDefinition/' . $club->club_id) ?>" method="post" id="objectiveDefinitionForm">
+                <form action="<?= site_url($routePrefix . '/saveObjectiveDefinition/' . $club->club_id) ?>" method="post" id="objectiveDefinitionForm">
                     <?= csrf_field() ?>
                     <input type="hidden" name="objective_id" id="objective_id">
                     
@@ -392,15 +396,16 @@
                                 <label for="objective_description">รายละเอียดเพิ่มเติม (ถ้ามี)</label>
                             </div>
                             <div class="row align-items-center">
-                                <div class="col-md-6">
+                                <div class="col-md-6 mb-3 mb-md-0">
                                     <div class="form-floating">
-                                        <input type="number" class="form-control" id="objective_order" name="objective_order" placeholder="ลำดับ" required>
-                                        <label for="objective_order">ลำดับที่แสดง <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control" id="objective_order" name="objective_order" placeholder="ลำดับ" value="<?= !empty($objectives) ? count($objectives) + 1 : 1 ?>" min="1" required>
+                                        <label for="objective_order">ลำดับที่แสดง</label>
                                     </div>
                                 </div>
-                                <div class="col-md-6 text-md-end mt-3 mt-md-0">
-                                    <button type="submit" class="btn btn-primary btn-lg rounded-pill px-4 shadow-sm w-100 fw-bold submit-with-loading">
-                                        <i class="bi bi-save-fill me-2"></i> บันทึกจุดประสงค์
+                                <div class="col-md-6 text-md-end">
+                                    <button type="button" class="btn btn-secondary rounded-pill px-3 me-2 d-none" id="cancelEditBtn">ยกเลิกแก้ไข</button>
+                                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" id="saveObjectiveBtn">
+                                        <i class="bi bi-check2-circle me-1"></i> บันทึกจุดประสงค์
                                     </button>
                                 </div>
                             </div>
@@ -410,22 +415,22 @@
 
                 <hr class="my-4 opacity-10">
 
-                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-list-check me-2"></i>จุดประสงค์ที่มีอยู่</h6>
-                <div id="objectives-list-container">
+                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-list-ol me-2 text-primary"></i>รายการจุดประสงค์ปัจจุบัน</h6>
+                <div id="objectivesListContainer">
                     <?php if (!empty($objectives)): ?>
-                        <div class="table-responsive rounded-3 border">
-                            <table class="table table-hover align-middle mb-0" id="objectives-modal-table">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle border rounded-3 overflow-hidden" id="objectives-modal-table">
                                 <thead class="bg-light">
                                     <tr>
-                                        <th class="text-center" style="width: 70px;">ลำดับ</th>
+                                        <th style="width: 70px;" class="text-center">ลำดับ</th>
                                         <th>ชื่อจุดประสงค์</th>
-                                        <th class="text-end" style="width: 180px;">จัดการ</th>
+                                        <th style="width: 140px;" class="text-end">จัดการ</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php foreach ($objectives as $objective): ?>
-                                        <tr>
-                                            <td class="text-center fw-bold"><?= esc($objective->objective_order) ?></td>
+                                        <tr id="objective-row-<?= esc($objective->objective_id) ?>">
+                                            <td class="text-center fw-bold text-muted"><?= esc($objective->objective_order) ?></td>
                                             <td>
                                                 <div class="fw-bold"><?= esc($objective->objective_name) ?></div>
                                                 <div class="smallest text-muted text-wrap"><?= esc($objective->objective_description) ?></div>
@@ -439,7 +444,7 @@
                                                         data-objective-order="<?= esc($objective->objective_order) ?>">
                                                         <i class="bi bi-pencil"></i>
                                                     </button>
-                                                    <a href="<?= site_url('club/deleteObjective/' . $club->club_id . '/' . $objective->objective_id) ?>"
+                                                    <a href="<?= site_url($routePrefix . '/deleteObjective/' . $club->club_id . '/' . $objective->objective_id) ?>"
                                                         class="btn btn-sm btn-outline-danger rounded-pill px-3 delete-objective-btn">
                                                         <i class="bi bi-trash"></i>
                                                     </a>
@@ -707,7 +712,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 data-objective-order="${obj.objective_order}">
                                 <i class="bi bi-pencil"></i>
                             </button>
-                            <a href="<?= site_url('club/deleteObjective/' . $club->club_id) ?>/${obj.objective_id}"
+                            <a href="<?= site_url($routePrefix . '/deleteObjective/' . $club->club_id) ?>/${obj.objective_id}"
                                 class="btn btn-sm btn-outline-danger rounded-pill px-3 delete-objective-btn">
                                 <i class="bi bi-trash"></i>
                             </a>

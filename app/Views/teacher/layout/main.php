@@ -235,6 +235,7 @@
         'reading_assessment' => 'แบบประเมินอ่านคิดวิเคราะห์',
         'desirable_assessment' => 'คุณลักษณะอันพึงประสงค์',
         'club' => 'งานพัฒนาผู้เรียน / บันทึกชุมนุม',
+        'scout' => 'งานพัฒนาผู้เรียน / บันทึกลูกเสือ',
         'attendance' => 'SKJ Check-In',
         'leave' => 'ระบบการลา',
         'evaluation' => 'การประเมินผลการปฏิบัติงาน',
@@ -332,7 +333,7 @@
                     </li>
                     
                     <!-- งานพัฒนาผู้เรียน -->
-                    <li class="menu-item <?= is_open_segment([['club']], $segments) ?>">
+                    <li class="menu-item <?= is_open_segment([['club'], ['scout']], $segments) ?>">
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
                             <i class="menu-icon tf-icons bi-person-arms-up"></i>
                             <div data-i18n="งานพัฒนาผู้เรียน">งานพัฒนาผู้เรียน</div>
@@ -341,6 +342,11 @@
                             <li class="menu-item <?= is_active_segment(['club'], $segments) ?>">
                                 <a href="<?= base_url('club') ?>" class="menu-link">
                                     <div data-i18n="บันทึกชุมนุม">บันทึกชุมนุม</div>
+                                </a>
+                            </li>
+                            <li class="menu-item <?= is_active_segment(['scout'], $segments) ?>">
+                                <a href="<?= base_url('scout') ?>" class="menu-link">
+                                    <div data-i18n="บันทึกลูกเสือ">บันทึกลูกเสือ</div>
                                 </a>
                             </li>
                         </ul>

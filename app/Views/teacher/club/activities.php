@@ -131,6 +131,71 @@
         font-weight: 700;
         font-size: 0.85rem;
     }
+    .table-attendance-fixed {
+        width: 100% !important;
+        table-layout: fixed;
+        font-size: 0.8rem;
+    }
+    .table-attendance-fixed th,
+    .table-attendance-fixed td {
+        padding: 6px 1px !important;
+        text-align: center;
+        vertical-align: middle;
+    }
+    .table-attendance-fixed .col-no {
+        width: 38px;
+    }
+    .table-attendance-fixed .col-name {
+        width: 155px;
+        text-align: left;
+        padding-left: 8px !important;
+    }
+    .table-attendance-fixed .col-class {
+        width: 44px;
+    }
+    .table-attendance-fixed .col-total {
+        width: 40px;
+    }
+    .table-attendance-fixed .col-result {
+        width: 52px;
+    }
+    .table-attendance-fixed .student-name-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+        max-width: 145px;
+        font-weight: 600;
+        color: #1e293b;
+        font-size: 0.82rem;
+    }
+    .table-attendance-fixed .month-header {
+        background: rgba(99, 102, 241, 0.05) !important;
+        color: #4338ca;
+        font-weight: 700;
+        font-size: 0.72rem;
+        padding: 3px 1px !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .table-attendance-fixed .day-header {
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 3px 0 !important;
+        color: #64748b;
+    }
+    .table-attendance-fixed .mark-icon {
+        font-size: 0.85rem;
+        line-height: 1;
+        display: inline-block;
+    }
+    .table-attendance-fixed .summary-badge {
+        padding: 0.2rem 0.4rem;
+        border-radius: 0.4rem;
+        font-weight: 700;
+        font-size: 0.75rem;
+    }
 </style>
 
 <div class="container-fluid py-2">
@@ -158,11 +223,15 @@
     <div class="activities-header">
         <div class="row align-items-center text-start">
             <div class="col-lg-8">
+                <?php 
+                    $isScout = !empty($isScout) || \App\Models\ClubModel::isScoutClub($club->club_name); 
+                    $routePrefix = !empty($routePrefix) ? $routePrefix : ($isScout ? 'scout' : 'club');
+                ?>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb breadcrumb-light mb-2">
                         <li class="breadcrumb-item"><a href="<?= site_url('home') ?>" class="text-white text-opacity-75">หน้าหลัก</a></li>
-                        <li class="breadcrumb-item"><a href="<?= site_url('club') ?>" class="text-white text-opacity-75">ชุมนุม</a></li>
-                        <li class="breadcrumb-item active text-white fw-bold" aria-current="page">รายงานสรุปผล</li>
+                        <li class="breadcrumb-item"><a href="<?= site_url($routePrefix) ?>" class="text-white text-opacity-75"><?= $isScout ? 'ลูกเสือ' : 'ชุมนุม' ?></a></li>
+                        <li class="breadcrumb-item active text-white fw-bold" aria-current="page"><?= $isScout ? 'รายงานสรุปผลกิจกรรมลูกเสือ' : 'รายงานสรุปผล' ?></li>
                     </ol>
                 </nav>
                 <h1 class="display-6 fw-bold text-white mb-2">
@@ -191,12 +260,12 @@
             </div>
             <div class="col-lg-4 mt-4 mt-lg-0">
                 <div class="d-flex flex-wrap justify-content-lg-end gap-2">
-                    <a href="<?= site_url('club/printActivitiesReport/' . $club->club_id) ?>" target="_blank" class="btn btn-print-pdf rounded-pill px-4 py-2">
+                    <a href="<?= site_url($routePrefix . '/printActivitiesReport/' . $club->club_id) ?>" target="_blank" class="btn btn-print-pdf rounded-pill px-4 py-2">
                         <i class="bi bi-printer-fill me-2"></i> พิมพ์รายงาน PDF
                     </a>
                     
                     <div class="btn-group shadow-sm rounded-pill overflow-hidden bg-white p-1">
-                        <a href="<?= site_url('club/manual') ?>" class="btn btn-manual-action border-0 rounded-pill px-3 py-2 small">
+                        <a href="<?= site_url($routePrefix . '/manual') ?>" class="btn btn-manual-action border-0 rounded-pill px-3 py-2 small">
                             <i class="bi bi-book-half me-2"></i> คู่มือ
                         </a>
                         <button type="button" class="btn btn-white border-0 rounded-pill px-3 py-2 text-muted" data-bs-toggle="modal" data-bs-target="#clubHelpModal">
@@ -225,8 +294,8 @@
             <?php endif; ?>
         </div>
         <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+            <div style="overflow-x: hidden; width: 100%;">
+                <table class="table table-hover align-middle mb-0 table-attendance-fixed">
                     <thead class="bg-light sticky-header">
                         <?php
                             $thaiMonths = [
@@ -237,24 +306,24 @@
                             ];
                         ?>
                         <tr class="text-center">
-                            <th rowspan="2" class="align-middle py-3" style="width: 60px;">เลขที่</th>
-                            <th rowspan="2" class="align-middle py-3 text-start" style="min-width: 200px;">ชื่อ - นามสกุล</th>
-                            <th rowspan="2" class="align-middle py-3" style="width: 80px;">ชั้น</th>
+                            <th rowspan="2" class="align-middle py-2 col-no">ที่</th>
+                            <th rowspan="2" class="align-middle py-2 text-start col-name">ชื่อ - นามสกุล</th>
+                            <th rowspan="2" class="align-middle py-2 col-class">ห้อง</th>
                             <?php foreach ($schedulesByMonth as $month => $schedulesInMonth): ?>
                                 <?php
                                     $englishMonthName = date('F', strtotime($month));
                                     $thaiMonthName = $thaiMonths[$englishMonthName] ?? $englishMonthName;
                                     $year = date('Y', strtotime($month));
                                 ?>
-                                <th colspan="<?= count($schedulesInMonth) ?>" class="month-header py-2"><?= $thaiMonthName . ' ' . ($year + 543) ?></th>
+                                <th colspan="<?= count($schedulesInMonth) ?>" class="month-header py-1"><?= $thaiMonthName . ' ' . substr((string)($year + 543), -2) ?></th>
                             <?php endforeach; ?>
-                            <th rowspan="2" class="align-middle py-3" style="width: 80px;">รวม</th>
-                            <th rowspan="2" class="align-middle py-3" style="width: 100px;">ผลเวลาเรียน</th>
+                            <th rowspan="2" class="align-middle py-2 col-total">รวม</th>
+                            <th rowspan="2" class="align-middle py-2 col-result">ผล</th>
                         </tr>
                         <tr class="text-center">
                             <?php foreach ($schedulesByMonth as $month => $schedulesInMonth): ?>
                                 <?php foreach ($schedulesInMonth as $schedule): ?>
-                                    <th class="py-2 smallest fw-bold" style="min-width: 40px;"><?= date('d', strtotime($schedule->tcs_start_date)) ?></th>
+                                    <th class="day-header"><?= (int)date('d', strtotime($schedule->tcs_start_date)) ?></th>
                                 <?php endforeach; ?>
                             <?php endforeach; ?>
                         </tr>
@@ -271,12 +340,11 @@
                         <?php if (!empty($members)): ?>
                             <?php foreach ($members as $member): ?>
                                 <tr>
-                                    <td class="text-center text-muted fw-bold"><?= esc($member->StudentNumber) ?></td>
-                                    <td class="text-start">
-                                        <div class="fw-bold text-dark"><?= esc($member->StudentPrefix . $member->StudentFirstName . ' ' . $member->StudentLastName) ?></div>
-                                        <div class="smallest text-muted">ID: <?= esc($member->StudentCode ?? $member->StudentID) ?></div>
+                                    <td class="text-center text-muted fw-bold col-no"><?= esc($member->StudentNumber) ?></td>
+                                    <td class="text-start col-name" title="<?= esc($member->StudentPrefix . $member->StudentFirstName . ' ' . $member->StudentLastName) ?>">
+                                        <span class="student-name-text"><?= esc($member->StudentPrefix . $member->StudentFirstName . ' ' . $member->StudentLastName) ?></span>
                                     </td>
-                                    <td class="text-center"><?= esc($member->StudentClass) ?></td>
+                                    <td class="text-center text-muted col-class smallest"><?= esc($member->StudentClass) ?></td>
                                     <?php 
                                         $totalPresent = 0;
                                         foreach ($schedulesByMonth as $month => $schedulesInMonth):
@@ -286,28 +354,28 @@
                                                     $totalPresent++;
                                                 }
                                     ?>
-                                        <td class="text-center">
+                                        <td class="text-center p-0">
                                             <?php if ($status === 'มา'): ?>
-                                                <i class="bi bi-check-circle-fill text-success" style="font-size: 1.1rem;"></i>
+                                                <i class="bi bi-check-circle-fill text-success mark-icon"></i>
                                             <?php elseif ($status === 'ขาด'): ?>
-                                                <i class="bi bi-x-circle-fill text-danger" style="font-size: 1.1rem;"></i>
+                                                <i class="bi bi-x-circle-fill text-danger mark-icon"></i>
                                             <?php else: ?>
-                                                <span class="text-muted fs-4">-</span>
+                                                <span class="text-muted smallest">-</span>
                                             <?php endif; ?>
                                         </td>
                                     <?php 
                                             endforeach;
                                         endforeach; 
                                     ?>
-                                    <td class="text-center fw-bold text-primary"><?= $totalPresent ?></td>
-                                    <td class="text-center">
+                                    <td class="text-center fw-bold text-primary col-total"><?= $totalPresent ?></td>
+                                    <td class="text-center col-result">
                                         <?php
                                             if ($totalDisplayedSchedules > 0) {
                                                 $percentage = ($totalPresent / $totalDisplayedSchedules) * 100;
                                                 $isPass = ($percentage >= 80);
                                                 echo '<span class="summary-badge ' . ($isPass ? 'badge-pass' : 'badge-fail') . '">' . ($isPass ? 'ผ' : 'มผ') . '</span>';
                                             } else {
-                                                echo '<span class="text-muted">-</span>';
+                                                echo '<span class="text-muted smallest">-</span>';
                                             }
                                         ?>
                                     </td>
@@ -396,7 +464,7 @@
                 <div class="p-5 text-center">
                     <i class="bi bi-journal-x text-muted opacity-25" style="font-size: 4rem;"></i>
                     <p class="text-muted mt-3 mb-0">ยังไม่มีการกำหนดจุดประสงค์สำหรับชุมนุมนี้</p>
-                    <a href="<?= site_url('club/objectives/' . $club->club_id) ?>" class="btn btn-link btn-sm mt-2">ไปที่หน้าประเมินจุดประสงค์</a>
+                    <a href="<?= site_url($routePrefix . '/objectives/' . $club->club_id) ?>" class="btn btn-link btn-sm mt-2">ไปที่หน้าประเมินจุดประสงค์</a>
                 </div>
             <?php endif; ?>
         </div>

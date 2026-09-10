@@ -10,6 +10,35 @@ class ClubController extends BaseController
     protected $clubModel;
     protected $currentAcademicYear;
     protected $currentTerm;
+    protected string $routePrefix = 'club';
+    protected bool $isScout = false;
+
+    protected function getRoutePrefix(): string
+    {
+        if ($this->routePrefix === 'scout' || str_starts_with(uri_string(), 'scout')) {
+            return 'scout';
+        }
+        return 'club';
+    }
+
+    protected function isScoutContext(?object $club = null): bool
+    {
+        if ($this->isScout || str_starts_with(uri_string(), 'scout')) {
+            return true;
+        }
+        if ($club && ClubModel::isScoutClub($club->club_name ?? '')) {
+            return true;
+        }
+        return false;
+    }
+
+    protected function renderClubView(string $viewPath, array $data = [])
+    {
+        $club = $data['club'] ?? null;
+        $data['routePrefix'] = $this->getRoutePrefix();
+        $data['isScout'] = $this->isScoutContext($club);
+        return view($viewPath, $data);
+    }
 
     public function __construct()
     {
@@ -55,14 +84,14 @@ class ClubController extends BaseController
         return 'closed'; // Default to closed if no settings found
     }
 
-    private function getTeacherId()
+    protected function getTeacherId()
     {
         $session = session();
         // Assuming 'person_id' is stored in the session after login
         return $session->get('person_id');
     }
 
-    private function isClubAdvisor(?string $teacherId, ?object $club): bool
+    protected function isClubAdvisor(?string $teacherId, ?object $club): bool
     {
         if (!$club || empty($teacherId)) {
             return false;
@@ -90,7 +119,7 @@ class ClubController extends BaseController
         }
 
         $data['title'] = "ชุมนุมที่ปรึกษา";
-        $data['clubs'] = $this->clubModel->getClubsByTeacher($teacherId, $this->currentAcademicYear, $this->currentTerm);
+        $data['clubs'] = $this->clubModel->getClubsByTeacher($teacherId, $this->currentAcademicYear, $this->currentTerm, 'club');
         $data['currentAcademicYear'] = $this->currentAcademicYear;
         $data['currentTerm'] = $this->currentTerm;
 
@@ -160,7 +189,7 @@ class ClubController extends BaseController
         // Verify ownership
         if (!$this->isClubAdvisor($teacherId, $club)) {
             session()->setFlashdata('error', 'ไม่พบชุมนุมหรือคุณไม่มีสิทธิ์แก้ไข');
-            return redirect()->to('club');
+            return redirect()->to($this->getRoutePrefix());
         }
 
         // Check if max participants is not less than current members
@@ -170,7 +199,7 @@ class ClubController extends BaseController
 
         if ($newMax < $memberCount) {
             session()->setFlashdata('error', 'จำนวนรับสูงสุดต้องไม่น้อยกว่าจำนวนสมาชิกปัจจุบัน (' . $memberCount . ' คน)');
-            return redirect()->to('club/manage/' . $clubId);
+            return redirect()->to($this->getRoutePrefix() . '/manage/' . $clubId);
         }
 
         $data = [
@@ -182,12 +211,12 @@ class ClubController extends BaseController
         ];
 
         if ($this->clubModel->update($clubId, $data)) {
-            session()->setFlashdata('success', 'อัปเดตข้อมูลชุมนุมสำเร็จ');
+            session()->setFlashdata('success', 'อัปเดตข้อมูลสำเร็จ');
         } else {
-            session()->setFlashdata('error', 'ไม่สามารถอัปเดตข้อมูลชุมนุมได้');
+            session()->setFlashdata('error', 'ไม่สามารถอัปเดตข้อมูลได้');
         }
 
-        return redirect()->to('club/manage/' . $clubId);
+        return redirect()->to($this->getRoutePrefix() . '/manage/' . $clubId);
     }
 
     public function updateMemberRole($clubId)
@@ -202,8 +231,8 @@ class ClubController extends BaseController
 
         // Verify ownership
         if (!$this->isClubAdvisor($teacherId, $club)) {
-            session()->setFlashdata('error', 'ไม่พบชุมนุมหรือคุณไม่มีสิทธิ์จัดการชุมนุมนี้');
-            return redirect()->to('club');
+            session()->setFlashdata('error', 'ไม่พบข้อมูลหรือคุณไม่มีสิทธิ์จัดการ');
+            return redirect()->to($this->getRoutePrefix());
         }
 
         $studentId = $this->request->getPost('student_id');
@@ -215,7 +244,7 @@ class ClubController extends BaseController
             session()->setFlashdata('error', 'ไม่สามารถอัปเดตบทบาทสมาชิกได้');
         }
 
-        return redirect()->to('club/manage/' . $clubId);
+        return redirect()->to($this->getRoutePrefix() . '/manage/' . $clubId);
     }
 
     public function removeMember($clubId, $studentId)
@@ -229,17 +258,17 @@ class ClubController extends BaseController
         $club = $this->clubModel->find($clubId);
 
         if (!$this->isClubAdvisor($teacherId, $club)) {
-            session()->setFlashdata('error', 'ไม่พบชุมนุมหรือคุณไม่มีสิทธิ์จัดการชุมนุมนี้');
-            return redirect()->to('club');
+            session()->setFlashdata('error', 'ไม่พบข้อมูลหรือคุณไม่มีสิทธิ์จัดการ');
+            return redirect()->to($this->getRoutePrefix());
         }
 
         if ($this->clubModel->removeMember($clubId, $studentId)) {
-            session()->setFlashdata('success', 'ลบสมาชิกออกจากชุมนุมสำเร็จ');
+            session()->setFlashdata('success', 'ลบสมาชิกสำเร็จ');
         } else {
-            session()->setFlashdata('error', 'ไม่สามารถลบสมาชิกออกจากชุมนุมได้');
+            session()->setFlashdata('error', 'ไม่สามารถลบสมาชิกได้');
         }
 
-        return redirect()->to('club/manage/' . $clubId);
+        return redirect()->to($this->getRoutePrefix() . '/manage/' . $clubId);
     }
 
     public function manage($clubId)
@@ -258,16 +287,17 @@ class ClubController extends BaseController
         $club = $this->clubModel->find($clubId);
 
         if (!$this->isClubAdvisor($teacherId, $club)) {
-            session()->setFlashdata('error', 'ไม่พบชุมนุมหรือคุณไม่มีสิทธิ์จัดการชุมนุมนี้');
-            return redirect()->to('club');
+            session()->setFlashdata('error', 'ไม่พบข้อมูลหรือคุณไม่มีสิทธิ์จัดการ');
+            return redirect()->to($this->getRoutePrefix());
         }
 
-        $data['title'] = "จัดการชุมนุม: " . $club->club_name;
+        $isScout = $this->isScoutContext($club);
+        $data['title'] = ($isScout ? "จัดการกองลูกเสือ: " : "จัดการชุมนุม: ") . $club->club_name;
         $data['club'] = $club;
         $data['members'] = $this->clubModel->getClubMembers($clubId);
         $data['advisors'] = $this->clubModel->getAdvisorsDetails($club->club_faculty_advisor);
 
-        return view('teacher/club/manage', $data);
+        return $this->renderClubView('teacher/club/manage', $data);
     }
 
     // --- Attendance Recording (Part D) ---
@@ -283,11 +313,12 @@ class ClubController extends BaseController
         $club = $this->clubModel->find($clubId);
 
         if (!$this->isClubAdvisor($teacherId, $club)) {
-            session()->setFlashdata('error', 'ไม่พบชุมนุมหรือคุณไม่มีสิทธิ์จัดการชุมนุมนี้');
-            return redirect()->to('club');
+            session()->setFlashdata('error', 'ไม่พบข้อมูลหรือคุณไม่มีสิทธิ์จัดการ');
+            return redirect()->to($this->getRoutePrefix());
         }
 
-        $data['title'] = "ตารางกิจกรรมชุมนุม: " . $club->club_name;
+        $isScout = $this->isScoutContext($club);
+        $data['title'] = ($isScout ? "ตารางกิจกรรมลูกเสือ: " : "ตารางกิจกรรมชุมนุม: ") . $club->club_name;
         $data['club'] = $club;
         $data['schedules'] = $this->clubModel->getSchedulesByYear($club->club_year, $club->club_trem, $clubId);
         $data['studyTimeInfo'] = $this->clubModel->getClubStudyTimeInfo($club);
@@ -297,7 +328,7 @@ class ClubController extends BaseController
             $schedule->attendance_recorded = $this->clubModel->hasAttendanceRecorded($schedule->tcs_schedule_id, (int)$clubId);
         }
 
-        return view('teacher/club/schedule', $data);
+        return $this->renderClubView('teacher/club/schedule', $data);
     }
 
     public function createSchedule($clubId)
@@ -311,8 +342,8 @@ class ClubController extends BaseController
         $club = $this->clubModel->find($clubId);
 
         if (!$this->isClubAdvisor($teacherId, $club)) {
-            session()->setFlashdata('error', 'ไม่พบชุมนุมหรือคุณไม่มีสิทธิ์จัดการชุมนุมนี้');
-            return redirect()->to('club');
+            session()->setFlashdata('error', 'ไม่พบข้อมูลหรือคุณไม่มีสิทธิ์จัดการ');
+            return redirect()->to($this->getRoutePrefix());
         }
 
         $data = [
@@ -328,7 +359,7 @@ class ClubController extends BaseController
             session()->setFlashdata('error', 'ไม่สามารถสร้างตารางกิจกรรมได้');
         }
 
-        return redirect()->to('club/schedule/' . $clubId);
+        return redirect()->to($this->getRoutePrefix() . '/schedule/' . $clubId);
     }
 
     public function saveActivity($clubId)
@@ -342,8 +373,8 @@ class ClubController extends BaseController
         $club = $this->clubModel->find($clubId);
 
         if (!$this->isClubAdvisor($teacherId, $club)) {
-            session()->setFlashdata('error', 'ไม่พบชุมนุมหรือคุณไม่มีสิทธิ์จัดการชุมนุมนี้');
-            return redirect()->to('club');
+            session()->setFlashdata('error', 'ไม่พบข้อมูลหรือคุณไม่มีสิทธิ์จัดการ');
+            return redirect()->to($this->getRoutePrefix());
         }
 
         $studyTimeInfo = $this->clubModel->getClubStudyTimeInfo($club);
@@ -366,7 +397,7 @@ class ClubController extends BaseController
         // Basic validation
         if (empty($data['act_date']) || empty($data['act_name'])) {
             session()->setFlashdata('error', 'กรุณากรอกข้อมูลกิจกรรมให้ครบถ้วน');
-            return redirect()->to('club/schedule/' . $clubId);
+            return redirect()->to($this->getRoutePrefix() . '/schedule/' . $clubId);
         }
 
         if ($this->clubModel->upsertActivity($data)) {
@@ -375,7 +406,7 @@ class ClubController extends BaseController
             session()->setFlashdata('error', 'ไม่สามารถบันทึกข้อมูลกิจกรรมได้');
         }
 
-        return redirect()->to('club/schedule/' . $clubId);
+        return redirect()->to($this->getRoutePrefix() . '/schedule/' . $clubId);
     }
 
 
@@ -392,10 +423,11 @@ class ClubController extends BaseController
 
         if (!$this->isClubAdvisor($teacherId, $club) || !$schedule) {
             session()->setFlashdata('error', 'ไม่พบข้อมูลหรือคุณไม่มีสิทธิ์จัดการ');
-            return redirect()->to('club');
+            return redirect()->to($this->getRoutePrefix());
         }
 
-        $data['title'] = "บันทึกการเข้าเรียนชุมนุม : " . $club->club_name . " - สัปดาห์ที่ " . $schedule->tcs_week_number;
+        $isScout = $this->isScoutContext($club);
+        $data['title'] = ($isScout ? "บันทึกการเข้าเรียนลูกเสือ : " : "บันทึกการเข้าเรียนชุมนุม : ") . $club->club_name . " - สัปดาห์ที่ " . $schedule->tcs_week_number;
         $data['club'] = $club;
         $data['schedule'] = $schedule;
         $data['members'] = $this->clubModel->getClubMembers($clubId);
@@ -424,7 +456,7 @@ class ClubController extends BaseController
         }
         $data['existingAttendance'] = $existingAttendance;
 
-        return view('teacher/club/record_attendance', $data);
+        return $this->renderClubView('teacher/club/record_attendance', $data);
     }
 
     public function saveAttendance($clubId, $scheduleId)
@@ -440,7 +472,7 @@ class ClubController extends BaseController
 
         if (!$this->isClubAdvisor($teacherId, $club) || !$schedule) {
             session()->setFlashdata('error', 'ไม่พบข้อมูลหรือคุณไม่มีสิทธิ์จัดการ');
-            return redirect()->to('club');
+            return redirect()->to($this->getRoutePrefix());
         }
 
         $attendanceData = $this->request->getPost('attendance'); // Array of student_id => status
@@ -482,7 +514,7 @@ class ClubController extends BaseController
             session()->setFlashdata('error', 'ไม่พบข้อมูลการเข้าเรียนที่จะบันทึก');
         }
 
-        return redirect()->to('club/recordAttendance/' . $clubId . '/' . $scheduleId);
+        return redirect()->to($this->getRoutePrefix() . '/recordAttendance/' . $clubId . '/' . $scheduleId);
     }
 
     // --- Activity Reports (Part E) ---
@@ -498,11 +530,12 @@ class ClubController extends BaseController
         $club = $this->clubModel->find($clubId);
 
         if (!$this->isClubAdvisor($teacherId, $club)) {
-            session()->setFlashdata('error', 'ไม่พบชุมนุมหรือคุณไม่มีสิทธิ์จัดการชุมนุมนี้');
-            return redirect()->to('club');
+            session()->setFlashdata('error', 'ไม่พบข้อมูลหรือคุณไม่มีสิทธิ์จัดการ');
+            return redirect()->to($this->getRoutePrefix());
         }
 
-        $data['title'] = "รายงานการบันทึกเวลาเรียน: " . $club->club_name;
+        $isScout = $this->isScoutContext($club);
+        $data['title'] = ($isScout ? "รายงานการบันทึกเวลาเรียนลูกเสือ: " : "รายงานการบันทึกเวลาเรียน: ") . $club->club_name;
         $data['club'] = $club;
         $data['members'] = $this->clubModel->getClubMembers($clubId);
         $data['studyTimeInfo'] = $this->clubModel->getClubStudyTimeInfo($club, $data['members']);
@@ -564,7 +597,7 @@ class ClubController extends BaseController
         }
         $data['objectiveProgressMap'] = $objectiveProgressMap;
 
-        return view('teacher/club/activities', $data);
+        return $this->renderClubView('teacher/club/activities', $data);
     }
 
     public function printActivitiesReport($clubId)
@@ -719,10 +752,12 @@ class ClubController extends BaseController
         // ผู้ดูแลกิจกรรม (All advisors)
         if (!empty($advisorNames)) {
             $data['evaluatorName'] = implode(', ', $advisorNames);
+            $data['advisorNames'] = $advisorNames;
         } else {
             // Fallback to current teacher if no advisors are listed
             $teacherInfo = $this->clubModel->getPersonnelFullName($teacherId);
             $data['evaluatorName'] = $teacherInfo ? $teacherInfo['pers_prefix'] . $teacherInfo['pers_firstname'] . ' ' . $teacherInfo['pers_lastname'] : '...........................................';
+            $data['advisorNames'] = [$data['evaluatorName']];
         }
 
         // หัวหน้ากิจกรรม (First advisor)
@@ -765,7 +800,7 @@ class ClubController extends BaseController
         // Fetch activities for the new page
         $data['activities'] = $this->clubModel->getActivitiesByClub($clubId);
 
-        return view('teacher/club/print_activities', $data);
+        return $this->renderClubView('teacher/club/print_activities', $data);
     }
 
     public function createActivity($clubId)
@@ -779,8 +814,8 @@ class ClubController extends BaseController
         $club = $this->clubModel->find($clubId);
 
         if (!$this->isClubAdvisor($teacherId, $club)) {
-            session()->setFlashdata('error', 'ไม่พบชุมนุมหรือคุณไม่มีสิทธิ์จัดการชุมนุมนี้');
-            return redirect()->to('club');
+            session()->setFlashdata('error', 'ไม่พบข้อมูลหรือคุณไม่มีสิทธิ์จัดการ');
+            return redirect()->to($this->getRoutePrefix());
         }
 
         $data = [
@@ -797,7 +832,7 @@ class ClubController extends BaseController
             session()->setFlashdata('error', 'ไม่สามารถสร้างกิจกรรมได้');
         }
 
-        return redirect()->to('club/activities/' . $clubId);
+        return redirect()->to($this->getRoutePrefix() . '/activities/' . $clubId);
     }
 
     public function editActivity($clubId, $activityId)
@@ -813,14 +848,15 @@ class ClubController extends BaseController
 
         if (!$this->isClubAdvisor($teacherId, $club) || !$activity || $activity->club_id != $clubId) {
             session()->setFlashdata('error', 'ไม่พบข้อมูลหรือคุณไม่มีสิทธิ์จัดการ');
-            return redirect()->to('club');
+            return redirect()->to($this->getRoutePrefix());
         }
 
-        $data['title'] = "แก้ไขกิจกรรม: " . $activity->activity_title;
+        $isScout = $this->isScoutContext($club);
+        $data['title'] = ($isScout ? "แก้ไขกิจกรรมลูกเสือ: " : "แก้ไขกิจกรรม: ") . $activity->activity_title;
         $data['club'] = $club;
         $data['activity'] = $activity;
 
-        return view('teacher/club/activities', $data); // Will use the same view with modal
+        return $this->renderClubView('teacher/club/activities', $data);
     }
 
     public function updateActivity($clubId, $activityId)
@@ -836,7 +872,7 @@ class ClubController extends BaseController
 
         if (!$this->isClubAdvisor($teacherId, $club) || !$activity || $activity->club_id != $clubId) {
             session()->setFlashdata('error', 'ไม่พบข้อมูลหรือคุณไม่มีสิทธิ์จัดการ');
-            return redirect()->to('club');
+            return redirect()->to($this->getRoutePrefix());
         }
 
         $data = [
@@ -852,7 +888,7 @@ class ClubController extends BaseController
             session()->setFlashdata('error', 'ไม่สามารถอัปเดตกิจกรรมได้');
         }
 
-        return redirect()->to('club/activities/' . $clubId);
+        return redirect()->to($this->getRoutePrefix() . '/activities/' . $clubId);
     }
 
     public function deleteActivity($clubId, $activityId)
@@ -868,7 +904,7 @@ class ClubController extends BaseController
 
         if (!$this->isClubAdvisor($teacherId, $club) || !$activity || $activity->club_id != $clubId) {
             session()->setFlashdata('error', 'ไม่พบข้อมูลหรือคุณไม่มีสิทธิ์จัดการ');
-            return redirect()->to('club');
+            return redirect()->to($this->getRoutePrefix());
         }
 
         if ($this->clubModel->deleteActivity($activityId)) {
@@ -877,7 +913,7 @@ class ClubController extends BaseController
             session()->setFlashdata('error', 'ไม่สามารถลบกิจกรรมได้');
         }
 
-        return redirect()->to('club/activities/' . $clubId);
+        return redirect()->to($this->getRoutePrefix() . '/activities/' . $clubId);
     }
 
     public function objectives($clubId)
@@ -891,18 +927,19 @@ class ClubController extends BaseController
         $club = $this->clubModel->find($clubId);
 
         if (!$this->isClubAdvisor($teacherId, $club)) {
-            session()->setFlashdata('error', 'ไม่พบชุมนุมหรือคุณไม่มีสิทธิ์จัดการชุมนุมนี้');
-            return redirect()->to('club');
+            session()->setFlashdata('error', 'ไม่พบข้อมูลหรือคุณไม่มีสิทธิ์จัดการ');
+            return redirect()->to($this->getRoutePrefix());
         }
 
-        $data['title'] = "จุดประสงค์กิจกรรม: " . $club->club_name;
+        $isScout = $this->isScoutContext($club);
+        $data['title'] = ($isScout ? "จุดประสงค์กิจกรรมลูกเสือ: " : "จุดประสงค์กิจกรรม: ") . $club->club_name;
         $data['club'] = $club;
         $data['members'] = $this->clubModel->getClubMembers($clubId);
         $data['studyTimeInfo'] = $this->clubModel->getClubStudyTimeInfo($club, $data['members']);
         $data['objectives'] = $this->clubModel->getObjectivesByClub($clubId);
         $data['progress'] = $this->clubModel->getClubStudentProgress($clubId);
 
-        return view('teacher/club/objectives', $data);
+        return $this->renderClubView('teacher/club/objectives', $data);
     }
 
     public function saveObjectives($clubId)
@@ -916,19 +953,19 @@ class ClubController extends BaseController
         $club = $this->clubModel->find($clubId);
 
         if (!$this->isClubAdvisor($teacherId, $club)) {
-            session()->setFlashdata('error', 'ไม่พบชุมนุมหรือคุณไม่มีสิทธิ์จัดการชุมนุมนี้');
-            return redirect()->to('club');
+            session()->setFlashdata('error', 'ไม่พบข้อมูลหรือคุณไม่มีสิทธิ์จัดการ');
+            return redirect()->to($this->getRoutePrefix());
         }
 
         $progressData = $this->request->getPost('progress');
         
         if ($this->clubModel->saveStudentProgress($clubId, $teacherId, $progressData)) {
-            session()->setFlashdata('success', 'บันทึกข้อมูลจุดประสงค์กิจกรรมสำเร็จ');
+            session()->setFlashdata('success', 'บันทึกข้อมูลจุดประสงค์สำเร็จ');
         } else {
             session()->setFlashdata('error', 'ไม่สามารถบันทึกข้อมูลได้');
         }
 
-        return redirect()->to('club/objectives/' . $clubId);
+        return redirect()->to($this->getRoutePrefix() . '/objectives/' . $clubId);
     }
 
     public function saveObjectiveDefinition($clubId)
@@ -942,8 +979,8 @@ class ClubController extends BaseController
         $club = $this->clubModel->find($clubId);
 
         if (!$this->isClubAdvisor($teacherId, $club)) {
-            session()->setFlashdata('error', 'ไม่พบชุมนุมหรือคุณไม่มีสิทธิ์จัดการชุมนุมนี้');
-            return redirect()->to('club');
+            session()->setFlashdata('error', 'ไม่พบข้อมูลหรือคุณไม่มีสิทธิ์จัดการ');
+            return redirect()->to($this->getRoutePrefix());
         }
 
         $objectiveId = $this->request->getPost('objective_id');
@@ -956,42 +993,42 @@ class ClubController extends BaseController
             'objective_name' => $objectiveName,
             'objective_description' => $objectiveDescription,
             'objective_order' => $objectiveOrder,
-            'created_by' => $teacherId, // Assuming created_by is the current teacher
+            'created_by' => $teacherId,
         ];
 
-    if (empty($objectiveId)) {
-        // Add new objective
-        if ($this->clubModel->addObjective($data)) {
-            $message = 'เพิ่มจุดประสงค์สำเร็จ';
-            $success = true;
+        if (empty($objectiveId)) {
+            // Add new objective
+            if ($this->clubModel->addObjective($data)) {
+                $message = 'เพิ่มจุดประสงค์สำเร็จ';
+                $success = true;
+            } else {
+                $message = 'ไม่สามารถเพิ่มจุดประสงค์ได้';
+                $success = false;
+            }
         } else {
-            $message = 'ไม่สามารถเพิ่มจุดประสงค์ได้';
-            $success = false;
+            // Update existing objective
+            if ($this->clubModel->updateObjective($objectiveId, $data)) {
+                $message = 'แก้ไขจุดประสงค์สำเร็จ';
+                $success = true;
+            } else {
+                $message = 'ไม่สามารถแก้ไขจุดประสงค์ได้';
+                $success = false;
+            }
         }
-    } else {
-        // Update existing objective
-        if ($this->clubModel->updateObjective($objectiveId, $data)) {
-            $message = 'แก้ไขจุดประสงค์สำเร็จ';
-            $success = true;
-        } else {
-            $message = 'ไม่สามารถแก้ไขจุดประสงค์ได้';
-            $success = false;
+
+        if ($this->request->isAJAX()) {
+            $objectives = $this->clubModel->getObjectivesByClub($clubId);
+            return $this->response->setJSON([
+                'success' => $success,
+                'message' => $message,
+                'objectives' => $objectives,
+                'csrf_token' => csrf_hash()
+            ]);
         }
-    }
 
-    if ($this->request->isAJAX()) {
-        $objectives = $this->clubModel->getObjectivesByClub($clubId);
-        return $this->response->setJSON([
-            'success' => $success,
-            'message' => $message,
-            'objectives' => $objectives,
-            'csrf_token' => csrf_hash()
-        ]);
+        $success ? session()->setFlashdata('success', $message) : session()->setFlashdata('error', $message);
+        return redirect()->to($this->getRoutePrefix() . '/objectives/' . $clubId);
     }
-
-    $success ? session()->setFlashdata('success', $message) : session()->setFlashdata('error', $message);
-    return redirect()->to('club/objectives/' . $clubId);
-}
 
     public function deleteObjective($clubId, $objectiveId)
     {
@@ -1004,8 +1041,8 @@ class ClubController extends BaseController
         $club = $this->clubModel->find($clubId);
 
         if (!$this->isClubAdvisor($teacherId, $club)) {
-            session()->setFlashdata('error', 'ไม่พบชุมนุมหรือคุณไม่มีสิทธิ์จัดการชุมนุมนี้');
-            return redirect()->to('club');
+            session()->setFlashdata('error', 'ไม่พบข้อมูลหรือคุณไม่มีสิทธิ์จัดการ');
+            return redirect()->to($this->getRoutePrefix());
         }
 
         if ($this->clubModel->deleteObjective($objectiveId)) {
@@ -1014,7 +1051,7 @@ class ClubController extends BaseController
             session()->setFlashdata('error', 'ไม่สามารถลบจุดประสงค์ได้');
         }
 
-        return redirect()->to('club/objectives/' . $clubId);
+        return redirect()->to($this->getRoutePrefix() . '/objectives/' . $clubId);
     }
 
     public function manual()
@@ -1024,8 +1061,9 @@ class ClubController extends BaseController
             return redirect()->to('login');
         }
 
-        $data['title'] = "คู่มือการใช้งานระบบชุมนุม";
+        $isScout = $this->isScoutContext();
+        $data['title'] = $isScout ? "คู่มือการใช้งานระบบกิจกรรมลูกเสือ - เนตรนารี" : "คู่มือการใช้งานระบบชุมนุม";
         
-        return view('teacher/club/manual', $data);
+        return $this->renderClubView('teacher/club/manual', $data);
     }
 }

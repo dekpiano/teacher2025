@@ -109,11 +109,15 @@
     <div class="schedule-header shadow-lg">
         <div class="row align-items-center text-start">
             <div class="col-lg-8">
+                <?php 
+                    $isScout = !empty($isScout) || \App\Models\ClubModel::isScoutClub($club->club_name);
+                    $routePrefix = !empty($routePrefix) ? $routePrefix : ($isScout ? 'scout' : 'club');
+                ?>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb breadcrumb-light mb-2">
                         <li class="breadcrumb-item"><a href="<?= site_url('home') ?>" class="text-white text-opacity-75">หน้าหลัก</a></li>
-                        <li class="breadcrumb-item"><a href="<?= site_url('club') ?>" class="text-white text-opacity-75">ชุมนุม</a></li>
-                        <li class="breadcrumb-item active text-white fw-bold" aria-current="page">ตารางกิจกรรม</li>
+                        <li class="breadcrumb-item"><a href="<?= site_url($routePrefix) ?>" class="text-white text-opacity-75"><?= $isScout ? 'ลูกเสือ' : 'ชุมนุม' ?></a></li>
+                        <li class="breadcrumb-item active text-white fw-bold" aria-current="page"><?= $isScout ? 'ตารางกิจกรรมลูกเสือ' : 'ตารางกิจกรรม' ?></li>
                     </ol>
                 </nav>
                 <h1 class="display-6 fw-bold text-white mb-2">
@@ -142,7 +146,7 @@
             <div class="col-lg-4 mt-4 mt-lg-0">
                 <div class="d-flex flex-wrap justify-content-lg-end gap-2">
                     <div class="btn-group shadow-sm rounded-pill overflow-hidden bg-white p-1">
-                        <a href="<?= site_url('club/manual') ?>" class="btn btn-white border-0 rounded-pill px-3 py-2 text-primary fw-bold small">
+                        <a href="<?= site_url($routePrefix . '/manual') ?>" class="btn btn-white border-0 rounded-pill px-3 py-2 text-primary fw-bold small">
                             <i class="bi bi-book-half me-2"></i> คู่มือ
                         </a>
                         <button type="button" class="btn btn-white border-0 rounded-pill px-3 py-2 text-muted" data-bs-toggle="modal" data-bs-target="#clubHelpModal">
@@ -204,7 +208,7 @@
                                             <?php if ($schedule->tcs_start_date == '0000-00-00' || empty($schedule->tcs_start_date)): ?>
                                                 <span class="text-muted"><i class="bi bi-dash-circle me-1"></i>รอกำหนดวันที่</span>
                                             <?php else: ?>
-                                                <i class="bi bi-calendar-event text-primary me-1"></i>
+                                                <i class="bi bi-calendar-check text-primary me-1"></i>
                                                 <?= esc(thai_date($schedule->tcs_start_date, 'short')) ?>
                                             <?php endif; ?>
                                         </div>
@@ -271,7 +275,7 @@
                                                     <i class="bi bi-lock-fill me-1"></i> เช็คชื่อ
                                                 </button>
                                             <?php else: ?>
-                                                <a href="<?= site_url('club/recordAttendance/' . $club->club_id . '/' . $schedule->tcs_schedule_id) ?>" class="btn btn-primary btn-sm btn-action shadow-sm">
+                                                <a href="<?= site_url($routePrefix . '/recordAttendance/' . $club->club_id . '/' . $schedule->tcs_schedule_id) ?>" class="btn btn-primary btn-sm btn-action shadow-sm">
                                                     <i class="bi bi-person-check me-1"></i> เช็คชื่อ
                                                 </a>
                                             <?php endif; ?>
@@ -297,7 +301,7 @@
 <div class="modal fade" id="activityModal" tabindex="-1" role="dialog" aria-labelledby="activityModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-            <form action="<?= site_url('club/saveActivity/' . $club->club_id) ?>" method="post" id="activityForm">
+            <form action="<?= site_url($routePrefix . '/saveActivity/' . $club->club_id) ?>" method="post" id="activityForm">
                 <?= csrf_field() ?>
                 <input type="hidden" name="activity_date" id="modal_activity_date">
                 <div class="modal-header bg-primary text-white border-0 py-4">

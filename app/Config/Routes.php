@@ -86,6 +86,36 @@ $routes->post('verify-email/reset-password', 'ControlTeacherVerification::resetP
         $routes->get('manual', 'ClubController::manual');
     });
 
+    // Scout Routes (งานพัฒนาผู้เรียน - กิจกรรมลูกเสือ)
+    $routes->group('scout', static function ($routes) {
+        $routes->get('', 'ScoutController::index');
+        $routes->get('manage/(:num)', 'ScoutController::manage/$1');
+        $routes->post('update/(:num)', 'ScoutController::update/$1');
+        $routes->post('updateMemberRole/(:num)', 'ScoutController::updateMemberRole/$1');
+        $routes->post('removeMember/(:num)/(:any)', 'ScoutController::removeMember/$1/$2');
+
+        // Attendance Routes
+        $routes->get('schedule/(:num)', 'ScoutController::showSchedule/$1');
+        $routes->post('createSchedule/(:num)', 'ScoutController::createSchedule/$1');
+        $routes->post('saveActivity/(:num)', 'ScoutController::saveActivity/$1');
+        $routes->get('recordAttendance/(:num)/(:num)', 'ScoutController::recordAttendance/$1/$2');
+        $routes->post('saveAttendance/(:num)/(:num)', 'ScoutController::saveAttendance/$1/$2');
+
+        // Activity Routes
+        $routes->get('activities/(:num)', 'ScoutController::showActivities/$1');
+        $routes->post('createActivity/(:num)', 'ScoutController::createActivity/$1');
+        $routes->post('updateActivity/(:num)/(:num)', 'ScoutController::updateActivity/$1/$2');
+        $routes->post('deleteActivity/(:num)/(:num)', 'ScoutController::deleteActivity/$1/$2');
+        $routes->get('printActivitiesReport/(:num)', 'ScoutController::printActivitiesReport/$1');
+
+        // Objectives Routes
+        $routes->get('objectives/(:num)', 'ScoutController::objectives/$1');
+        $routes->post('saveObjectives/(:num)', 'ScoutController::saveObjectives/$1');
+        $routes->post('saveObjectiveDefinition/(:num)', 'ScoutController::saveObjectiveDefinition/$1');
+        $routes->get('deleteObjective/(:num)/(:num)', 'ScoutController::deleteObjective/$1/$2');
+        $routes->get('manual', 'ScoutController::manual');
+    });
+
     // Assessment Routes for Head of Department
     $routes->group('assessment-head', ['namespace' => 'App\Controllers\Assessment'], static function ($routes) {
         $routes->get('check-score', 'ControllerCheckScore::checkScoreHead');
