@@ -8,22 +8,115 @@ use CodeIgniter\HTTP\ResponseInterface;
 class PaAgreementController extends BaseController
 {
     protected $paModel;
+    protected $configModel;
     protected $db;
     protected $db_personnel;
     protected $session;
 
     public function __construct()
     {
+        helper(['url', 'text', 'form']);
         $this->session = session();
         if (!$this->session->get('isLoggedIn')) {
             service('response')->redirect(base_url('login'))->send();
             exit;
         }
 
-        helper(['url', 'text', 'form']);
         $this->paModel = new \App\Models\PaAgreementModel();
+        $this->configModel = new \App\Models\PaAgreementConfigModel();
         $this->db = db_connect();
         $this->db_personnel = db_connect('personnel');
+    }
+
+    /**
+     * Check PA submission window status for a given fiscal year
+     */
+    private function getSubmissionStatus($year)
+    {
+        $config = $this->configModel->getConfigByYear($year);
+        $now = date('Y-m-d H:i:s');
+        
+        $isOpen = false;
+        $statusCode = 'no_config';
+        $statusText = 'ระบบเปิดรับเอกสาร';
+        $badgeClass = 'bg-label-success';
+        $message = '';
+
+        if ($config) {
+            $manualOpen = ((int)$config['conf_status'] === 1);
+            $hasStart = !empty($config['conf_start_datetime']);
+            $hasEnd = !empty($config['conf_end_datetime']);
+
+            if (!$manualOpen) {
+                $isOpen = false;
+                $statusCode = 'closed_manually';
+                $statusText = 'ปิดรับเอกสารชั่วคราว';
+                $badgeClass = 'bg-label-secondary';
+                $message = 'ระบบปิดรับการส่งเอกสารชั่วคราวโดยผู้ดูแลระบบ';
+            } elseif ($hasStart && $now < $config['conf_start_datetime']) {
+                $isOpen = false;
+                $statusCode = 'not_started';
+                $statusText = 'ยังไม่ถึงกำหนดเวลาส่ง';
+                $badgeClass = 'bg-label-warning';
+                $startFormatted = date('d/m/', strtotime($config['conf_start_datetime'])) . (date('Y', strtotime($config['conf_start_datetime'])) + 543) . ' เวลา ' . date('H:i', strtotime($config['conf_start_datetime'])) . ' น.';
+                $message = 'ยังไม่ถึงกำหนดเวลาเปิดรับเอกสาร (เริ่มเปิดระบบวันที่ ' . $startFormatted . ')';
+            } elseif ($hasEnd && $now > $config['conf_end_datetime']) {
+                $isOpen = false;
+                $statusCode = 'expired';
+                $statusText = 'สิ้นสุดกำหนดเวลาส่งแล้ว';
+                $badgeClass = 'bg-label-danger';
+                $endFormatted = date('d/m/', strtotime($config['conf_end_datetime'])) . (date('Y', strtotime($config['conf_end_datetime'])) + 543) . ' เวลา ' . date('H:i', strtotime($config['conf_end_datetime'])) . ' น.';
+                $message = 'หมดเวลาการส่งเอกสารสำหรับปีงบประมาณนี้แล้ว (สิ้นสุดเมื่อวันที่ ' . $endFormatted . ')';
+            } else {
+                $isOpen = true;
+                $statusCode = 'open';
+                $statusText = 'ระบบเปิดรับเอกสาร';
+                $badgeClass = 'bg-label-success';
+                if ($hasEnd) {
+                    $endFormatted = date('d/m/', strtotime($config['conf_end_datetime'])) . (date('Y', strtotime($config['conf_end_datetime'])) + 543) . ' เวลา ' . date('H:i', strtotime($config['conf_end_datetime'])) . ' น.';
+                    $message = 'เปิดรับเอกสารถึงวันที่ ' . $endFormatted;
+                }
+            }
+        } else {
+            // Default: if no config row exists, consider open
+            $isOpen = true;
+            $statusCode = 'open';
+            $statusText = 'ระบบเปิดรับเอกสาร';
+            $badgeClass = 'bg-label-success';
+        }
+
+        // Remaining time text if open and end date is set
+        $remainingText = '';
+        if ($isOpen && !empty($config['conf_end_datetime'])) {
+            $diff = strtotime($config['conf_end_datetime']) - strtotime($now);
+            if ($diff > 0) {
+                $days = floor($diff / 86400);
+                $hours = floor(($diff % 86400) / 3600);
+                $mins = floor(($diff % 3600) / 60);
+                if ($days > 0) {
+                    $remainingText = "เหลือเวลาอีก {$days} วัน {$hours} ชั่วโมง";
+                } elseif ($hours > 0) {
+                    $remainingText = "เหลือเวลาอีก {$hours} ชั่วโมง {$mins} นาที";
+                } else {
+                    $remainingText = "เหลือเวลาอีก {$mins} นาที";
+                }
+            }
+        }
+
+        return [
+            'is_open'        => $isOpen,
+            'status_code'    => $statusCode,
+            'status_text'    => $statusText,
+            'badge_class'    => $badgeClass,
+            'message'        => $message,
+            'remaining_text' => $remainingText,
+            'config'         => $config,
+            'note'           => $config['conf_note'] ?? null,
+            'start_datetime' => $config['conf_start_datetime'] ?? null,
+            'end_datetime'   => $config['conf_end_datetime'] ?? null,
+            'start_thai'     => !empty($config['conf_start_datetime']) ? date('d/m/', strtotime($config['conf_start_datetime'])) . (date('Y', strtotime($config['conf_start_datetime'])) + 543) . ' เวลา ' . date('H:i', strtotime($config['conf_start_datetime'])) . ' น.' : null,
+            'end_thai'       => !empty($config['conf_end_datetime']) ? date('d/m/', strtotime($config['conf_end_datetime'])) . (date('Y', strtotime($config['conf_end_datetime'])) + 543) . ' เวลา ' . date('H:i', strtotime($config['conf_end_datetime'])) . ' น.' : null,
+        ];
     }
 
     /**
@@ -92,6 +185,7 @@ class PaAgreementController extends BaseController
         $data['current_year'] = $currentYear;
         $data['agreement'] = $this->paModel->getAgreement($personId, $currentYear);
         $data['history'] = $this->paModel->getHistory($personId);
+        $data['system_config'] = $this->getSubmissionStatus($currentYear);
 
         return view('teacher/pa_agreement/pa_agreement_main', $data);
     }
@@ -104,6 +198,15 @@ class PaAgreementController extends BaseController
         $post = $this->request->getPost();
         $teacherId = $this->session->get('person_id');
         $year = $post['pa_year'] ?? $this->getCurrentFiscalYear();
+
+        // Check if submission is open
+        $systemConfig = $this->getSubmissionStatus($year);
+        if (!$systemConfig['is_open']) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'ขออภัย ไม่สามารถส่งงานได้ เนื่องจากระบบปิดรับเอกสารแล้ว (' . $systemConfig['status_text'] . ')'
+            ]);
+        }
 
         $existing = $this->paModel->getAgreement($teacherId, $year);
 
@@ -170,6 +273,22 @@ class PaAgreementController extends BaseController
         $file = $this->request->getFile('file');
         $post = $this->request->getPost();
         
+        $path = $post['path'] ?? '';
+        $chunkYear = null;
+        if (preg_match('/pa_agreement\/(\d{4})/', $path, $matches)) {
+            $chunkYear = $matches[1];
+        }
+        $chunkYear = $chunkYear ?: $this->getCurrentFiscalYear();
+
+        // Check submission window
+        $windowStatus = $this->getSubmissionStatus($chunkYear);
+        if (!$windowStatus['is_open']) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'ขออภัย ไม่สามารถอัปโหลดไฟล์ได้ เนื่องจากระบบปิดรับเอกสารแล้ว (' . $windowStatus['status_text'] . ')'
+            ]);
+        }
+
         $uploadUrl = env('upload.server.url');
         $client = \Config\Services::curlrequest();
 
@@ -225,6 +344,15 @@ class PaAgreementController extends BaseController
         }
 
         $year = $agreement['pa_year'];
+
+        // Check if submission is open
+        $windowStatus = $this->getSubmissionStatus($year);
+        if (!$windowStatus['is_open'] && $this->session->get('person_id') !== 'admin') {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'ขออภัย ไม่สามารถลบข้อมูลได้ เนื่องจากระบบปิดรับเอกสารแล้ว (' . $windowStatus['status_text'] . ')'
+            ]);
+        }
 
         if ($type === 'presentation') {
             $this->paModel->update($id, ['pa_presentation_link' => null]);

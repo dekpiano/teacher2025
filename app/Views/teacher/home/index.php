@@ -838,8 +838,15 @@
                         <a href="<?= base_url('pa-agreement') ?>" class="luxe-card">
                             <i class="bi bi-journal-bookmark-fill card-icon text-primary"></i>
                             <div class="card-text">
-                                <h6>การประเมินผลการพัฒนางานตามข้อตกลง (PA)</h6>
-                                <p>ส่งสื่อนำเสนอ, แผนการสอน, PA1</p>
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <h6 class="mb-1">การประเมินผลการพัฒนางานตามข้อตกลง (PA)</h6>
+                                    <?php if (isset($isPAOpen) && $isPAOpen): ?>
+                                        <span class="badge bg-label-success rounded-pill px-2 py-1 ms-1" style="font-size: 0.7rem;"><i class="bi bi-circle-fill me-1" style="font-size: 0.45rem;"></i>เปิดรับส่ง</span>
+                                    <?php else: ?>
+                                        <span class="badge bg-label-danger rounded-pill px-2 py-1 ms-1" style="font-size: 0.7rem;"><i class="bi bi-lock-fill me-1"></i>ปิดรับส่ง</span>
+                                    <?php endif; ?>
+                                </div>
+                                <p class="mb-0">ส่งสื่อนำเสนอ, แผนการสอน, PA1</p>
                             </div>
                         </a>
                     </div>

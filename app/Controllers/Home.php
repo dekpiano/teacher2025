@@ -133,6 +133,24 @@ class Home extends BaseController
             }
         }
 
+        $isPAOpen = true;
+        if ($isPAPermitted) {
+            $paConfigModel = new \App\Models\PaAgreementConfigModel();
+            $month = (int)date('n');
+            $fy = (int)date('Y') + 543;
+            if ($month >= 10) $fy++;
+            $paConfig = $paConfigModel->getConfigByYear($fy);
+            $now = date('Y-m-d H:i:s');
+            if ($paConfig) {
+                $manualOpen = ((int)$paConfig['conf_status'] === 1);
+                $hasStart = !empty($paConfig['conf_start_datetime']);
+                $hasEnd = !empty($paConfig['conf_end_datetime']);
+                if (!$manualOpen || ($hasStart && $now < $paConfig['conf_start_datetime']) || ($hasEnd && $now > $paConfig['conf_end_datetime'])) {
+                    $isPAOpen = false;
+                }
+            }
+        }
+
         // Fetch today's check-in record and system settings
         $attendanceModel = new \App\Models\AttendanceModel();
         $todayRecord = $attendanceModel->getTodayRecord($session->get('person_id'));
@@ -147,6 +165,7 @@ class Home extends BaseController
         // Prepare data for the view
         $data = [
             'isPAPermitted'         => $isPAPermitted,
+            'isPAOpen'              => $isPAOpen,
             'title'                 => 'หน้าแรก',
             'CheckHomeVisitManager' => $CheckHomeVisitManager,
             'OnOff'                 => $OnOff,

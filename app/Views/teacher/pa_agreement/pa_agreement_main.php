@@ -79,6 +79,13 @@
         padding: 8px 10px;
         margin-top: 8px;
     }
+    .dropzone-box.dropzone-disabled {
+        pointer-events: none !important;
+        opacity: 0.55 !important;
+        background-color: #f1f5f9 !important;
+        cursor: not-allowed !important;
+        border-color: #cbd5e1 !important;
+    }
 </style>
 
 <div class="row">
@@ -104,15 +111,62 @@
                         </div>
                     </div>
 
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-label-success px-3 py-2 fs-7 rounded-pill">
-                            <i class="bi bi-check-circle-fill me-1"></i> ระบบเปิดรับเอกสาร
-                        </span>
+                    <div class="d-flex align-items-center gap-2 flex-wrap justify-content-md-end">
+                        <?php if ($system_config['is_open']): ?>
+                            <span class="badge bg-label-success px-3 py-2 fs-7 rounded-pill fw-bold">
+                                <i class="bi bi-check-circle-fill me-1"></i> <?= esc($system_config['status_text']) ?>
+                            </span>
+                            <?php if (!empty($system_config['remaining_text'])): ?>
+                                <span class="badge bg-label-primary px-3 py-2 fs-7 rounded-pill fw-bold">
+                                    <i class="bi bi-stopwatch me-1"></i> <?= esc($system_config['remaining_text']) ?>
+                                </span>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            <span class="badge <?= esc($system_config['badge_class']) ?> px-3 py-2 fs-7 rounded-pill fw-bold">
+                                <i class="bi bi-lock-fill me-1"></i> <?= esc($system_config['status_text']) ?>
+                            </span>
+                        <?php endif; ?>
                     </div>
                 </div>
 
+                <!-- Window Status Alert Banner (Shown when Closed or Outside Submission Window) -->
+                <?php if (!$system_config['is_open']): ?>
+                    <div class="alert alert-danger d-flex align-items-start py-3 px-3 mt-3 mb-0 rounded-3 border-0 bg-label-danger" role="alert">
+                        <i class="bi bi-exclamation-octagon-fill me-2 fs-4 text-danger flex-shrink-0 mt-1"></i>
+                        <div>
+                            <div class="fw-bold fs-6 mb-1 text-danger">
+                                ระบบปิดรับการส่งและแก้ไขเอกสาร PA ประจำปีงบประมาณ <?= $current_year ?>
+                            </div>
+                            <div class="small text-dark">
+                                <?= esc($system_config['message']) ?>
+                            </div>
+                            <?php if (!empty($system_config['note'])): ?>
+                                <div class="mt-2 p-2 bg-white rounded-2 border border-danger border-opacity-25 small text-secondary">
+                                    <i class="bi bi-info-circle-fill me-1 text-danger"></i> <strong>คำชี้แจงจากงานบุคลากร:</strong> <?= esc($system_config['note']) ?>
+                                </div>
+                            <?php endif; ?>
+                            <div class="mt-2 x-small text-muted">
+                                <i class="bi bi-shield-check me-1"></i> คุณครูยังสามารถคลิกเปิดดู หรือดาวน์โหลดเอกสารที่เคยส่งไว้ก่อนหน้านี้ได้ตามปกติ
+                            </div>
+                        </div>
+                    </div>
+                <?php elseif (!empty($system_config['start_thai']) || !empty($system_config['end_thai']) || !empty($system_config['note'])): ?>
+                    <div class="alert alert-info d-flex align-items-center py-2 px-3 mt-3 mb-0 rounded-3 border-0 bg-label-info" role="alert">
+                        <i class="bi bi-calendar-check-fill me-2 fs-5 text-info"></i>
+                        <div class="small">
+                            <strong>กำหนดเวลาส่งงาน:</strong> 
+                            <?= !empty($system_config['start_thai']) ? 'เริ่ม ' . esc($system_config['start_thai']) : '' ?>
+                            <?= (!empty($system_config['start_thai']) && !empty($system_config['end_thai'])) ? ' ถึง ' : '' ?>
+                            <?= !empty($system_config['end_thai']) ? esc($system_config['end_thai']) : 'ไม่จำกัดเวลาสิ้นสุด' ?>
+                            <?php if (!empty($system_config['note'])): ?>
+                                | <span class="text-dark fw-semibold"><?= esc($system_config['note']) ?></span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
                 <!-- Prominent Notice Banner -->
-                <div class="alert alert-warning d-flex align-items-center py-2 px-3 mt-3 mb-0 rounded-3 border-0 bg-label-warning" role="alert">
+                <div class="alert alert-warning d-flex align-items-center py-2 px-3 mt-2 mb-0 rounded-3 border-0 bg-label-warning" role="alert">
                     <i class="bi bi-shield-lock-fill me-2 fs-5 text-warning"></i>
                     <div class="small fw-semibold">
                         <span class="fw-bold text-dark">หมายเหตุสำคัญ:</span> ระบบข้อตกลงในการพัฒนางาน (PA) นี้ <strong>ใช้เฉพาะข้าราชการครูเท่านั้น</strong> (ครูอัตราจ้าง / เจ้าหน้าที่ ไม่จำเป็นต้องส่งในส่วนนี้)
@@ -193,12 +247,12 @@
                                     </label>
                                     <div class="input-group input-group-sm">
                                         <span class="input-group-text"><i class="bi bi-link-45deg"></i></span>
-                                        <input type="url" class="form-control form-control-sm" id="pa_presentation_link" name="pa_presentation_link" placeholder="https://..." value="<?= $agreement['pa_presentation_link'] ?? '' ?>">
+                                        <input type="url" class="form-control form-control-sm" id="pa_presentation_link" name="pa_presentation_link" placeholder="https://..." value="<?= $agreement['pa_presentation_link'] ?? '' ?>" <?= !$system_config['is_open'] ? 'disabled' : '' ?>>
                                     </div>
                                 </div>
 
-                                <button type="button" id="btn-save-link" class="btn btn-primary btn-sm w-100 shadow-xs">
-                                    <i class="bi bi-link-45deg me-1"></i> บันทึกลิ้งก์สื่อนำเสนอ
+                                <button type="button" id="btn-save-link" class="btn <?= $system_config['is_open'] ? 'btn-primary' : 'btn-secondary' ?> btn-sm w-100 shadow-xs" <?= !$system_config['is_open'] ? 'disabled' : '' ?>>
+                                    <i class="bi bi-link-45deg me-1"></i> <?= $system_config['is_open'] ? 'บันทึกลิ้งก์สื่อนำเสนอ' : 'ระบบปิดรับการส่งงาน' ?>
                                 </button>
 
                                 <hr class="my-2">
@@ -209,10 +263,13 @@
 
                                 <!-- Dropzone for Presentation File -->
                                 <input type="file" id="pa_file_presentation" accept=".ppt,.pptx,.pdf,.mp4,.avi,.mov" class="d-none">
-                                <div class="dropzone-box" id="dropzone_presentation">
-                                    <i class="bi bi-cloud-arrow-up-fill dropzone-icon text-danger"></i>
-                                    <div class="small fw-bold text-dark">ลากและวางไฟล์สื่อนำเสนอที่นี่</div>
-                                    <div class="x-small text-muted">หรือ <span class="text-danger fw-semibold">คลิกเลือกไฟล์</span> (PPT, PDF, MP4 สูงสุด 100MB)</div>
+                                <div class="dropzone-box <?= !$system_config['is_open'] ? 'dropzone-disabled' : '' ?>" id="dropzone_presentation">
+                                    <?php if (!$system_config['is_open']): ?>
+                                        <span class="badge bg-danger px-3 py-1 rounded-pill mb-2"><i class="bi bi-lock-fill me-1"></i> ปิดรับการส่งไฟล์</span>
+                                    <?php endif; ?>
+                                    <i class="bi bi-cloud-arrow-up-fill dropzone-icon <?= $system_config['is_open'] ? 'text-danger' : 'text-muted' ?>"></i>
+                                    <div class="small fw-bold text-dark"><?= $system_config['is_open'] ? 'ลากและวางไฟล์สื่อนำเสนอที่นี่' : 'ปิดรับการอัปโหลดไฟล์' ?></div>
+                                    <div class="x-small text-muted"><?= $system_config['is_open'] ? 'หรือ <span class="text-danger fw-semibold">คลิกเลือกไฟล์</span> (PPT, PDF, MP4 สูงสุด 100MB)' : 'อยู่นอกกำหนดเวลาการส่งงาน' ?></div>
                                 </div>
 
                                 <!-- Selected File Badge -->
@@ -235,8 +292,8 @@
                                     <div class="progress-bar bg-danger progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
                                 </div>
                             </div>
-                            <button type="button" id="btn-save-presentation-file" class="btn btn-danger btn-sm w-100 mt-2 shadow-xs">
-                                <i class="bi bi-cloud-arrow-up me-1"></i> บันทึกไฟล์สื่อนำเสนอ
+                            <button type="button" id="btn-save-presentation-file" class="btn <?= $system_config['is_open'] ? 'btn-danger' : 'btn-secondary' ?> btn-sm w-100 mt-2 shadow-xs" <?= !$system_config['is_open'] ? 'disabled' : '' ?>>
+                                <i class="bi bi-cloud-arrow-up me-1"></i> <?= $system_config['is_open'] ? 'บันทึกไฟล์สื่อนำเสนอ' : 'ระบบปิดรับการส่งไฟล์' ?>
                             </button>
                         </div>
                     </div>
@@ -281,10 +338,13 @@
 
                                 <!-- Dropzone for Lesson Plan -->
                                 <input type="file" id="pa_file_lesson_plan" accept=".pdf" class="d-none">
-                                <div class="dropzone-box" id="dropzone_lesson_plan">
-                                    <i class="bi bi-cloud-arrow-up-fill dropzone-icon text-info"></i>
-                                    <div class="small fw-bold text-dark">ลากและวางไฟล์แผนการสอนที่นี่</div>
-                                    <div class="x-small text-muted">หรือ <span class="text-info fw-semibold">คลิกเลือกไฟล์</span> (PDF สูงสุด 20MB)</div>
+                                <div class="dropzone-box <?= !$system_config['is_open'] ? 'dropzone-disabled' : '' ?>" id="dropzone_lesson_plan">
+                                    <?php if (!$system_config['is_open']): ?>
+                                        <span class="badge bg-danger px-3 py-1 rounded-pill mb-2"><i class="bi bi-lock-fill me-1"></i> ปิดรับการส่งไฟล์</span>
+                                    <?php endif; ?>
+                                    <i class="bi bi-cloud-arrow-up-fill dropzone-icon <?= $system_config['is_open'] ? 'text-info' : 'text-muted' ?>"></i>
+                                    <div class="small fw-bold text-dark"><?= $system_config['is_open'] ? 'ลากและวางไฟล์แผนการสอนที่นี่' : 'ปิดรับการอัปโหลดไฟล์' ?></div>
+                                    <div class="x-small text-muted"><?= $system_config['is_open'] ? 'หรือ <span class="text-info fw-semibold">คลิกเลือกไฟล์</span> (PDF สูงสุด 20MB)' : 'อยู่นอกกำหนดเวลาการส่งงาน' ?></div>
                                 </div>
 
                                 <!-- Selected File Badge -->
@@ -307,8 +367,8 @@
                                     <div class="progress-bar bg-info progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
                                 </div>
                             </div>
-                            <button type="button" id="btn-save-lesson-plan" class="btn btn-info text-white btn-sm w-100 mt-3 shadow-xs">
-                                <i class="bi bi-cloud-arrow-up me-1"></i> บันทึกไฟล์แผนการสอน
+                            <button type="button" id="btn-save-lesson-plan" class="btn <?= $system_config['is_open'] ? 'btn-info text-white' : 'btn-secondary' ?> btn-sm w-100 mt-3 shadow-xs" <?= !$system_config['is_open'] ? 'disabled' : '' ?>>
+                                <i class="bi bi-cloud-arrow-up me-1"></i> <?= $system_config['is_open'] ? 'บันทึกไฟล์แผนการสอน' : 'ระบบปิดรับการส่งไฟล์' ?>
                             </button>
                         </div>
                     </div>
@@ -521,6 +581,7 @@
 <script>
     $(document).ready(function() {
         const year = '<?= $current_year ?>';
+        const isSystemOpen = <?= $system_config['is_open'] ? 'true' : 'false' ?>;
         const CHUNK_SIZE = 1024 * 900; // 900KB chunk (Bypass Nginx 1MB limit & Reduce chunk count)
 
         // Modal notification on page load
@@ -674,6 +735,15 @@
 
             // Click dropzone to trigger input
             dropzone.on('click', function() {
+                if (!isSystemOpen) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'ระบบปิดรับการส่งเอกสาร',
+                        text: 'ขออภัย ระบบปิดรับการส่งหรือแก้ไขเอกสาร PA ประจำปีงบประมาณนี้แล้ว',
+                        confirmButtonColor: '#ff3e1d'
+                    });
+                    return;
+                }
                 input.trigger('click');
             });
 
@@ -701,6 +771,15 @@
 
             // Handle dropped files
             dropzone[0].addEventListener('drop', function(e) {
+                if (!isSystemOpen) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'ระบบปิดรับการส่งเอกสาร',
+                        text: 'ขออภัย ระบบปิดรับการส่งหรือแก้ไขเอกสาร PA ประจำปีงบประมาณนี้แล้ว',
+                        confirmButtonColor: '#ff3e1d'
+                    });
+                    return;
+                }
                 const dt = e.dataTransfer;
                 const files = dt.files;
                 if (files.length > 0) {
@@ -770,6 +849,16 @@
 
         // 1. Save Presentation Link
         $('#btn-save-link').on('click', function() {
+            if (!isSystemOpen) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ระบบปิดรับการส่งเอกสาร',
+                    text: 'ขออภัย ระบบปิดรับการส่งเอกสาร PA ประจำปีงบประมาณนี้แล้ว',
+                    confirmButtonColor: '#ff3e1d'
+                });
+                return;
+            }
+
             const link = $('#pa_presentation_link').val().trim();
             if (!link) {
                 Swal.fire('ข้อผิดพลาด', 'กรุณาระบุ URL ลิ้งก์สื่อนำเสนอ', 'warning');
@@ -806,6 +895,16 @@
 
         // 2. Save Lesson Plan PDF
         $('#btn-save-lesson-plan').on('click', async function() {
+            if (!isSystemOpen) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ระบบปิดรับการส่งเอกสาร',
+                    text: 'ขออภัย ระบบปิดรับการส่งเอกสาร PA ประจำปีงบประมาณนี้แล้ว',
+                    confirmButtonColor: '#ff3e1d'
+                });
+                return;
+            }
+
             const fileInput = $('#pa_file_lesson_plan')[0];
             const file = fileInput ? fileInput.files[0] : null;
             if (!file) {
@@ -859,6 +958,16 @@
 
         // 3. Save Presentation File
         $('#btn-save-presentation-file').on('click', async function() {
+            if (!isSystemOpen) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ระบบปิดรับการส่งเอกสาร',
+                    text: 'ขออภัย ระบบปิดรับการส่งเอกสาร PA ประจำปีงบประมาณนี้แล้ว',
+                    confirmButtonColor: '#ff3e1d'
+                });
+                return;
+            }
+
             const fileInput = $('#pa_file_presentation')[0];
             const file = fileInput ? fileInput.files[0] : null;
             if (!file) {
@@ -916,6 +1025,16 @@
         // Delete Handler
         $('.btn-delete').on('click', function(e) {
             e.preventDefault();
+
+            if (!isSystemOpen) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ระบบปิดรับเอกสาร',
+                    text: 'ขออภัย ไม่สามารถลบหรือแก้ไขข้อมูลได้ เนื่องจากระบบปิดรับเอกสารแล้ว',
+                    confirmButtonColor: '#ff3e1d'
+                });
+                return;
+            }
             const id = $(this).data('id');
             const type = $(this).data('type');
 
