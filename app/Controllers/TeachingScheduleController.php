@@ -801,24 +801,44 @@ class TeachingScheduleController extends BaseController
     public function getStudentStudyPlans(): array
     {
         try {
-            $builder = $this->db->table('tb_students')
-                ->select('DISTINCT(TRIM(StudentStudyLine)) as study_plan', false)
-                ->where('StudentStudyLine IS NOT NULL')
-                ->where('TRIM(StudentStudyLine) !=', '')
-                ->where('TRIM(StudentStudyLine) !=', '-')
-                ->orderBy('study_plan', 'ASC');
-
-            $results = $builder->get()->getResultArray();
             $plans = [];
-            foreach ($results as $r) {
-                $p = trim($r['study_plan'] ?? '');
-                // คัดกรองเฉพาะแผนการเรียนที่เป็นตัวย่อภาษาอังกฤษมาตรฐาน (ไม่เอาชื่อคนหรือข้อความภาษาไทยที่ปะปนในฐานข้อมูล)
-                if (!empty($p) && preg_match('/^[A-Za-z0-9\(\)\-]+$/', $p) && !in_array($p, $plans)) {
-                    $plans[] = $p;
+
+            // 1. ดึงแผนจากตาราง Master tb_classroom_study_plans ที่คำนวณจากนักเรียนปัจจุบัน
+            if ($this->db->tableExists('tb_classroom_study_plans')) {
+                $rows = $this->db->table('tb_classroom_study_plans')->select('study_plan')->get()->getResultArray();
+                foreach ($rows as $r) {
+                    $val = trim($r['study_plan'] ?? '');
+                    if (!empty($val)) {
+                        $parts = preg_split('/[,\/]+\s*/', $val);
+                        foreach ($parts as $part) {
+                            $p = trim($part);
+                            if (!empty($p) && !in_array($p, $plans)) {
+                                $plans[] = $p;
+                            }
+                        }
+                    }
                 }
             }
 
-            // หากไม่มีในฐานข้อมูล ให้ใช้รายการแผนการเรียนมาตรฐานตามที่โรงเรียนใช้งาน
+            // 2. ดึงเพิ่มเติมจาก tb_students เฉพาะนักเรียนปัจจุบันที่มีสถานะ 1/ปกติ
+            if ($this->db->tableExists('tb_students')) {
+                $builder = $this->db->table('tb_students')
+                    ->select('DISTINCT(TRIM(StudentStudyLine)) as study_plan', false)
+                    ->where('StudentStatus', '1/ปกติ')
+                    ->where('StudentStudyLine IS NOT NULL')
+                    ->where('TRIM(StudentStudyLine) !=', '')
+                    ->where('TRIM(StudentStudyLine) !=', '-');
+
+                $results = $builder->get()->getResultArray();
+                foreach ($results as $r) {
+                    $p = trim($r['study_plan'] ?? '');
+                    if (!empty($p) && !in_array($p, $plans)) {
+                        $plans[] = $p;
+                    }
+                }
+            }
+
+            // Fallback มาตรฐาน
             if (empty($plans)) {
                 $plans = [
                     'CEP', 'CP', 'GENERAL', 
@@ -828,9 +848,7 @@ class TeachingScheduleController extends BaseController
                 ];
             }
 
-            // จัดเรียงลำดับ
             sort($plans, SORT_NATURAL | SORT_FLAG_CASE);
-
             return $plans;
         } catch (\Throwable $e) {
             log_message('error', 'getStudentStudyPlans error: ' . $e->getMessage());
@@ -860,42 +878,24 @@ class TeachingScheduleController extends BaseController
     public function getStudentClassRoomMap(): array
     {
         try {
-            $builder = $this->db->table('tb_students')
-                ->select('TRIM(StudentClass) as class_name, TRIM(StudentStudyLine) as study_plan')
-                ->where('StudentClass IS NOT NULL')
-                ->where('TRIM(StudentClass) !=', '')
-                ->groupBy(['TRIM(StudentClass)', 'TRIM(StudentStudyLine)'])
-                ->orderBy('class_name', 'ASC');
-
-            $results = $builder->get()->getResultArray();
-            $map = [];
-            foreach ($results as $row) {
-                $rawClass = trim($row['class_name'] ?? '');
-                $plan = trim($row['study_plan'] ?? '');
-                if (empty($rawClass)) continue;
-
-                $grade = '';
-                $room = '';
-                if (preg_match('/^(?:ม\.?\s*)?(\d+)[\/\.](\d+|[A-Za-z0-9]+)$/u', $rawClass, $matches)) {
-                    $grade = 'ม.' . $matches[1];
-                    $room = (string)$matches[2];
-                } else {
-                    $room = $rawClass;
-                }
-
-                if (!empty($grade) && !empty($room)) {
-                    if (!isset($map[$grade])) {
-                        $map[$grade] = [];
+            if ($this->db->tableExists('tb_classroom_study_plans')) {
+                $cPlans = $this->db->table('tb_classroom_study_plans')->orderBy('id', 'ASC')->get()->getResultArray();
+                if (!empty($cPlans)) {
+                    $map = [];
+                    foreach ($cPlans as $cp) {
+                        $grade = trim($cp['grade_level'] ?? '');
+                        $room  = trim($cp['room'] ?? '');
+                        if (!isset($map[$grade])) $map[$grade] = [];
+                        $map[$grade][$room] = [
+                            'room'  => $room,
+                            'class' => trim($cp['class_name'] ?? ''),
+                            'plan'  => trim($cp['study_plan'] ?? '')
+                        ];
                     }
-                    $map[$grade][$room] = [
-                        'room'  => $room,
-                        'class' => $rawClass,
-                        'plan'  => $plan
-                    ];
+                    return $map;
                 }
             }
-
-            return $map;
+            return [];
         } catch (\Throwable $e) {
             log_message('error', 'getStudentClassRoomMap error: ' . $e->getMessage());
             return [];
@@ -1196,11 +1196,6 @@ class TeachingScheduleController extends BaseController
             }
 
             $remarkParts = [];
-            $uniquePlans = array_values(array_unique(array_filter($sub['study_plans'])));
-            // ในกรณีที่มีห้องเรียนมากกว่า 1 ห้อง ไม่ต้องแสดงแผนการเรียนในหมายเหตุ
-            if ($sub['room_count'] <= 1 && count($sub['rooms'] ?? []) <= 1 && !empty($uniquePlans)) {
-                $remarkParts[] = implode(', ', $uniquePlans);
-            }
             if (!empty($sub['remarks'])) {
                 $remarkParts[] = implode(', ', $sub['remarks']);
             }

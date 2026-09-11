@@ -684,7 +684,7 @@
         const availableRooms = getRoomsForGrade(gradeLevel);
         const selectedRooms = parseRooms(currentRoomStr);
         const gradeKey = normalizeGrade(gradeLevel);
-        const gradeMap = classRoomMap[gradeKey] || classRoomMap[gradeLevel];
+        const gradeMap = classRoomMap[gradeKey] || classRoomMap[gradeLevel] || {};
 
         let html = '';
         availableRooms.forEach(r => {
@@ -692,9 +692,12 @@
             const activeClass = isActive ? 'btn-primary active' : 'btn-outline-primary';
             const plan = (gradeMap && gradeMap[r]) ? gradeMap[r].plan : '';
             const title = plan ? `ห้อง ${r} (${plan})` : `ห้อง ${r}`;
-            html += `<button type="button" class="btn btn-sm ${activeClass} btn-room-pill" 
-                             data-room="${r}" title="${title}" 
-                             onclick="toggleRoomPill(this, '${r}')">${r}</button>`;
+            const planBadge = plan ? `<span class="badge ${isActive ? 'bg-white text-primary' : 'bg-light text-secondary border'} ms-1" style="font-size: 0.65rem; padding: 1px 4px; font-weight: 500;">${escapeHtml(plan)}</span>` : '';
+            html += `<button type="button" class="btn btn-sm ${activeClass} btn-room-pill d-inline-flex align-items-center" 
+                             data-room="${r}" title="${escapeHtml(title)}" 
+                             onclick="toggleRoomPill(this, '${r}')">
+                         <span>ห้อง ${r}</span>${planBadge}
+                     </button>`;
         });
         return html;
     }
@@ -764,29 +767,80 @@
         const currentRooms = parseRooms($input.val());
         const gradeLevel = $card.find('.grade-level').val() || '';
         const selectedPlan = $card.find('.study-plan').val() || '';
+        const gradeKey = normalizeGrade(gradeLevel);
+        const gradeMap = classRoomMap[gradeKey] || classRoomMap[gradeLevel] || {};
 
-        // 1. Sync pill button active states
+        // 1. Sync pill button active states and badge styles
         $card.find('.btn-room-pill').each(function() {
             const r = String($(this).data('room'));
+            const $subBadge = $(this).find('.badge');
             if (currentRooms.includes(r)) {
                 $(this).removeClass('btn-outline-primary').addClass('btn-primary active');
+                if ($subBadge.length) {
+                    $subBadge.removeClass('bg-light text-secondary border').addClass('bg-white text-primary');
+                }
             } else {
                 $(this).removeClass('btn-primary active').addClass('btn-outline-primary');
+                if ($subBadge.length) {
+                    $subBadge.removeClass('bg-white text-primary').addClass('bg-light text-secondary border');
+                }
             }
         });
 
-        // 2. Render live preview badge of selected rooms
+        // 2. Render live preview badge of selected rooms and study plan detection
         const $preview = $card.find('.selected-rooms-preview');
         if ($preview.length) {
             if (currentRooms.length > 0) {
-                let html = '<span class="badge bg-primary fw-bold me-1" style="font-size: 0.76rem;"><i class="bi bi-door-open me-1"></i>ห้องที่เลือก:</span>';
+                let html = '<div class="w-100 d-flex flex-wrap align-items-center gap-1">';
+                html += '<span class="badge bg-primary fw-bold" style="font-size: 0.76rem;"><i class="bi bi-door-open me-1"></i>ห้องที่เลือก:</span>';
+                
+                let detectedPlans = [];
                 currentRooms.forEach(function(r) {
-                    html += `<span class="badge bg-label-primary fw-semibold" style="font-size: 0.74rem;">ห้อง ${escapeHtml(r)}</span>`;
+                    const plan = (gradeMap && gradeMap[r]) ? gradeMap[r].plan : '';
+                    if (plan) detectedPlans.push(`ห้อง ${r}: ${plan}`);
+                    const badgeContent = plan ? `ห้อง ${escapeHtml(r)} <span class="badge bg-white text-dark ms-1" style="font-size: 0.65rem;">${escapeHtml(plan)}</span>` : `ห้อง ${escapeHtml(r)}`;
+                    html += `<span class="badge bg-label-primary fw-semibold d-inline-flex align-items-center" style="font-size: 0.74rem;">${badgeContent}</span>`;
                 });
                 html += `<span class="text-muted small ms-1" style="font-size: 0.72rem;">(รวม ${currentRooms.length} ห้อง)</span>`;
+                html += '</div>';
+
+                // Real-time study plan status guide
+                if (currentRooms.length === 1) {
+                    const r = currentRooms[0];
+                    const singlePlan = (gradeMap && gradeMap[r]) ? gradeMap[r].plan : '';
+                    if (singlePlan) {
+                        html += `<div class="w-100 text-success small fw-semibold mt-1" style="font-size: 0.73rem;">
+                            <i class="bi bi-check-circle-fill text-success me-1"></i>สถานะแผนการเรียนห้อง ${escapeHtml(r)} ปีนี้: <span class="badge bg-label-success fw-bold">${escapeHtml(singlePlan)}</span> <span class="text-muted fw-normal">(ระบบบันทึกแผนนี้ให้อัตโนมัติ)</span>
+                        </div>`;
+                    }
+                } else if (detectedPlans.length > 0) {
+                    html += `<div class="w-100 text-info small fw-medium mt-1" style="font-size: 0.72rem;">
+                        <i class="bi bi-info-circle-fill text-info me-1"></i>แผนการเรียนรายห้อง: ${escapeHtml(detectedPlans.join(' | '))} <span class="text-muted">(ระบบจะบันทึกแยกแผนตามห้องให้อัตโนมัติ)</span>
+                    </div>`;
+                }
+
                 $preview.html(html).show();
             } else {
                 $preview.html('<span class="text-muted small" style="font-size: 0.72rem;"><i class="bi bi-info-circle me-1"></i>ยังไม่ได้เลือกห้อง</span>').show();
+            }
+        }
+
+        // 3. Dynamically update auto option label in study plan select
+        const $planSelect = $card.find('.study-plan');
+        const $autoOption = $planSelect.find('option[value="__auto__"]');
+        if ($autoOption.length) {
+            if (currentRooms.length === 1) {
+                const r = currentRooms[0];
+                const p = (gradeMap && gradeMap[r]) ? gradeMap[r].plan : '';
+                if (p) {
+                    $autoOption.text(`-- อัตโนมัติ: ห้อง ${r} (${p}) [แนะนำ] --`);
+                } else {
+                    $autoOption.text(`-- ตามแผนของแต่ละห้องอัตโนมัติ (จากฐานข้อมูล) --`);
+                }
+            } else if (currentRooms.length > 1) {
+                $autoOption.text(`-- อัตโนมัติตามห้องเรียน (แนะนำ: บันทึกแยกแผนตามห้อง) --`);
+            } else {
+                $autoOption.text(`-- ตามแผนของแต่ละห้องอัตโนมัติ (จากฐานข้อมูล) --`);
             }
         }
     }
