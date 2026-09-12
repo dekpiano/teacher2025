@@ -255,7 +255,7 @@
 <!-- Modal Training -->
 <div class="modal fade" id="modalTraining" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <form class="modal-content border-0 shadow-lg" action="<?= base_url('portfolio/save-training') ?>" method="POST" enctype="multipart/form-data" style="border-radius: 20px;">
+        <form class="modal-content border-0 shadow-lg" action="<?= base_url('portfolio/save-training') ?>" method="POST" enctype="multipart/form-data" style="border-radius: 20px;" novalidate>
             <div class="modal-header">
                 <h5 class="modal-title fw-bold" id="modalTrainingTitle">เพิ่มข้อมูลการอบรม</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -301,7 +301,7 @@
 <!-- Modal Document -->
 <div class="modal fade" id="modalDocument" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <form class="modal-content border-0 shadow-lg" action="<?= base_url('portfolio/save-document') ?>" method="POST" enctype="multipart/form-data" style="border-radius: 20px;">
+        <form class="modal-content border-0 shadow-lg" action="<?= base_url('portfolio/save-document') ?>" method="POST" enctype="multipart/form-data" style="border-radius: 20px;" novalidate>
             <div class="modal-header">
                 <h5 class="modal-title fw-bold" id="modalDocumentTitle">เพิ่มผลงาน / กิจกรรม</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -456,88 +456,19 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
-<!-- Flatpickr CSS & JS (with Thai locale) -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/th.js"></script>
 <script>
 $(document).ready(function() {
-    // เรียกใช้งาน Flatpickr สไตล์ Sneat (แสดงผลปี พ.ศ.)
-    if (typeof flatpickr !== 'undefined') {
-        flatpickr(".flatpickr-date", {
-            disableMobile: true,
-            dateFormat: "Y-m-d", // บันทึกเป็น ค.ศ. (ISO) ไปยังฐานข้อมูล
-            altInput: true,      // เปิดการแสดงผลแบบทางเลือก
-            altFormat: "d/m/Y",  // รูปแบบ วัน/เดือน/ปีพ.ศ.
-            locale: "th",
-            allowInput: true,
-            monthSelectorType: "static",
-            onOpen: function(selectedDates, dateStr, instance) {
-                updateCalendarToBE(instance);
-            },
-            onMonthChange: function(selectedDates, dateStr, instance) {
-                setTimeout(() => updateCalendarToBE(instance), 0);
-            },
-            onYearChange: function(selectedDates, dateStr, instance) {
-                setTimeout(() => updateCalendarToBE(instance), 0);
-            },
-            formatDate: function(date, format, locale) {
-                if (format === "d/m/Y") {
-                    const d = date.getDate().toString().padStart(2, '0');
-                    const m = (date.getMonth() + 1).toString().padStart(2, '0');
-                    const y = date.getFullYear() + 543; // แปลงเป็น พ.ศ.
-                    return `${d}/${m}/${y}`;
-                }
-                return flatpickr.formatDate(date, format, locale);
-            },
-            parseDate: function(dateStr, format) {
-                if (dateStr && dateStr.includes('/')) {
-                    const parts = dateStr.split('/');
-                    if (parts.length === 3) {
-                        const d = parseInt(parts[0], 10);
-                        const m = parseInt(parts[1], 10) - 1;
-                        const y = parseInt(parts[2], 10) - 543; // แปลงกลับเป็น ค.ศ.
-                        return new Date(y, m, d);
-                    }
-                }
-                return flatpickr.parseDate(dateStr, format);
-            }
-        });
-
-        // ฟังก์ชันช่วยเปลี่ยนตัวเลขปีในหัวปฏิทิน Flatpickr ให้เป็น พ.ศ.
-        function updateCalendarToBE(instance) {
-            setTimeout(() => {
-                const yearDisplay = instance.calendarContainer.querySelector(".flatpickr-current-month .cur-year");
-                if (yearDisplay) {
-                    const year = parseInt(instance.currentYear);
-                    if (year < 2400) {
-                        if (yearDisplay.tagName === "INPUT") {
-                            yearDisplay.value = year + 543;
-                        } else {
-                            yearDisplay.textContent = year + 543;
-                        }
-                    }
-                }
-                const yearInput = instance.calendarContainer.querySelector(".numInput.cur-year");
-                if (yearInput) {
-                    const year = parseInt(instance.currentYear);
-                    if (year < 2400) {
-                        yearInput.value = year + 543;
-                    }
-                }
-            }, 5);
-        }
-    }
-
     // Helper to set dates inside Flatpickr instances dynamically
     function setFlatpickrDate(selector, val) {
         const el = $(selector)[0];
         if (el && el._flatpickr) {
             if (val) {
-                el._flatpickr.setDate(val.split(' ')[0]);
+                el._flatpickr.setDate(val.split(' ')[0], true);
             } else {
                 el._flatpickr.clear();
             }
+        } else {
+            $(selector).val(val || '');
         }
     }
     // Helper for Chunked Upload
@@ -659,27 +590,85 @@ $(document).ready(function() {
         $('#modalDocumentTitle').text('เพิ่มผลงาน / กิจกรรม');
     });
 
+    // Helper to get formatted date string (YYYY-MM-DD) from Flatpickr or input
+    function getFpDateStr(selector) {
+        const el = $(selector)[0];
+        if (!el) return '';
+
+        // 1. Check direct _flatpickr instance on input or its sibling
+        const fp = el._flatpickr || el.nextElementSibling?._flatpickr;
+        if (fp && fp.selectedDates && fp.selectedDates.length > 0) {
+            const d = fp.selectedDates[0];
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        }
+
+        // 2. Check input value, altInput value, or sibling value
+        let val = el.value || (fp && fp.altInput ? fp.altInput.value : '') || (el.nextElementSibling ? el.nextElementSibling.value : '');
+        if (val) {
+            val = val.trim();
+            // YYYY-MM-DD (CE or BE)
+            if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+                const parts = val.split('-');
+                let y = parseInt(parts[0], 10);
+                if (y > 2400) y -= 543;
+                return `${y}-${parts[1]}-${parts[2]}`;
+            }
+            // DD/MM/YYYY or DD-MM-YYYY
+            const m = val.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+            if (m) {
+                let y = parseInt(m[3], 10);
+                if (y > 2400) y -= 543;
+                const mo = String(m[2]).padStart(2, '0');
+                const day = String(m[1]).padStart(2, '0');
+                return `${y}-${mo}-${day}`;
+            }
+            return val;
+        }
+        return '';
+    }
+
     // Handle Training Form Submit
     $('#modalTraining form').on('submit', async function(e) {
         e.preventDefault();
         const form = this;
+
+        const trainName = $(form).find('input[name="train_name"]').val()?.trim();
+        if (!trainName) {
+            Swal.fire('ข้อมูลไม่ครบถ้วน', 'กรุณาระบุชื่อหลักสูตร / หัวข้อสัมมนา', 'warning');
+            window.resetButtonLoading(form);
+            return;
+        }
+
+        const startDate = getFpDateStr('#train_start_date');
+        if (!startDate) {
+            Swal.fire('ข้อมูลไม่ครบถ้วน', 'กรุณาระบุวันที่เริ่มอบรม', 'warning');
+            window.resetButtonLoading(form);
+            return;
+        }
+
         const formData = new FormData(form);
+        formData.set('train_start_date', startDate);
+        const endDate = getFpDateStr('#train_end_date');
+        if (endDate) {
+            formData.set('train_end_date', endDate);
+        }
+
         const fileInput = $(form).find('input[type="file"]')[0];
-        const file = fileInput.files[0];
-        
-        // Hide Modal first
-        $('#modalTraining').modal('hide');
+        const file = fileInput ? fileInput.files[0] : null;
 
         Swal.fire({
             title: 'กำลังบันทึกข้อมูล...',
-            text: 'กำลังเตรียมการอัปโหลด',
+            text: 'กำลังเตรียมการบันทึกข้อมูล',
             allowOutsideClick: false,
             didOpen: () => { Swal.showLoading(); }
         });
 
         try {
             if (file) {
-                Swal.update({ text: 'กำลังอัปโหลดไฟล์แบบแบ่งส่วน (Chunked)...' });
+                Swal.update({ text: 'กำลังอัปโหลดไฟล์เกียรติบัตร...' });
                 const personId = '<?= session()->get('person_id') ?>';
                 const uploadPath = `personnel/teacher/training/${personId}`;
                 const fileName = `Cert_${Date.now()}.${file.name.split('.').pop()}`;
@@ -700,6 +689,7 @@ $(document).ready(function() {
             });
 
             if (res.status === 'success') {
+                $('#modalTraining').modal('hide');
                 Swal.fire({
                     icon: 'success',
                     title: 'สำเร็จ',
@@ -715,9 +705,11 @@ $(document).ready(function() {
                 });
             } else {
                 Swal.fire('ผิดพลาด', res.message, 'error');
+                window.resetButtonLoading(form);
             }
         } catch (error) {
-            Swal.fire('ผิดพลาด', error.message || 'ไม่สามารถอัปโหลดไฟล์ได้', 'error');
+            Swal.fire('ผิดพลาด', error.message || 'ไม่สามารถบันทึกข้อมูลได้', 'error');
+            window.resetButtonLoading(form);
         }
     });
 
@@ -725,23 +717,44 @@ $(document).ready(function() {
     $('#modalDocument form').on('submit', async function(e) {
         e.preventDefault();
         const form = this;
-        const formData = new FormData(form);
+
+        const docTitle = $(form).find('input[name="doc_title"]').val()?.trim();
+        if (!docTitle) {
+            Swal.fire('ข้อมูลไม่ครบถ้วน', 'กรุณาระบุหัวข้อหรือชื่อผลงาน', 'warning');
+            window.resetButtonLoading(form);
+            return;
+        }
+
+        const docDate = getFpDateStr('#doc_date');
+        if (!docDate) {
+            Swal.fire('ข้อมูลไม่ครบถ้วน', 'กรุณาระบุวันที่ของผลงาน/กิจกรรม', 'warning');
+            window.resetButtonLoading(form);
+            return;
+        }
+
         const fileInput = $(form).find('input[type="file"]')[0];
-        const file = fileInput.files[0];
-        
-        // Hide Modal first
-        $('#modalDocument').modal('hide');
+        const file = fileInput ? fileInput.files[0] : null;
+        const isEdit = Boolean($('#doc_id').val());
+
+        if (!isEdit && !file) {
+            Swal.fire('ข้อมูลไม่ครบถ้วน', 'กรุณาแนบไฟล์หรือรูปภาพผลงาน', 'warning');
+            window.resetButtonLoading(form);
+            return;
+        }
+
+        const formData = new FormData(form);
+        formData.set('doc_date', docDate);
 
         Swal.fire({
             title: 'กำลังบันทึกข้อมูล...',
-            text: 'กำลังเตรียมการอัปโหลด',
+            text: 'กำลังเตรียมการบันทึกข้อมูล',
             allowOutsideClick: false,
             didOpen: () => { Swal.showLoading(); }
         });
 
         try {
             if (file) {
-                Swal.update({ text: 'กำลังอัปโหลดไฟล์แบบแบ่งส่วน (Chunked)...' });
+                Swal.update({ text: 'กำลังอัปโหลดไฟล์ผลงาน...' });
                 const personId = '<?= session()->get('person_id') ?>';
                 const uploadPath = `personnel/teacher/portfolio/${personId}`;
                 const fileName = `Port_${Date.now()}.${file.name.split('.').pop()}`;
@@ -764,6 +777,7 @@ $(document).ready(function() {
             });
 
             if (res.status === 'success') {
+                $('#modalDocument').modal('hide');
                 Swal.fire({
                     icon: 'success',
                     title: 'สำเร็จ',
@@ -779,9 +793,11 @@ $(document).ready(function() {
                 });
             } else {
                 Swal.fire('ผิดพลาด', res.message, 'error');
+                window.resetButtonLoading(form);
             }
         } catch (error) {
-            Swal.fire('ผิดพลาด', error.message || 'ไม่สามารถอัปโหลดไฟล์ได้', 'error');
+            Swal.fire('ผิดพลาด', error.message || 'ไม่สามารถบันทึกข้อมูลได้', 'error');
+            window.resetButtonLoading(form);
         }
     });
 

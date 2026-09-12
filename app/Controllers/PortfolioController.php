@@ -453,8 +453,33 @@ class PortfolioController extends BaseController
     private function _formatDate($dateStr)
     {
         if (empty($dateStr)) return null;
-        // Assume dd-mm-yyyy or yyyy-mm-dd
-        return date('Y-m-d', strtotime($dateStr));
+        $dateStr = trim($dateStr);
+
+        // Match YYYY-MM-DD (e.g. 2026-09-12 or 2569-09-12)
+        if (preg_match('/^(\d{4})-(\d{1,2})-(\d{1,2})/', $dateStr, $m)) {
+            $y = (int)$m[1];
+            if ($y > 2400) $y -= 543;
+            return sprintf('%04d-%02d-%02d', $y, (int)$m[2], (int)$m[3]);
+        }
+
+        // Match DD/MM/YYYY or DD-MM-YYYY (e.g. 12/09/2569 or 12/09/2026)
+        if (preg_match('/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/', $dateStr, $m)) {
+            $d = (int)$m[1];
+            $mo = (int)$m[2];
+            $y = (int)$m[3];
+            if ($y > 2400) $y -= 543;
+            return sprintf('%04d-%02d-%02d', $y, $mo, $d);
+        }
+
+        // Fallback for timestamps or standard strings
+        $time = strtotime($dateStr);
+        if ($time !== false) {
+            $y = (int)date('Y', $time);
+            if ($y > 2400) $y -= 543;
+            return sprintf('%04d-%s', $y, date('m-d', $time));
+        }
+
+        return null;
     }
 
     private function _uploadFileToServer($file, $remotePath, $originalName)

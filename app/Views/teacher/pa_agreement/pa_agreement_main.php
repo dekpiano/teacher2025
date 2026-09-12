@@ -112,66 +112,62 @@
                     </div>
 
                     <div class="d-flex align-items-center gap-2 flex-wrap justify-content-md-end">
+                        <button type="button" class="btn btn-sm btn-outline-warning rounded-pill py-1 px-3 fw-semibold shadow-none" id="btnShowNoticeModal">
+                            <i class="bi bi-exclamation-circle me-1"></i> ข้อควรทราบสำคัญ
+                        </button>
                         <?php if ($system_config['is_open']): ?>
-                            <span class="badge bg-label-success px-3 py-2 fs-7 rounded-pill fw-bold">
-                                <i class="bi bi-check-circle-fill me-1"></i> <?= esc($system_config['status_text']) ?>
-                            </span>
-                            <?php if (!empty($system_config['remaining_text'])): ?>
-                                <span class="badge bg-label-primary px-3 py-2 fs-7 rounded-pill fw-bold">
-                                    <i class="bi bi-stopwatch me-1"></i> <?= esc($system_config['remaining_text']) ?>
+                                <span class="badge bg-label-success px-3 py-2 fs-7 rounded-pill fw-bold">
+                                    <i class="bi bi-check-circle-fill me-1"></i> <?= esc($system_config['status_text']) ?>
                                 </span>
-                            <?php endif; ?>
+                                <?php if (!empty($system_config['remaining_text'])): ?>
+                                        <span class="badge bg-label-primary px-3 py-2 fs-7 rounded-pill fw-bold">
+                                            <i class="bi bi-stopwatch me-1"></i> <?= esc($system_config['remaining_text']) ?>
+                                        </span>
+                                <?php endif; ?>
                         <?php else: ?>
-                            <span class="badge <?= esc($system_config['badge_class']) ?> px-3 py-2 fs-7 rounded-pill fw-bold">
-                                <i class="bi bi-lock-fill me-1"></i> <?= esc($system_config['status_text']) ?>
-                            </span>
+                                <span class="badge <?= esc($system_config['badge_class']) ?> px-3 py-2 fs-7 rounded-pill fw-bold">
+                                    <i class="bi bi-lock-fill me-1"></i> <?= esc($system_config['status_text']) ?>
+                                </span>
                         <?php endif; ?>
                     </div>
                 </div>
 
                 <!-- Window Status Alert Banner (Shown when Closed or Outside Submission Window) -->
                 <?php if (!$system_config['is_open']): ?>
-                    <div class="alert alert-danger d-flex align-items-start py-3 px-3 mt-3 mb-0 rounded-3 border-0 bg-label-danger" role="alert">
-                        <i class="bi bi-exclamation-octagon-fill me-2 fs-4 text-danger flex-shrink-0 mt-1"></i>
-                        <div>
-                            <div class="fw-bold fs-6 mb-1 text-danger">
-                                ระบบปิดรับการส่งและแก้ไขเอกสาร PA ประจำปีงบประมาณ <?= $current_year ?>
-                            </div>
-                            <div class="small text-dark">
-                                <?= esc($system_config['message']) ?>
-                            </div>
-                            <?php if (!empty($system_config['note'])): ?>
-                                <div class="mt-2 p-2 bg-white rounded-2 border border-danger border-opacity-25 small text-secondary">
-                                    <i class="bi bi-info-circle-fill me-1 text-danger"></i> <strong>คำชี้แจงจากงานบุคลากร:</strong> <?= esc($system_config['note']) ?>
+                        <div class="alert alert-danger d-flex align-items-start py-3 px-3 mt-3 mb-0 rounded-3 border-0 bg-label-danger" role="alert">
+                            <i class="bi bi-exclamation-octagon-fill me-2 fs-4 text-danger flex-shrink-0 mt-1"></i>
+                            <div>
+                                <div class="fw-bold fs-6 mb-1 text-danger">
+                                    ระบบปิดรับการส่งและแก้ไขเอกสาร PA ประจำปีงบประมาณ <?= $current_year ?>
                                 </div>
-                            <?php endif; ?>
-                            <div class="mt-2 x-small text-muted">
-                                <i class="bi bi-shield-check me-1"></i> คุณครูยังสามารถคลิกเปิดดู หรือดาวน์โหลดเอกสารที่เคยส่งไว้ก่อนหน้านี้ได้ตามปกติ
+                                <div class="small text-dark">
+                                    <?= esc($system_config['message']) ?>
+                                </div>
+                                <?php if (!empty($system_config['note'])): ?>
+                                        <div class="mt-2 p-2 bg-white rounded-2 border border-danger border-opacity-25 small text-secondary">
+                                            <i class="bi bi-info-circle-fill me-1 text-danger"></i> <strong>คำชี้แจงจากงานบุคลากร:</strong> <?= esc($system_config['note']) ?>
+                                        </div>
+                                <?php endif; ?>
+                                <div class="mt-2 x-small text-muted">
+                                    <i class="bi bi-shield-check me-1"></i> คุณครูยังสามารถคลิกเปิดดู หรือดาวน์โหลดเอกสารที่เคยส่งไว้ก่อนหน้านี้ได้ตามปกติ
+                                </div>
                             </div>
                         </div>
-                    </div>
                 <?php elseif (!empty($system_config['start_thai']) || !empty($system_config['end_thai']) || !empty($system_config['note'])): ?>
-                    <div class="alert alert-info d-flex align-items-center py-2 px-3 mt-3 mb-0 rounded-3 border-0 bg-label-info" role="alert">
-                        <i class="bi bi-calendar-check-fill me-2 fs-5 text-info"></i>
-                        <div class="small">
-                            <strong>กำหนดเวลาส่งงาน:</strong> 
-                            <?= !empty($system_config['start_thai']) ? 'เริ่ม ' . esc($system_config['start_thai']) : '' ?>
-                            <?= (!empty($system_config['start_thai']) && !empty($system_config['end_thai'])) ? ' ถึง ' : '' ?>
-                            <?= !empty($system_config['end_thai']) ? esc($system_config['end_thai']) : 'ไม่จำกัดเวลาสิ้นสุด' ?>
-                            <?php if (!empty($system_config['note'])): ?>
-                                | <span class="text-dark fw-semibold"><?= esc($system_config['note']) ?></span>
-                            <?php endif; ?>
+                        <div class="alert alert-info d-flex align-items-center py-2 px-3 mt-3 mb-0 rounded-3 border-0 bg-label-info" role="alert">
+                            <i class="bi bi-calendar-check-fill me-2 fs-5 text-info"></i>
+                            <div class="small">
+                                <strong>กำหนดเวลาส่งงาน:</strong> 
+                                <?= !empty($system_config['start_thai']) ? 'เริ่ม ' . esc($system_config['start_thai']) : '' ?>
+                                <?= (!empty($system_config['start_thai']) && !empty($system_config['end_thai'])) ? ' ถึง ' : '' ?>
+                                <?= !empty($system_config['end_thai']) ? esc($system_config['end_thai']) : 'ไม่จำกัดเวลาสิ้นสุด' ?>
+                                <?php if (!empty($system_config['note'])): ?>
+                                        | <span class="text-dark fw-semibold"><?= esc($system_config['note']) ?></span>
+                                <?php endif; ?>
+                            </div>
                         </div>
-                    </div>
                 <?php endif; ?>
 
-                <!-- Prominent Notice Banner -->
-                <div class="alert alert-warning d-flex align-items-center py-2 px-3 mt-2 mb-0 rounded-3 border-0 bg-label-warning" role="alert">
-                    <i class="bi bi-shield-lock-fill me-2 fs-5 text-warning"></i>
-                    <div class="small fw-semibold">
-                        <span class="fw-bold text-dark">หมายเหตุสำคัญ:</span> ระบบข้อตกลงในการพัฒนางาน (PA) นี้ <strong>ใช้เฉพาะข้าราชการครูเท่านั้น</strong> (ครูอัตราจ้าง / เจ้าหน้าที่ ไม่จำเป็นต้องส่งในส่วนนี้)
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -193,14 +189,14 @@
                                 <span class="fw-bold text-dark">1. สื่อนำเสนอผลงาน</span>
                             </div>
                             <div class="d-flex gap-1">
-                                <?php if ($agreement && !empty($agreement['pa_presentation_link'])) : ?>
-                                    <span class="badge bg-label-success rounded-pill px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i> ลิ้งก์</span>
+                                <?php if ($agreement && !empty($agreement['pa_presentation_link'])): ?>
+                                        <span class="badge bg-label-success rounded-pill px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i> ลิ้งก์</span>
                                 <?php endif; ?>
-                                <?php if ($agreement && !empty($agreement['pa_file_presentation'])) : ?>
-                                    <span class="badge bg-label-success rounded-pill px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i> ไฟล์</span>
+                                <?php if ($agreement && !empty($agreement['pa_file_presentation'])): ?>
+                                        <span class="badge bg-label-success rounded-pill px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i> ไฟล์</span>
                                 <?php endif; ?>
-                                <?php if (!$agreement || (empty($agreement['pa_presentation_link']) && empty($agreement['pa_file_presentation']))) : ?>
-                                    <span class="badge bg-label-secondary rounded-pill px-2 py-1">ยังไม่ส่ง</span>
+                                <?php if (!$agreement || (empty($agreement['pa_presentation_link']) && empty($agreement['pa_file_presentation']))): ?>
+                                        <span class="badge bg-label-secondary rounded-pill px-2 py-1">ยังไม่ส่ง</span>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -210,34 +206,34 @@
                                     รูปแบบ PPT, CANVA หรืออื่นๆ (ความยาวไม่เกิน 10 นาที)
                                 </div>
 
-                                <?php if ($agreement && !empty($agreement['pa_presentation_link'])) : ?>
-                                    <div class="alert alert-outline-danger d-flex align-items-center justify-content-between p-2 mb-2 rounded-3" role="alert">
-                                        <div class="d-flex align-items-center text-truncate me-2">
-                                            <i class="bi bi-link-45deg fs-4 text-danger me-1"></i>
-                                            <div class="text-truncate">
-                                                <div class="small fw-bold text-dark text-truncate">มีลิ้งก์ในระบบแล้ว</div>
-                                                <div class="x-small text-muted text-truncate"><?= esc($agreement['pa_presentation_link']) ?></div>
+                                <?php if ($agreement && !empty($agreement['pa_presentation_link'])): ?>
+                                        <div class="alert alert-outline-danger d-flex align-items-center justify-content-between p-2 mb-2 rounded-3" role="alert">
+                                            <div class="d-flex align-items-center text-truncate me-2">
+                                                <i class="bi bi-link-45deg fs-4 text-danger me-1"></i>
+                                                <div class="text-truncate">
+                                                    <div class="small fw-bold text-dark text-truncate">มีลิ้งก์ในระบบแล้ว</div>
+                                                    <div class="x-small text-muted text-truncate"><?= esc($agreement['pa_presentation_link']) ?></div>
+                                                </div>
                                             </div>
+                                            <a href="<?= esc($agreement['pa_presentation_link']) ?>" target="_blank" class="btn btn-xs btn-danger text-nowrap rounded-pill px-2">
+                                                <i class="bi bi-box-arrow-up-right me-1"></i> เปิดดู
+                                            </a>
                                         </div>
-                                        <a href="<?= esc($agreement['pa_presentation_link']) ?>" target="_blank" class="btn btn-xs btn-danger text-nowrap rounded-pill px-2">
-                                            <i class="bi bi-box-arrow-up-right me-1"></i> เปิดดู
-                                        </a>
-                                    </div>
                                 <?php endif; ?>
 
-                                <?php if ($agreement && !empty($agreement['pa_file_presentation'])) : ?>
-                                    <div class="alert alert-outline-warning d-flex align-items-center justify-content-between p-2 mb-2 rounded-3" role="alert">
-                                        <div class="d-flex align-items-center text-truncate me-2">
-                                            <i class="bi bi-file-earmark-play-fill fs-4 text-warning me-2"></i>
-                                            <div class="text-truncate">
-                                                <div class="small fw-bold text-dark text-truncate">มีไฟล์สื่อนำเสนอในระบบแล้ว</div>
-                                                <div class="x-small text-muted text-truncate"><?= esc($agreement['pa_file_presentation']) ?></div>
+                                <?php if ($agreement && !empty($agreement['pa_file_presentation'])): ?>
+                                        <div class="alert alert-outline-warning d-flex align-items-center justify-content-between p-2 mb-2 rounded-3" role="alert">
+                                            <div class="d-flex align-items-center text-truncate me-2">
+                                                <i class="bi bi-file-earmark-play-fill fs-4 text-warning me-2"></i>
+                                                <div class="text-truncate">
+                                                    <div class="small fw-bold text-dark text-truncate">มีไฟล์สื่อนำเสนอในระบบแล้ว</div>
+                                                    <div class="x-small text-muted text-truncate"><?= esc($agreement['pa_file_presentation']) ?></div>
+                                                </div>
                                             </div>
+                                            <a href="<?= env('upload.server.baseurl.pa_agreement') . $agreement['pa_year'] . '/presentation/' . $agreement['pa_file_presentation'] ?>" target="_blank" class="btn btn-xs btn-warning text-nowrap rounded-pill px-2">
+                                                <i class="bi bi-eye me-1"></i> เปิดดู
+                                            </a>
                                         </div>
-                                        <a href="<?= env('upload.server.baseurl.pa_agreement') . $agreement['pa_year'] . '/presentation/' . $agreement['pa_file_presentation'] ?>" target="_blank" class="btn btn-xs btn-warning text-nowrap rounded-pill px-2">
-                                            <i class="bi bi-eye me-1"></i> เปิดดู
-                                        </a>
-                                    </div>
                                 <?php endif; ?>
 
                                 <!-- URL Link Input -->
@@ -265,7 +261,7 @@
                                 <input type="file" id="pa_file_presentation" accept=".ppt,.pptx,.pdf,.mp4,.avi,.mov" class="d-none">
                                 <div class="dropzone-box <?= !$system_config['is_open'] ? 'dropzone-disabled' : '' ?>" id="dropzone_presentation">
                                     <?php if (!$system_config['is_open']): ?>
-                                        <span class="badge bg-danger px-3 py-1 rounded-pill mb-2"><i class="bi bi-lock-fill me-1"></i> ปิดรับการส่งไฟล์</span>
+                                            <span class="badge bg-danger px-3 py-1 rounded-pill mb-2"><i class="bi bi-lock-fill me-1"></i> ปิดรับการส่งไฟล์</span>
                                     <?php endif; ?>
                                     <i class="bi bi-cloud-arrow-up-fill dropzone-icon <?= $system_config['is_open'] ? 'text-danger' : 'text-muted' ?>"></i>
                                     <div class="small fw-bold text-dark"><?= $system_config['is_open'] ? 'ลากและวางไฟล์สื่อนำเสนอที่นี่' : 'ปิดรับการอัปโหลดไฟล์' ?></div>
@@ -309,10 +305,10 @@
                                 </div>
                                 <span class="fw-bold text-dark">2. แผนการจัดการเรียนรู้</span>
                             </div>
-                            <?php if ($agreement && !empty($agreement['pa_file_lesson_plan'])) : ?>
-                                <span class="badge bg-label-success rounded-pill px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i> ส่งไฟล์แล้ว</span>
+                            <?php if ($agreement && !empty($agreement['pa_file_lesson_plan'])): ?>
+                                    <span class="badge bg-label-success rounded-pill px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i> ส่งไฟล์แล้ว</span>
                             <?php else: ?>
-                                <span class="badge bg-label-secondary rounded-pill px-2 py-1">ยังไม่ส่ง</span>
+                                    <span class="badge bg-label-secondary rounded-pill px-2 py-1">ยังไม่ส่ง</span>
                             <?php endif; ?>
                         </div>
                         <div class="card-body p-3 d-flex flex-column justify-content-between">
@@ -321,26 +317,26 @@
                                     แผนการจัดการเรียนรู้ที่ใช้ในประเด็นท้าทาย 1 แผน (PDF)
                                 </div>
 
-                                <?php if ($agreement && !empty($agreement['pa_file_lesson_plan'])) : ?>
-                                    <div class="alert alert-outline-info d-flex align-items-center justify-content-between p-2 mb-2 rounded-3" role="alert">
-                                        <div class="d-flex align-items-center text-truncate me-2">
-                                            <i class="bi bi-file-earmark-pdf-fill fs-4 text-info me-2"></i>
-                                            <div class="text-truncate">
-                                                <div class="small fw-bold text-dark text-truncate">มีไฟล์ในระบบแล้ว</div>
-                                                <div class="x-small text-muted text-truncate"><?= esc($agreement['pa_file_lesson_plan']) ?></div>
+                                <?php if ($agreement && !empty($agreement['pa_file_lesson_plan'])): ?>
+                                        <div class="alert alert-outline-info d-flex align-items-center justify-content-between p-2 mb-2 rounded-3" role="alert">
+                                            <div class="d-flex align-items-center text-truncate me-2">
+                                                <i class="bi bi-file-earmark-pdf-fill fs-4 text-info me-2"></i>
+                                                <div class="text-truncate">
+                                                    <div class="small fw-bold text-dark text-truncate">มีไฟล์ในระบบแล้ว</div>
+                                                    <div class="x-small text-muted text-truncate"><?= esc($agreement['pa_file_lesson_plan']) ?></div>
+                                                </div>
                                             </div>
+                                            <a href="<?= env('upload.server.baseurl.pa_agreement') . $agreement['pa_year'] . '/lesson_plan/' . $agreement['pa_file_lesson_plan'] ?>" target="_blank" class="btn btn-xs btn-info text-nowrap rounded-pill px-2">
+                                                <i class="bi bi-eye me-1"></i> เปิดดู
+                                            </a>
                                         </div>
-                                        <a href="<?= env('upload.server.baseurl.pa_agreement') . $agreement['pa_year'] . '/lesson_plan/' . $agreement['pa_file_lesson_plan'] ?>" target="_blank" class="btn btn-xs btn-info text-nowrap rounded-pill px-2">
-                                            <i class="bi bi-eye me-1"></i> เปิดดู
-                                        </a>
-                                    </div>
                                 <?php endif; ?>
 
                                 <!-- Dropzone for Lesson Plan -->
                                 <input type="file" id="pa_file_lesson_plan" accept=".pdf" class="d-none">
                                 <div class="dropzone-box <?= !$system_config['is_open'] ? 'dropzone-disabled' : '' ?>" id="dropzone_lesson_plan">
                                     <?php if (!$system_config['is_open']): ?>
-                                        <span class="badge bg-danger px-3 py-1 rounded-pill mb-2"><i class="bi bi-lock-fill me-1"></i> ปิดรับการส่งไฟล์</span>
+                                            <span class="badge bg-danger px-3 py-1 rounded-pill mb-2"><i class="bi bi-lock-fill me-1"></i> ปิดรับการส่งไฟล์</span>
                                     <?php endif; ?>
                                     <i class="bi bi-cloud-arrow-up-fill dropzone-icon <?= $system_config['is_open'] ? 'text-info' : 'text-muted' ?>"></i>
                                     <div class="small fw-bold text-dark"><?= $system_config['is_open'] ? 'ลากและวางไฟล์แผนการสอนที่นี่' : 'ปิดรับการอัปโหลดไฟล์' ?></div>
@@ -384,10 +380,10 @@
                                 </div>
                                 <span class="fw-bold text-dark">3. บันทึกข้อตกลง PA1</span>
                             </div>
-                            <?php if ($agreement && !empty($agreement['pa_file_pa1'])) : ?>
-                                <span class="badge bg-label-success rounded-pill px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i> มีไฟล์ในระบบแล้ว</span>
+                            <?php if ($agreement && !empty($agreement['pa_file_pa1'])): ?>
+                                    <span class="badge bg-label-success rounded-pill px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i> มีไฟล์ในระบบแล้ว</span>
                             <?php else: ?>
-                                <span class="badge bg-label-secondary rounded-pill px-2 py-1">รอดำเนินการ</span>
+                                    <span class="badge bg-label-secondary rounded-pill px-2 py-1">รอดำเนินการ</span>
                             <?php endif; ?>
                         </div>
                         <div class="card-body p-3 d-flex flex-column justify-content-between">
@@ -396,26 +392,26 @@
                                     บันทึกข้อตกลงพัฒนางาน PA1 ประจำปีงบประมาณ <?= $current_year ?>
                                 </div>
 
-                                <?php if ($agreement && !empty($agreement['pa_file_pa1'])) : ?>
-                                    <div class="alert alert-outline-success d-flex align-items-center justify-content-between p-2 mb-3 rounded-3" role="alert">
-                                        <div class="d-flex align-items-center text-truncate me-2">
-                                            <i class="bi bi-file-earmark-check-fill fs-4 text-success me-2"></i>
-                                            <div class="text-truncate">
-                                                <div class="small fw-bold text-dark text-truncate">มีไฟล์ในระบบแล้ว</div>
-                                                <div class="x-small text-muted text-truncate"><?= esc($agreement['pa_file_pa1']) ?></div>
+                                <?php if ($agreement && !empty($agreement['pa_file_pa1'])): ?>
+                                        <div class="alert alert-outline-success d-flex align-items-center justify-content-between p-2 mb-3 rounded-3" role="alert">
+                                            <div class="d-flex align-items-center text-truncate me-2">
+                                                <i class="bi bi-file-earmark-check-fill fs-4 text-success me-2"></i>
+                                                <div class="text-truncate">
+                                                    <div class="small fw-bold text-dark text-truncate">มีไฟล์ในระบบแล้ว</div>
+                                                    <div class="x-small text-muted text-truncate"><?= esc($agreement['pa_file_pa1']) ?></div>
+                                                </div>
+                                            </div>
+                                            <a href="<?= env('upload.server.baseurl.pa_agreement') . $agreement['pa_year'] . '/pa1/' . $agreement['pa_file_pa1'] ?>" target="_blank" class="btn btn-xs btn-success text-nowrap rounded-pill px-2">
+                                                <i class="bi bi-eye me-1"></i> เปิดดู
+                                            </a>
+                                        </div>
+                                <?php else: ?>
+                                        <div class="alert alert-secondary d-flex align-items-center p-2 mb-3 rounded-3" role="alert">
+                                            <i class="bi bi-hourglass-split fs-4 text-secondary me-2"></i>
+                                            <div class="small text-muted">
+                                                ยังไม่มีไฟล์บันทึกข้อตกลง PA1 ในระบบ
                                             </div>
                                         </div>
-                                        <a href="<?= env('upload.server.baseurl.pa_agreement') . $agreement['pa_year'] . '/pa1/' . $agreement['pa_file_pa1'] ?>" target="_blank" class="btn btn-xs btn-success text-nowrap rounded-pill px-2">
-                                            <i class="bi bi-eye me-1"></i> เปิดดู
-                                        </a>
-                                    </div>
-                                <?php else : ?>
-                                    <div class="alert alert-secondary d-flex align-items-center p-2 mb-3 rounded-3" role="alert">
-                                        <i class="bi bi-hourglass-split fs-4 text-secondary me-2"></i>
-                                        <div class="small text-muted">
-                                            ยังไม่มีไฟล์บันทึกข้อตกลง PA1 ในระบบ
-                                        </div>
-                                    </div>
                                 <?php endif; ?>
 
                                 <div class="bg-label-primary p-3 rounded-3 border border-primary border-opacity-25">
@@ -432,14 +428,14 @@
                             </div>
 
                             <div class="pt-2">
-                                <?php if ($agreement && !empty($agreement['pa_file_pa1'])) : ?>
-                                    <a href="<?= env('upload.server.baseurl.pa_agreement') . $agreement['pa_year'] . '/pa1/' . $agreement['pa_file_pa1'] ?>" target="_blank" class="btn btn-label-primary btn-sm w-100 mt-2">
-                                        <i class="bi bi-file-earmark-pdf me-1"></i> ดูเอกสาร PA1 ของปีนี้
-                                    </a>
-                                <?php else : ?>
-                                    <button type="button" class="btn btn-outline-secondary btn-sm w-100 mt-2" disabled>
-                                        <i class="bi bi-clock-history me-1"></i> งานบุคลากรกำลังดำเนินการ
-                                    </button>
+                                <?php if ($agreement && !empty($agreement['pa_file_pa1'])): ?>
+                                        <a href="<?= env('upload.server.baseurl.pa_agreement') . $agreement['pa_year'] . '/pa1/' . $agreement['pa_file_pa1'] ?>" target="_blank" class="btn btn-label-primary btn-sm w-100 mt-2">
+                                            <i class="bi bi-file-earmark-pdf me-1"></i> ดูเอกสาร PA1 ของปีนี้
+                                        </a>
+                                <?php else: ?>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm w-100 mt-2" disabled>
+                                            <i class="bi bi-clock-history me-1"></i> งานบุคลากรกำลังดำเนินการ
+                                        </button>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -474,99 +470,99 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if (empty($history)) : ?>
-                                <tr>
-                                    <td colspan="7" class="text-center py-4 text-muted">
-                                        <i class="bi bi-inbox fs-3 d-block mb-1 text-light"></i>
-                                        ไม่พบประวัติการส่งข้อมูล
-                                    </td>
-                                </tr>
-                            <?php else : ?>
-                                <?php foreach ($history as $row) : ?>
+                            <?php if (empty($history)): ?>
                                     <tr>
-                                        <td class="ps-3 fw-semibold text-dark"><?= $row['pa_year'] ?></td>
-                                        <td class="small text-muted"><?= thai_date_and_time($row['pa_created_at']) ?> น.</td>
-                                        <td class="text-center">
-                                            <?php if (!empty($row['pa_presentation_link'])) : ?>
-                                                <a href="<?= esc($row['pa_presentation_link']) ?>" target="_blank" class="btn btn-sm btn-icon btn-label-danger rounded-pill shadow-xs" title="เปิดดูลิ้งก์สื่อนำเสนอ">
-                                                    <i class="bi bi-play-circle-fill"></i>
-                                                </a>
-                                            <?php else : ?>
-                                                <span class="badge bg-label-secondary small pe-none">-</span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td class="text-center">
-                                            <?php if (!empty($row['pa_file_presentation'])) : ?>
-                                                <a href="<?= env('upload.server.baseurl.pa_agreement') . $row['pa_year'] . '/presentation/' . $row['pa_file_presentation'] ?>" target="_blank" class="btn btn-sm btn-icon btn-label-warning rounded-pill shadow-xs" title="เปิดดูไฟล์สื่อนำเสนอ">
-                                                    <i class="bi bi-file-earmark-play-fill"></i>
-                                                </a>
-                                            <?php else : ?>
-                                                <span class="badge bg-label-secondary small pe-none">-</span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td class="text-center">
-                                            <?php if (!empty($row['pa_file_lesson_plan'])) : ?>
-                                                <a href="<?= env('upload.server.baseurl.pa_agreement') . $row['pa_year'] . '/lesson_plan/' . $row['pa_file_lesson_plan'] ?>" target="_blank" class="btn btn-sm btn-icon btn-label-info rounded-pill shadow-xs" title="เปิดดูแผนการสอน">
-                                                    <i class="bi bi-journal-text"></i>
-                                                </a>
-                                            <?php else : ?>
-                                                <span class="badge bg-label-secondary small pe-none">ไม่ได้ส่ง</span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td class="text-center">
-                                            <?php if (!empty($row['pa_file_pa1'])) : ?>
-                                                <a href="<?= env('upload.server.baseurl.pa_agreement') . $row['pa_year'] . '/pa1/' . $row['pa_file_pa1'] ?>" target="_blank" class="btn btn-sm btn-icon btn-label-primary rounded-pill shadow-xs" title="เปิดดูข้อตกลง PA1">
-                                                    <i class="bi bi-file-earmark-check"></i>
-                                                </a>
-                                            <?php else : ?>
-                                                <span class="badge bg-label-warning small pe-none"><i class="bi bi-clock me-1"></i>รอเจ้าหน้าที่</span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td class="text-center pe-3">
-                                            <div class="dropdown d-inline-block">
-                                                <button class="btn btn-sm btn-icon btn-label-secondary rounded-pill" type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">
-                                                    <i class="bi bi-three-dots-vertical"></i>
-                                                </button>
-                                                <ul class="dropdown-menu dropdown-menu-end shadow-lg py-2" style="min-width: 220px; z-index: 1060;">
-                                                    <li><h6 class="dropdown-header text-uppercase fs-8 text-muted">ตัวเลือกลบข้อมูล</h6></li>
-                                                    <li>
-                                                        <a class="dropdown-item d-flex align-items-center btn-delete py-2 <?= empty($row['pa_presentation_link']) ? 'disabled text-muted' : '' ?>" 
-                                                           href="javascript:void(0)" 
-                                                           data-id="<?= $row['pa_id'] ?>" 
-                                                           data-type="presentation">
-                                                            <i class="bi bi-play-circle me-2 text-danger fs-6"></i> ลบลิ้งก์นำเสนอ
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <a class="dropdown-item d-flex align-items-center btn-delete py-2 <?= empty($row['pa_file_lesson_plan']) ? 'disabled text-muted' : '' ?>" 
-                                                           href="javascript:void(0)" 
-                                                           data-id="<?= $row['pa_id'] ?>" 
-                                                           data-type="lesson_plan">
-                                                            <i class="bi bi-journal-text me-2 text-info fs-6"></i> ลบไฟล์แผนการสอน
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <a class="dropdown-item d-flex align-items-center btn-delete py-2 <?= empty($row['pa_file_presentation']) ? 'disabled text-muted' : '' ?>" 
-                                                           href="javascript:void(0)" 
-                                                           data-id="<?= $row['pa_id'] ?>" 
-                                                           data-type="presentation_file">
-                                                            <i class="bi bi-file-earmark-play me-2 text-warning fs-6"></i> ลบไฟล์สื่อนำเสนอ
-                                                        </a>
-                                                    </li>
-                                                    <li><hr class="dropdown-divider my-1"></li>
-                                                    <li>
-                                                        <a class="dropdown-item d-flex align-items-center btn-delete py-2 text-danger fw-bold" 
-                                                           href="javascript:void(0)" 
-                                                           data-id="<?= $row['pa_id'] ?>" 
-                                                           data-type="all">
-                                                            <i class="bi bi-trash3-fill me-2 fs-6"></i> ลบข้อมูลทั้งหมดของปีนี้
-                                                        </a>
-                                                    </li>
-                                                </ul>
-                                            </div>
+                                        <td colspan="7" class="text-center py-4 text-muted">
+                                            <i class="bi bi-inbox fs-3 d-block mb-1 text-light"></i>
+                                            ไม่พบประวัติการส่งข้อมูล
                                         </td>
                                     </tr>
-                                <?php endforeach; ?>
+                            <?php else: ?>
+                                    <?php foreach ($history as $row): ?>
+                                            <tr>
+                                                <td class="ps-3 fw-semibold text-dark"><?= $row['pa_year'] ?></td>
+                                                <td class="small text-muted"><?= thai_date_and_time($row['pa_created_at']) ?> น.</td>
+                                                <td class="text-center">
+                                                    <?php if (!empty($row['pa_presentation_link'])): ?>
+                                                            <a href="<?= esc($row['pa_presentation_link']) ?>" target="_blank" class="btn btn-sm btn-icon btn-label-danger rounded-pill shadow-xs" title="เปิดดูลิ้งก์สื่อนำเสนอ">
+                                                                <i class="bi bi-play-circle-fill"></i>
+                                                            </a>
+                                                    <?php else: ?>
+                                                            <span class="badge bg-label-secondary small pe-none">-</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td class="text-center">
+                                                    <?php if (!empty($row['pa_file_presentation'])): ?>
+                                                            <a href="<?= env('upload.server.baseurl.pa_agreement') . $row['pa_year'] . '/presentation/' . $row['pa_file_presentation'] ?>" target="_blank" class="btn btn-sm btn-icon btn-label-warning rounded-pill shadow-xs" title="เปิดดูไฟล์สื่อนำเสนอ">
+                                                                <i class="bi bi-file-earmark-play-fill"></i>
+                                                            </a>
+                                                    <?php else: ?>
+                                                            <span class="badge bg-label-secondary small pe-none">-</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td class="text-center">
+                                                    <?php if (!empty($row['pa_file_lesson_plan'])): ?>
+                                                            <a href="<?= env('upload.server.baseurl.pa_agreement') . $row['pa_year'] . '/lesson_plan/' . $row['pa_file_lesson_plan'] ?>" target="_blank" class="btn btn-sm btn-icon btn-label-info rounded-pill shadow-xs" title="เปิดดูแผนการสอน">
+                                                                <i class="bi bi-journal-text"></i>
+                                                            </a>
+                                                    <?php else: ?>
+                                                            <span class="badge bg-label-secondary small pe-none">ไม่ได้ส่ง</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td class="text-center">
+                                                    <?php if (!empty($row['pa_file_pa1'])): ?>
+                                                            <a href="<?= env('upload.server.baseurl.pa_agreement') . $row['pa_year'] . '/pa1/' . $row['pa_file_pa1'] ?>" target="_blank" class="btn btn-sm btn-icon btn-label-primary rounded-pill shadow-xs" title="เปิดดูข้อตกลง PA1">
+                                                                <i class="bi bi-file-earmark-check"></i>
+                                                            </a>
+                                                    <?php else: ?>
+                                                            <span class="badge bg-label-warning small pe-none"><i class="bi bi-clock me-1"></i>รอเจ้าหน้าที่</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td class="text-center pe-3">
+                                                    <div class="dropdown d-inline-block">
+                                                        <button class="btn btn-sm btn-icon btn-label-secondary rounded-pill" type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">
+                                                            <i class="bi bi-three-dots-vertical"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu dropdown-menu-end shadow-lg py-2" style="min-width: 220px; z-index: 1060;">
+                                                            <li><h6 class="dropdown-header text-uppercase fs-8 text-muted">ตัวเลือกลบข้อมูล</h6></li>
+                                                            <li>
+                                                                <a class="dropdown-item d-flex align-items-center btn-delete py-2 <?= empty($row['pa_presentation_link']) ? 'disabled text-muted' : '' ?>" 
+                                                                   href="javascript:void(0)" 
+                                                                   data-id="<?= $row['pa_id'] ?>" 
+                                                                   data-type="presentation">
+                                                                    <i class="bi bi-play-circle me-2 text-danger fs-6"></i> ลบลิ้งก์นำเสนอ
+                                                                </a>
+                                                            </li>
+                                                            <li>
+                                                                <a class="dropdown-item d-flex align-items-center btn-delete py-2 <?= empty($row['pa_file_lesson_plan']) ? 'disabled text-muted' : '' ?>" 
+                                                                   href="javascript:void(0)" 
+                                                                   data-id="<?= $row['pa_id'] ?>" 
+                                                                   data-type="lesson_plan">
+                                                                    <i class="bi bi-journal-text me-2 text-info fs-6"></i> ลบไฟล์แผนการสอน
+                                                                </a>
+                                                            </li>
+                                                            <li>
+                                                                <a class="dropdown-item d-flex align-items-center btn-delete py-2 <?= empty($row['pa_file_presentation']) ? 'disabled text-muted' : '' ?>" 
+                                                                   href="javascript:void(0)" 
+                                                                   data-id="<?= $row['pa_id'] ?>" 
+                                                                   data-type="presentation_file">
+                                                                    <i class="bi bi-file-earmark-play me-2 text-warning fs-6"></i> ลบไฟล์สื่อนำเสนอ
+                                                                </a>
+                                                            </li>
+                                                            <li><hr class="dropdown-divider my-1"></li>
+                                                            <li>
+                                                                <a class="dropdown-item d-flex align-items-center btn-delete py-2 text-danger fw-bold" 
+                                                                   href="javascript:void(0)" 
+                                                                   data-id="<?= $row['pa_id'] ?>" 
+                                                                   data-type="all">
+                                                                    <i class="bi bi-trash3-fill me-2 fs-6"></i> ลบข้อมูลทั้งหมดของปีนี้
+                                                                </a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                    <?php endforeach; ?>
                             <?php endif; ?>
                         </tbody>
                     </table>
@@ -584,34 +580,63 @@
         const isSystemOpen = <?= $system_config['is_open'] ? 'true' : 'false' ?>;
         const CHUNK_SIZE = 1024 * 900; // 900KB chunk (Bypass Nginx 1MB limit & Reduce chunk count)
 
-        // Modal notification on page load
-        Swal.fire({
-            icon: 'warning',
-            title: '<span class="text-warning fw-bold fs-4">⚠️ ข้อควรทราบสำคัญ</span>',
-            html: `
-                <div class="text-center py-2">
-                    <div class="p-3 bg-label-warning rounded-3 mb-3 border border-warning">
-                        <h5 class="fw-bold text-warning mb-1">
-                            <i class="bi bi-shield-lock-fill me-1"></i> ข้อตกลง PA นี้สำหรับ "ข้าราชการครู" เท่านั้น
-                        </h5>
-                        <div class="text-dark fw-semibold mt-2" style="font-size: 1.05rem;">
-                            สำหรับตำแหน่ง <span class="badge bg-warning text-dark fs-7">ครูผู้ช่วย</span> และ <span class="badge bg-warning text-dark fs-7">ครู (คศ.1 - คศ.5)</span>
+        const teacherId = '<?= session()->get('person_id') ?>';
+        const noticeStorageKey = 'hide_pa_notice_' + (teacherId || 'default');
+
+        // Modal notification with 'Don't show again' option
+        function showNoticeModal(force = false) {
+            if (!force && localStorage.getItem(noticeStorageKey) === 'true') {
+                return;
+            }
+
+            Swal.fire({
+                icon: 'warning',
+                title: '<span class="text-warning fw-bold fs-4">⚠️ ข้อควรทราบสำคัญ</span>',
+                html: `
+                    <div class="text-center py-2">
+                        <div class="p-3 bg-label-warning rounded-3 mb-3 border border-warning">
+                            <h5 class="fw-bold text-warning mb-1">
+                                <i class="bi bi-shield-lock-fill me-1"></i> ข้อตกลง PA นี้สำหรับ "ข้าราชการครู" เท่านั้น
+                            </h5>
+                            <div class="text-dark fw-semibold mt-2" style="font-size: 1.05rem;">
+                                สำหรับตำแหน่ง <span class="badge bg-warning text-dark fs-7">ครูผู้ช่วย</span> และ <span class="badge bg-warning text-dark fs-7">ครู (คศ.1 - คศ.5)</span>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-secondary text-start small mb-0 py-2 border">
+                            <i class="bi bi-info-circle-fill text-primary me-1"></i> 
+                            <strong>ครูอัตราจ้าง / ครูจ้างสอน / เจ้าหน้าที่ธุรการ และบุคลากรอื่น ๆ:</strong><br>
+                            <span class="text-muted fw-semibold">ไม่จำเป็นต้องจัดทำหรือส่งข้อมูลข้อตกลง PA ในระบบนี้</span>
+                        </div>
+
+                        <div class="form-check d-flex justify-content-center align-items-center mt-3 pt-2">
+                            <input class="form-check-input me-2" type="checkbox" id="chkDontShowNoticeAgain" style="cursor: pointer;">
+                            <label class="form-check-label text-muted small user-select-none" for="chkDontShowNoticeAgain" style="cursor: pointer;">
+                                ไม่แสดงข้อความนี้อีก
+                            </label>
                         </div>
                     </div>
+                `,
+                confirmButtonText: '<i class="bi bi-check-circle-fill me-1"></i> รับทราบและเข้าใจแล้ว',
+                confirmButtonColor: '#ffab00',
+                allowOutsideClick: false,
+                customClass: {
+                    popup: 'rounded-4 shadow-lg p-4'
+                }
+            }).then((result) => {
+                if ($('#chkDontShowNoticeAgain').is(':checked')) {
+                    localStorage.setItem(noticeStorageKey, 'true');
+                }
+            });
+        }
 
-                    <div class="alert alert-secondary text-start small mb-0 py-2 border">
-                        <i class="bi bi-info-circle-fill text-primary me-1"></i> 
-                        <strong>ครูอัตราจ้าง / ครูจ้างสอน / เจ้าหน้าที่ธุรการ และบุคลากรอื่น ๆ:</strong><br>
-                        <span class="text-muted fw-semibold">ไม่จำเป็นต้องจัดทำหรือส่งข้อมูลข้อตกลง PA ในระบบนี้</span>
-                    </div>
-                </div>
-            `,
-            confirmButtonText: '<i class="bi bi-check-circle-fill me-1"></i> รับทราบและเข้าใจแล้ว',
-            confirmButtonColor: '#ffab00',
-            allowOutsideClick: false,
-            customClass: {
-                popup: 'rounded-4 shadow-lg p-4'
-            }
+        // Modal notification on page load if not dismissed
+        showNoticeModal(false);
+
+        // Click handler to re-open notice modal from header button
+        $('#btnShowNoticeModal').on('click', function(e) {
+            e.preventDefault();
+            showNoticeModal(true);
         });
 
         // Helper: Upload file in chunks to remote server
