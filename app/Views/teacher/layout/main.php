@@ -1800,14 +1800,33 @@
             });
 
             // 5) Safety: Restore buttons and hide loader on pageshow, modal show/hide, and sweetalert close
-            $(window).on('pageshow', function () {
-                window.resetButtonLoading();
-                window.hidePageLoader();
-            });
-
             $(document).on('shown.bs.modal hidden.bs.modal', function (e) {
                 window.resetButtonLoading(e.target);
                 window.hidePageLoader();
+                if (e.type === 'hidden') {
+                    setTimeout(function () {
+                        if ($('.modal.show').length === 0) {
+                            $('.modal-backdrop').remove();
+                            $('body').removeClass('modal-open').css({
+                                'overflow': '',
+                                'padding-right': ''
+                            });
+                        }
+                    }, 200);
+                }
+            });
+
+            // Clean up any orphaned backdrops when tab regains focus (e.g. after returning from target="_blank")
+            $(window).on('focus pageshow', function () {
+                window.resetButtonLoading();
+                window.hidePageLoader();
+                if ($('.modal.show').length === 0 && $('.modal-backdrop').length > 0) {
+                    $('.modal-backdrop').remove();
+                    $('body').removeClass('modal-open').css({
+                        'overflow': '',
+                        'padding-right': ''
+                    });
+                }
             });
 
             $(document).on('click', '.swal2-confirm, .swal2-cancel, .swal2-close, .swal2-deny', function () {

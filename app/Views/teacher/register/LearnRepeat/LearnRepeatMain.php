@@ -218,10 +218,9 @@
                                                         <i class="bi bi-printer me-1"></i> พิมพ์
                                                     </button>
                                                 <?php else : ?>
-                                                    <button type="button" id="chcek_report" class="btn btn-outline-info btn-sm px-3 shadow-sm hover-elevate" 
-                                                            data-bs-toggle="modal" data-bs-target="#Modalprint" 
-                                                            report-yaer="<?= esc($v_check_subject->RegisterYear) ?>" 
-                                                            report-subject="<?= esc($v_check_subject->SubjectID) ?>">
+                                                    <button type="button" class="btn btn-outline-info btn-sm px-3 shadow-sm hover-elevate btn-check-report" 
+                                                            data-report-year="<?= esc($v_check_subject->RegisterYear) ?>" 
+                                                            data-report-subject="<?= esc($v_check_subject->SubjectID) ?>">
                                                         <i class="bi bi-printer me-1"></i> พิมพ์
                                                     </button>
                                                 <?php endif; ?>
@@ -314,18 +313,38 @@
             return new bootstrap.Tooltip(tooltipTriggerEl)
         });
 
+        const modalEl = document.getElementById('Modalprint');
+        const printModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+        function cleanupModalPrintBackdrop() {
+            if (!$('#Modalprint').hasClass('show')) {
+                $('.modal-backdrop').remove();
+                $('body').removeClass('modal-open').css({
+                    'overflow': '',
+                    'padding-right': ''
+                });
+            }
+        }
+
         // Report Button Handler
-        $(document).on('click', '#chcek_report', function(e) {
+        $(document).on('click', '.btn-check-report, #chcek_report', function(e) {
             e.preventDefault();
-            var year = $(this).attr('report-yaer');
-            var subject = $(this).attr('report-subject');
+            var year = $(this).attr('data-report-year') || $(this).attr('report-yaer');
+            var subject = $(this).attr('data-report-subject') || $(this).attr('report-subject');
             var $btn = $(this);
             var originalHtml = $btn.html();
 
             $("#report_RegisterYear").val(year);
             $("#report_SubjectID").val(subject);
 
-            // Show loading state
+            // Pre-fill select with loading indicator
+            var selectPrint = $('#select_print');
+            selectPrint.html('<option value="" disabled selected>กำลังโหลดข้อมูลห้องเรียน...</option>');
+
+            // Show modal immediately
+            printModal.show();
+
+            // Show loading state on button
             $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status"></span>');
 
             $.ajax({
@@ -337,16 +356,18 @@
                 },
                 dataType: 'json',
                 success: function(data) {
-                    var selectPrint = $('#select_print');
                     selectPrint.empty();
                     selectPrint.append('<option value="all">ทั้งหมด (ทุกห้องเรียน)</option>');
-                    $.each(data, function(key, val) {
-                        selectPrint.append('<option value="' + val.StudentClass + '">' + val.StudentClass + '</option>');
-                    });
-                    $btn.prop('disabled', false).html(originalHtml);
+                    if (Array.isArray(data)) {
+                        $.each(data, function(key, val) {
+                            if (val && val.StudentClass) {
+                                selectPrint.append('<option value="' + val.StudentClass + '">' + val.StudentClass + '</option>');
+                            }
+                        });
+                    }
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
-                    $btn.prop('disabled', false).html(originalHtml);
+                    selectPrint.html('<option value="all">ทั้งหมด (ทุกห้องเรียน)</option>');
                     Swal.fire({
                         icon: 'error',
                         title: 'เกิดข้อผิดพลาด',
@@ -354,15 +375,24 @@
                         customClass: { confirmButton: 'btn btn-primary' },
                         buttonsStyling: false
                     });
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).html(originalHtml);
                 }
             });
         });
 
-        // Close modal and reset form after PDF generation start
+        // Close modal when form is submitted for printing (PDF in target="_blank")
         $('#Modalprint form').on('submit', function() {
-            setTimeout(() => {
-                $('#Modalprint').modal('hide');
-            }, 1500);
+            printModal.hide();
+            // Background tab safety timeout (since target="_blank" opens new tab and suspends CSS transitionend)
+            setTimeout(cleanupModalPrintBackdrop, 350);
+            setTimeout(cleanupModalPrintBackdrop, 1000);
+        });
+
+        // Ensure backdrop is destroyed whenever modal is completely hidden
+        modalEl.addEventListener('hidden.bs.modal', function() {
+            cleanupModalPrintBackdrop();
         });
     });
 </script>
