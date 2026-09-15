@@ -412,7 +412,7 @@
                                     <th rowspan="4" class="ps-3 num-col" style="min-width: 55px;">เลขที่</th>
                                     <th rowspan="4" class="text-start name-col">ชื่อ-นามสกุล</th>
                                     <?php foreach ($assessmentItems as $mainItem): ?>
-                                        <th colspan="<?= count($mainItem['sub_items']) + 1 ?>" class="main-item-header">
+                                        <th colspan="<?= count($mainItem['sub_items']) + 1 ?>" class="main-item-header" data-bs-toggle="tooltip" title="<?= esc($mainItem['item_name']) ?>">
                                             ข้อที่ <?= $mainItem['item_order'] ?>
                                         </th>
                                     <?php endforeach; ?>

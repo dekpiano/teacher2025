@@ -294,13 +294,12 @@
             height: 100vh;
             overflow: hidden;
             pointer-events: none;
-            z-index: 0;
+            z-index: -1;
             background: linear-gradient(135deg, #f8f9fe 0%, #f1f4fb 50%, #f6f8fd 100%);
         }
 
         .layout-wrapper {
             position: relative;
-            z-index: 1;
             background: transparent !important;
         }
 
@@ -1799,7 +1798,13 @@
                 });
             });
 
-            // 5) Safety: Restore buttons and hide loader on pageshow, modal show/hide, and sweetalert close
+            // 5) Safety: Ensure modals are never trapped inside nested stacking contexts
+            $(document).on('show.bs.modal', function (e) {
+                if (e.target && e.target.parentElement !== document.body) {
+                    document.body.appendChild(e.target);
+                }
+            });
+
             $(document).on('shown.bs.modal hidden.bs.modal', function (e) {
                 window.resetButtonLoading(e.target);
                 window.hidePageLoader();

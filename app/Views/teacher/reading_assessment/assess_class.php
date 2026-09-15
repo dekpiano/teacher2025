@@ -307,7 +307,7 @@
                                     <th class="name-col">ชื่อ-นามสกุล</th>
                                     <?php foreach (($assessmentItems ?? []) as $item) : ?>
                                         <th class="text-center" style="min-width: 100px;">
-                                            <div class="smallest text-muted text-uppercase fw-bold mb-1">ข้อ <?= esc($item['ItemID']) ?></div>
+                                            <div class="smallest text-muted text-uppercase fw-bold mb-1" data-bs-toggle="tooltip" data-bs-placement="top" title="<?= esc($item['ItemName']) ?>">ข้อ <?= esc($item['ItemID']) ?></div>
                                             <div class="dropdown">
                                                 <button class="btn btn-xs btn-outline-secondary rounded-pill dropdown-toggle px-2" type="button" data-bs-toggle="dropdown">
                                                     <i class="bi bi-magic smallest"></i>
@@ -376,6 +376,12 @@
 <?= $this->section('scripts') ?>
 <script>
 $(document).ready(function() {
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+
     // SweetAlert2
     <?php if (session()->getFlashdata('message')) : ?>
         Swal.fire({
