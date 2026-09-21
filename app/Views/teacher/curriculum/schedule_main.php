@@ -28,7 +28,7 @@
                                 <?php endif; ?>
                             </div>
                         </div>
-                        <p class="opacity-75 mb-0">ระบบกำหนดรายวิชา ชั้น ห้อง และชั่วโมงสอน สำหรับครู<?= !empty($learning_name) ? 'ใน' . esc($learning_name) : '' ?> ประจำภาคเรียนที่ <?= esc($current_term) ?> ปีการศึกษา <?= esc($current_year) ?></p>
+                        <p class="opacity-75 mb-0">ระบบกำหนดรายวิชา ชั้น ห้อง และชั่วโมงสอน สำหรับครู<?= !empty($learning_name) ? 'ใน' . esc($learning_name) : '' ?> ประจำภาคเรียนที่ <span class="badge bg-white text-primary px-2 py-1 fs-6 fw-bold"><?= esc($current_term) ?>/<?= esc($current_year) ?></span></p>
                     </div>
                 </div>
             </div>
@@ -938,6 +938,7 @@
             </div>
             <div class="card-body p-3">
                 <!-- บรรทัดที่ 1: ข้อมูลจากคลังวิชา (ห้ามแก้ไข) -->
+                <input type="hidden" class="subject-id" name="subject_id[]" value="${data ? (data.subject_id ?? '') : ''}">
                 <div class="row g-2 mb-3">
                     <div class="col-md-2 col-sm-6">
                         <label class="form-label small fw-semibold text-secondary mb-1">รหัสวิชา <span class="text-danger">*</span></label>
@@ -1074,6 +1075,7 @@
             const data = e.params.data;
             const $card = $(this).closest('.subject-item-card');
             if (data && $card.length) {
+                if (data.id) $card.find('.subject-id').val(data.id);
                 if (data.subject_code) $card.find('.subject-code').val(data.subject_code);
                 if (data.subject_name) $card.find('.subject-name').val(data.subject_name);
                 if (data.subject_type) $card.find('.subject-type').val(data.subject_type);
@@ -1101,6 +1103,7 @@
         }).on('select2:clear', function(e) {
             const $card = $(this).closest('.subject-item-card');
             if ($card.length) {
+                $card.find('.subject-id').val('');
                 $card.find('.subject-code').val('');
                 $card.find('.subject-name').val('');
                 $card.find('.subject-type').val('');

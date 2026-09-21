@@ -39,23 +39,19 @@ class TeachingScheduleController extends BaseController
     }
 
     /**
-     * Get system Open/Close status for Teaching Schedule (จัดการวิชาเรียน) from tb_register_onoff
+     * Get system Open/Close status and Year/Term strictly from tb_register_onoff (onoff_id = 16 หรือ จัดการวิชาเรียน)
      */
     protected function getScheduleOnOff(): array
     {
         $onoffRow = $this->db->table('tb_register_onoff')
             ->where('onoff_id', 16)
+            ->orWhere('onoff_name', 'จัดการวิชาเรียน')
+            ->orLike('onoff_name', 'ตารางสอน')
+            ->orderBy("CASE WHEN onoff_id = 16 THEN 0 WHEN onoff_name = 'จัดการวิชาเรียน' THEN 1 ELSE 2 END", 'ASC', false)
             ->get()->getRow();
 
-        if (!$onoffRow) {
-            $onoffRow = $this->db->table('tb_register_onoff')
-                ->like('onoff_name', 'จัดการวิชาเรียน')
-                ->orLike('onoff_name', 'ตารางสอน')
-                ->get()->getRow();
-        }
-
         $status = $onoffRow ? ($onoffRow->onoff_status ?? 'off') : 'on';
-        $yearTerm = $onoffRow->onoff_year ?? null;
+        $yearTerm = $onoffRow ? trim((string)($onoffRow->onoff_year ?? '')) : '';
 
         $defaultTerm = null;
         $defaultYear = null;
@@ -63,6 +59,12 @@ class TeachingScheduleController extends BaseController
             $parts = explode('/', $yearTerm);
             $defaultTerm = trim($parts[0]);
             $defaultYear = trim($parts[1]);
+        }
+
+        // กรณีฉุกเฉินหาก onoff_year ใน tb_register_onoff ยังว่างเปล่า
+        if (empty($defaultYear) || empty($defaultTerm)) {
+            $defaultYear = (string)(date('Y') + 543);
+            $defaultTerm = '1';
         }
 
         // ดูเฉพาะสถานะ onoff_status ว่า เปิด ('on'/'true'/'1') หรือ ปิด ('off')
@@ -76,7 +78,35 @@ class TeachingScheduleController extends BaseController
             'end_date'     => $onoffRow->onoff_EndDate ?? null,
             'default_term' => $defaultTerm,
             'default_year' => $defaultYear,
+            'onoff_year'   => $yearTerm,
         ];
+    }
+
+    /**
+     * Resolve academic year and term consistently from parameters, request, or tb_register_onoff
+     */
+    protected function resolveYearAndTerm($year = null, $term = null): array
+    {
+        if ($year !== null && $term !== null && !empty($year) && !empty($term)) {
+            return ['year' => (string)$year, 'term' => (string)$term];
+        }
+
+        $reqYear = $this->request->getGet('year');
+        $reqTerm = $this->request->getGet('term');
+        if (!empty($reqYear) && !empty($reqTerm)) {
+            return ['year' => (string)$reqYear, 'term' => (string)$reqTerm];
+        }
+
+        $scheduleOnOff = $this->getScheduleOnOff();
+        $finalYear = $year ?: ($scheduleOnOff['default_year'] ?? null);
+        $finalTerm = $term ?: ($scheduleOnOff['default_term'] ?? null);
+
+        if (empty($finalYear) || empty($finalTerm)) {
+            $finalYear = (string)(date('Y') + 543);
+            $finalTerm = '1';
+        }
+
+        return ['year' => (string)$finalYear, 'term' => (string)$finalTerm];
     }
 
     protected function ensureTablesExist()
@@ -110,6 +140,17 @@ class TeachingScheduleController extends BaseController
                         'constraint' => 150,
                         'null'       => true,
                         'after'      => 'room'
+                    ]
+                ]);
+            }
+
+            if (!$this->db->fieldExists('subject_id', 'tb_teaching_schedule')) {
+                $forge->addColumn('tb_teaching_schedule', [
+                    'subject_id' => [
+                        'type'       => 'INT',
+                        'constraint' => 11,
+                        'null'       => true,
+                        'after'      => 'teacher_id'
                     ]
                 ]);
             }
@@ -164,18 +205,9 @@ class TeachingScheduleController extends BaseController
         $data['is_open'] = $scheduleOnOff['is_open'];
         $data['onoff_row'] = $scheduleOnOff['row'];
 
-        if ($year === null || $term === null) {
-            if (!empty($scheduleOnOff['default_year']) && !empty($scheduleOnOff['default_term'])) {
-                $year = $scheduleOnOff['default_year'];
-                $term = $scheduleOnOff['default_term'];
-            } elseif ($this->setup && !empty($this->setup->seplanset_year) && !empty($this->setup->seplanset_term)) {
-                $year = $this->setup->seplanset_year;
-                $term = $this->setup->seplanset_term;
-            } else {
-                $year = date('Y') + 543;
-                $term = 1;
-            }
-        }
+        $resolved = $this->resolveYearAndTerm($year, $term);
+        $year = $resolved['year'];
+        $term = $resolved['term'];
 
         $data['current_year'] = $year;
         $data['current_term'] = $term;
@@ -405,6 +437,26 @@ class TeachingScheduleController extends BaseController
         $classRoomMap = $this->getStudentClassRoomMap();
         $batchData = [];
 
+        $resolveSubjId = function($rawSubjId, $code) use ($term, $year) {
+            $subjId = !empty($rawSubjId) ? (int)$rawSubjId : null;
+            if (!$subjId && !empty($code)) {
+                $subRow = $this->db->table('tb_subjects')
+                    ->where('SubjectCode', $code)
+                    ->where('SubjectYear', $term . '/' . $year)
+                    ->get()->getRow();
+                if (!$subRow) {
+                    $subRow = $this->db->table('tb_subjects')
+                        ->where('SubjectCode', $code)
+                        ->orderBy("SUBSTRING_INDEX(SubjectYear, '/', -1) DESC, SUBSTRING_INDEX(SubjectYear, '/', 1) DESC, SubjectID DESC")
+                        ->get()->getRow();
+                }
+                if ($subRow) {
+                    $subjId = (int)$subRow->SubjectID;
+                }
+            }
+            return $subjId;
+        };
+
         // Support indexed arrays (e.g. subject_code[], subject_name[])
         if (isset($post['subject_code']) && is_array($post['subject_code'])) {
             foreach ($post['subject_code'] as $i => $code) {
@@ -422,12 +474,14 @@ class TeachingScheduleController extends BaseController
                     $hpw          = !empty($post['hours_per_week'][$i]) ? (int)$post['hours_per_week'][$i] : 0;
                     $totalH       = !empty($post['total_hours'][$i]) ? (int)$post['total_hours'][$i] : 0;
                     $remark       = trim($post['remark'][$i] ?? '');
+                    $subjId       = $resolveSubjId($post['subject_id'][$i] ?? null, $cleanCode);
 
                     foreach ($rooms as $singleRoom) {
                         $singlePlan = $this->resolveStudyPlan($selectedPlan, $gradeLevel, (string)$singleRoom, $classRoomMap);
 
                         $batchData[] = [
                             'teacher_id'     => $teacherId,
+                            'subject_id'     => $subjId,
                             'subject_code'   => $cleanCode,
                             'subject_name'   => $subName,
                             'subject_type'   => $subType,
@@ -462,12 +516,14 @@ class TeachingScheduleController extends BaseController
                     $hpw          = !empty($sub['hours_per_week']) ? (int)$sub['hours_per_week'] : 0;
                     $totalH       = !empty($sub['total_hours']) ? (int)$sub['total_hours'] : 0;
                     $remark       = trim($sub['remark'] ?? '');
+                    $subjId       = $resolveSubjId($sub['subject_id'] ?? null, $cleanCode);
 
                     foreach ($rooms as $singleRoom) {
                         $singlePlan = $this->resolveStudyPlan($selectedPlan, $gradeLevel, (string)$singleRoom, $classRoomMap);
 
                         $batchData[] = [
                             'teacher_id'     => $teacherId,
+                            'subject_id'     => $subjId,
                             'subject_code'   => $cleanCode,
                             'subject_name'   => $subName,
                             'subject_type'   => $subType,
@@ -500,12 +556,14 @@ class TeachingScheduleController extends BaseController
             $hpw          = !empty($post['hours_per_week']) ? (int)$post['hours_per_week'] : 0;
             $totalH       = !empty($post['total_hours']) ? (int)$post['total_hours'] : 0;
             $remark       = trim($post['remark'] ?? '');
+            $subjId       = $resolveSubjId($post['subject_id'] ?? null, $cleanCode);
 
             foreach ($rooms as $singleRoom) {
                 $singlePlan = $this->resolveStudyPlan($selectedPlan, $gradeLevel, (string)$singleRoom, $classRoomMap);
 
                 $batchData[] = [
                     'teacher_id'     => $teacherId,
+                    'subject_id'     => $subjId,
                     'subject_code'   => $cleanCode,
                     'subject_name'   => $subName,
                     'subject_type'   => $subType,
@@ -718,14 +776,12 @@ class TeachingScheduleController extends BaseController
         if (!empty($reqTerm) && !empty($reqYear)) {
             $targetSubjectYear = trim($reqTerm) . '/' . trim($reqYear);
         } else {
-            $scheduleOnOff = $this->getScheduleOnOff();
-            if (!empty($scheduleOnOff['row']->onoff_year)) {
-                $targetSubjectYear = trim($scheduleOnOff['row']->onoff_year);
-            }
+            $resolved = $this->resolveYearAndTerm();
+            $targetSubjectYear = $resolved['term'] . '/' . $resolved['year'];
         }
         
         $builder = $this->db->table('tb_subjects');
-        $builder->select('MIN(SubjectID) as SubjectID, SubjectCode, SubjectName, SubjectType, SubjectUnit, SubjectHour, SubjectClass', false);
+        $builder->select('MAX(SubjectID) as SubjectID, SubjectCode, SubjectName, SubjectType, SubjectUnit, SubjectHour, SubjectClass', false);
 
         if (!empty($targetSubjectYear)) {
             $builder->where('SubjectYear', $targetSubjectYear);
@@ -745,16 +801,16 @@ class TeachingScheduleController extends BaseController
         $query = $builder->get();
         $results = $query->getResultArray();
 
-        // Fallback: If no subjects found for specific SubjectYear and search query exists, try without SubjectYear
+        // Fallback: If no subjects found for specific SubjectYear and search query exists, try without SubjectYear prioritizing latest year/term
         if (empty($results) && !empty($targetSubjectYear) && !empty($q)) {
             $builderFallback = $this->db->table('tb_subjects');
-            $builderFallback->select('MIN(SubjectID) as SubjectID, SubjectCode, SubjectName, SubjectType, SubjectUnit, SubjectHour, SubjectClass', false);
+            $builderFallback->select('MAX(SubjectID) as SubjectID, SubjectCode, SubjectName, SubjectType, SubjectUnit, SubjectHour, SubjectClass', false);
             $builderFallback->groupStart()
                     ->like('SubjectCode', $q)
                     ->orLike('SubjectName', $q)
                     ->groupEnd();
             $builderFallback->groupBy(['SubjectCode', 'SubjectName', 'SubjectClass', 'SubjectType', 'SubjectUnit', 'SubjectHour']);
-            $builderFallback->orderBy('SubjectCode', 'ASC');
+            $builderFallback->orderBy("SUBSTRING_INDEX(SubjectYear, '/', -1) DESC, SUBSTRING_INDEX(SubjectYear, '/', 1) DESC, SubjectID DESC", '', false);
             $builderFallback->limit(50);
             $results = $builderFallback->get()->getResultArray();
         }
@@ -1020,8 +1076,9 @@ class TeachingScheduleController extends BaseController
      */
     public function getTeacherExtra($teacherId)
     {
-        $year = $this->request->getGet('year') ?? ($this->setup ? $this->setup->seplanset_year : (date('Y') + 543));
-        $term = $this->request->getGet('term') ?? ($this->setup ? $this->setup->seplanset_term : 1);
+        $resolved = $this->resolveYearAndTerm();
+        $year = $this->request->getGet('year') ?: $resolved['year'];
+        $term = $this->request->getGet('term') ?: $resolved['term'];
 
         $this->ensureTablesExist();
 
@@ -1097,12 +1154,9 @@ class TeachingScheduleController extends BaseController
     {
         $this->ensureTablesExist();
 
-        if ($year === null) {
-            $year = $this->request->getGet('year') ?? ($this->setup ? $this->setup->seplanset_year : (date('Y') + 543));
-        }
-        if ($term === null) {
-            $term = $this->request->getGet('term') ?? ($this->setup ? $this->setup->seplanset_term : 1);
-        }
+        $resolved = $this->resolveYearAndTerm($year, $term);
+        $year = $resolved['year'];
+        $term = $resolved['term'];
 
         // 1. Fetch Teacher Info
         $teacher = $this->db_personnel->table('tb_personnel')
@@ -1124,13 +1178,7 @@ class TeachingScheduleController extends BaseController
         }
 
         // 3. Fetch Subjects and group identical subjects (by subject_code + grade_level)
-        $rawSchedules = $this->teachingScheduleModel
-            ->where('teacher_id', $teacherId)
-            ->where('year', $year)
-            ->where('term', $term)
-            ->orderBy('grade_level', 'ASC')
-            ->orderBy('subject_code', 'ASC')
-            ->findAll();
+        $rawSchedules = $this->teachingScheduleModel->getTeacherSchedulesWithSubjects($teacherId, $year, $term);
 
         $groupedSubjects = [];
         $totalCredit = 0;
@@ -1290,15 +1338,9 @@ class TeachingScheduleController extends BaseController
     {
         $this->ensureTablesExist();
 
-        if ($year === null || $term === null) {
-            if ($this->setup && !empty($this->setup->seplanset_year) && !empty($this->setup->seplanset_term)) {
-                $year = $this->setup->seplanset_year;
-                $term = $this->setup->seplanset_term;
-            } else {
-                $year = date('Y') + 543;
-                $term = 1;
-            }
-        }
+        $resolved = $this->resolveYearAndTerm($year, $term);
+        $year = $resolved['year'];
+        $term = $resolved['term'];
 
         $person_id = $this->session->get('person_id');
         $user_personnel = $this->db_personnel->table('tb_personnel')->select('pers_learning')->where('pers_id', $person_id)->get()->getRow();
