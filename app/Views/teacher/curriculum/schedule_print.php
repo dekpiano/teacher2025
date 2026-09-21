@@ -10,42 +10,12 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
     <style>
-        /* TH Sarabun PSK / New Webfont (รองรับทั้งเครื่องที่มีฟอนต์และเครื่องที่ไม่มีผ่าน CDN) */
-        @font-face {
-            font-family: 'THSarabunPSK';
-            src: local('TH Sarabun PSK'), local('THSarabunPSK'), local('TH Sarabun New'), local('THSarabunNew'),
-                 url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@v1.0.0/fonts/THSarabunNew/THSarabunNew.woff2') format('woff2'),
-                 url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@v1.0.0/fonts/THSarabunNew/THSarabunNew.ttf') format('truetype');
-            font-weight: normal;
-            font-style: normal;
-            font-display: swap;
-        }
-        @font-face {
-            font-family: 'THSarabunPSK';
-            src: local('TH Sarabun PSK Bold'), local('THSarabunPSK-Bold'), local('TH Sarabun New Bold'), local('THSarabunNew-Bold'),
-                 url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@v1.0.0/fonts/THSarabunNew/THSarabunNew-Bold.woff2') format('woff2'),
-                 url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@v1.0.0/fonts/THSarabunNew/THSarabunNew-Bold.ttf') format('truetype');
-            font-weight: bold;
-            font-style: normal;
-            font-display: swap;
-        }
+        /* TH Sarabun PSK / New Webfont */
         @font-face {
             font-family: 'TH Sarabun PSK';
-            src: local('TH Sarabun PSK'), local('THSarabunPSK'), local('TH Sarabun New'), local('THSarabunNew'),
-                 url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@v1.0.0/fonts/THSarabunNew/THSarabunNew.woff2') format('woff2'),
-                 url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@v1.0.0/fonts/THSarabunNew/THSarabunNew.ttf') format('truetype');
+            src: url('<?= base_url('assets/fonts/THSarabun.ttf') ?>') format('truetype');
             font-weight: normal;
             font-style: normal;
-            font-display: swap;
-        }
-        @font-face {
-            font-family: 'TH Sarabun PSK';
-            src: local('TH Sarabun PSK Bold'), local('THSarabunPSK-Bold'), local('TH Sarabun New Bold'), local('THSarabunNew-Bold'),
-                 url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@v1.0.0/fonts/THSarabunNew/THSarabunNew-Bold.woff2') format('woff2'),
-                 url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@v1.0.0/fonts/THSarabunNew/THSarabunNew-Bold.ttf') format('truetype');
-            font-weight: bold;
-            font-style: normal;
-            font-display: swap;
         }
 
         @page {
@@ -60,9 +30,9 @@
         }
 
         body {
-            font-family: 'THSarabunPSK', 'TH Sarabun PSK', 'TH Sarabun New', 'Sarabun', sans-serif;
+            font-family: 'TH Sarabun PSK', 'TH Sarabun New', 'Sarabun', sans-serif;
             font-size: 15pt;
-            line-height: 1.25;
+            line-height: 1.35;
             color: #000;
             background: #f4f6f9;
             margin: 0;
@@ -87,7 +57,6 @@
             border: none;
             padding: 8px 18px;
             border-radius: 6px;
-            font-size: 14pt;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
@@ -107,7 +76,6 @@
             border: none;
             padding: 8px 16px;
             border-radius: 6px;
-            font-size: 14pt;
             cursor: pointer;
             text-decoration: none;
             font-family: inherit;
@@ -132,19 +100,16 @@
         }
 
         .doc-title {
-            font-size: 18pt;
             font-weight: 700;
             margin: 0 0 3px 0;
         }
 
         .school-name {
-            font-size: 16pt;
             font-weight: 700;
             margin: 0 0 4px 0;
         }
 
         .meta-line {
-            font-size: 15pt;
             display: flex;
             justify-content: center;
             gap: 20px;
@@ -155,7 +120,6 @@
         /* Tables */
         .table-section-title {
             font-weight: 700;
-            font-size: 15pt;
             margin: 8px 0 3px 0;
         }
 
@@ -163,7 +127,7 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 6px;
-            font-size: 14pt;
+            font-size: 15pt;
         }
 
         table.schedule-table th, 
@@ -177,7 +141,6 @@
             background-color: #f1f3f5;
             font-weight: 700;
             text-align: center;
-            font-size: 14pt;
         }
 
         .subject-name-cell {
@@ -197,7 +160,6 @@
             border: 1px solid #000;
             padding: 4px 10px;
             margin: 6px 0 8px 0;
-            font-size: 15pt;
             font-weight: 700;
             text-align: right;
             background-color: #f8f9fa;
@@ -211,14 +173,12 @@
 
         .duty-title {
             font-weight: 700;
-            font-size: 16pt;
             margin-bottom: 2px;
         }
 
         .duty-list {
             margin: 0;
             padding-left: 24px;
-            font-size: 15pt;
             line-height: 1.35;
         }
 
@@ -228,7 +188,6 @@
 
         .duty-blank-line {
             margin-bottom: 2px;
-            font-size: 15pt;
             color: #333;
         }
 
@@ -242,7 +201,6 @@
             flex-direction: column;
             gap: 14px;
             page-break-inside: avoid;
-            font-size: 15pt;
         }
 
         .sig-row {

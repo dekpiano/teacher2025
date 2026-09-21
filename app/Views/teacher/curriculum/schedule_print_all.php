@@ -36,16 +36,11 @@
                  url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@v1.0.0/fonts/THSarabunNew/THSarabunNew.ttf') format('truetype');
             font-weight: normal;
             font-style: normal;
-            font-display: swap;
-        }
         @font-face {
             font-family: 'TH Sarabun PSK';
-            src: local('TH Sarabun PSK Bold'), local('THSarabunPSK-Bold'), local('TH Sarabun New Bold'), local('THSarabunNew-Bold'),
-                 url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@v1.0.0/fonts/THSarabunNew/THSarabunNew-Bold.woff2') format('woff2'),
-                 url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@v1.0.0/fonts/THSarabunNew/THSarabunNew-Bold.ttf') format('truetype');
-            font-weight: bold;
+            src: url('<?= base_url('assets/fonts/THSarabun.ttf') ?>') format('truetype');
+            font-weight: normal;
             font-style: normal;
-            font-display: swap;
         }
 
         @page {
@@ -60,9 +55,9 @@
         }
 
         body {
-            font-family: 'THSarabunPSK', 'TH Sarabun PSK', 'TH Sarabun New', 'Sarabun', sans-serif;
+            font-family: 'TH Sarabun PSK', 'TH Sarabun New', 'Sarabun', sans-serif;
             font-size: 15pt;
-            line-height: 1.25;
+            line-height: 1.3;
             color: #000;
             background: #f4f6f9;
             margin: 0;
@@ -70,7 +65,7 @@
         }
 
         .no-print-bar {
-            max-width: 960px;
+            max-width: 900px;
             margin: 0 auto 15px auto;
             display: flex;
             justify-content: space-between;
@@ -337,7 +332,9 @@
                             ?>
                             <tr>
                                 <!-- ที่ -->
-                                <td class="text-center"><?= $subjectIndex++ ?></td>
+                                <?php if ($first): ?>
+                                    <td class="text-center" rowspan="<?= $subjectCount ?>" style="vertical-align: top; padding-top: 5px;"><?= $subjectIndex ?></td>
+                                <?php endif; ?>
 
                                 <!-- ครูผู้สอน (rowspan) -->
                                 <?php if ($first): ?>

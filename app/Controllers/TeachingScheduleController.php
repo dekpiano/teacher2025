@@ -1358,10 +1358,11 @@ class TeachingScheduleController extends BaseController
         // Fetch teachers list in the department
         $teachers = !empty($pers_learning)
             ? $this->db_personnel->table('tb_personnel')
-                ->select('pers_id, pers_prefix, pers_firstname, pers_lastname, pers_learning, pers_groupleade, pers_numberGroup, pers_img')
+                ->select('pers_id, pers_prefix, pers_firstname, pers_lastname, pers_learning, pers_groupleade, pers_numberGroup, pers_img, pers_position')
                 ->where('pers_learning', $pers_learning)
                 ->where('pers_status', 'กำลังใช้งาน')
                 ->orderBy("CASE WHEN pers_groupleade LIKE '%หัวหน้ากลุ่มสาระ%' OR pers_groupleade = '1' THEN 0 ELSE 1 END", 'ASC', false)
+                ->orderBy('pers_position', 'ASC')
                 ->orderBy('pers_numberGroup', 'ASC')
                 ->orderBy('pers_firstname', 'ASC')
                 ->get()->getResultArray()
