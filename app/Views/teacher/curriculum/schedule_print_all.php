@@ -10,32 +10,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
     <style>
-        /* TH Sarabun PSK / New Webfont (รองรับทั้งเครื่องที่มีฟอนต์และเครื่องที่ไม่มีผ่าน CDN) */
-        @font-face {
-            font-family: 'THSarabunPSK';
-            src: local('TH Sarabun PSK'), local('THSarabunPSK'), local('TH Sarabun New'), local('THSarabunNew'),
-                 url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@v1.0.0/fonts/THSarabunNew/THSarabunNew.woff2') format('woff2'),
-                 url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@v1.0.0/fonts/THSarabunNew/THSarabunNew.ttf') format('truetype');
-            font-weight: normal;
-            font-style: normal;
-            font-display: swap;
-        }
-        @font-face {
-            font-family: 'THSarabunPSK';
-            src: local('TH Sarabun PSK Bold'), local('THSarabunPSK-Bold'), local('TH Sarabun New Bold'), local('THSarabunNew-Bold'),
-                 url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@v1.0.0/fonts/THSarabunNew/THSarabunNew-Bold.woff2') format('woff2'),
-                 url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@v1.0.0/fonts/THSarabunNew/THSarabunNew-Bold.ttf') format('truetype');
-            font-weight: bold;
-            font-style: normal;
-            font-display: swap;
-        }
-        @font-face {
-            font-family: 'TH Sarabun PSK';
-            src: local('TH Sarabun PSK'), local('THSarabunPSK'), local('TH Sarabun New'), local('THSarabunNew'),
-                 url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@v1.0.0/fonts/THSarabunNew/THSarabunNew.woff2') format('woff2'),
-                 url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@v1.0.0/fonts/THSarabunNew/THSarabunNew.ttf') format('truetype');
-            font-weight: normal;
-            font-style: normal;
+        /* TH Sarabun PSK / New Webfont */
         @font-face {
             font-family: 'TH Sarabun PSK';
             src: url('<?= base_url('assets/fonts/THSarabun.ttf') ?>') format('truetype');
@@ -378,19 +353,19 @@
                                 <td class="text-center"><?= $isAdd ? '/' : '' ?></td>
 
                                 <!-- หน่วยกิต -->
-                                <td class="text-center"><?= !empty($row['credit']) ? esc($row['credit']) : '-' ?></td>
+                                <td class="text-center"><?= ($row['credit'] !== '-' && is_numeric($row['credit'])) ? number_format((float)$row['credit'], 1) : esc($row['credit']) ?></td>
 
                                 <!-- ชั่วโมง/สัปดาห์ -->
-                                <td class="text-center"><?= esc($row['hours_per_week']) ?></td>
+                                <td class="text-center"><?= ($row['hours_per_week'] > 0) ? (float)$row['hours_per_week'] : '-' ?></td>
 
                                 <!-- ชั้น -->
                                 <td class="text-center"><?= esc($row['grade_level']) ?></td>
 
                                 <!-- ห้อง -->
-                                <td class="text-center"><?= esc($displayRoom) ?></td>
+                                <td class="text-center" style="white-space: nowrap;"><?= esc($displayRoom) ?></td>
 
                                 <!-- รวม -->
-                                <td class="text-center fw-bold"><?= esc($row['total_weekly_hours']) ?></td>
+                                <td class="text-center fw-bold"><?= ($row['total_hours'] > 0) ? (float)$row['total_hours'] : '-' ?></td>
 
                                 <!-- หมายเหตุ -->
                                 <td class="text-center">
@@ -399,6 +374,7 @@
                             </tr>
                             <?php $first = false; ?>
                         <?php endforeach; ?>
+                        <?php $subjectIndex++; ?>
                     <?php endforeach; ?>
                 <?php endif; ?>
 
