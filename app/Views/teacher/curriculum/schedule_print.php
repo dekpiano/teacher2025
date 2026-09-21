@@ -100,12 +100,14 @@
         }
 
         .doc-title {
-            font-weight: 700;
+            font-size: 15pt;
+            font-weight: normal;
             margin: 0 0 3px 0;
         }
 
         .school-name {
-            font-weight: 700;
+            font-size: 15pt;
+            font-weight: normal;
             margin: 0 0 4px 0;
         }
 
@@ -139,7 +141,7 @@
 
         table.schedule-table th {
             background-color: #f1f3f5;
-            font-weight: 700;
+            font-weight: normal;
             text-align: center;
         }
 

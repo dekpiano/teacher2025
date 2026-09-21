@@ -102,16 +102,20 @@
         }
 
         .doc-title {
-            font-weight: 700;
+            font-size: 15pt;
+            font-weight: normal;
             margin: 0 0 2px 0;
         }
 
         .school-name {
-            font-weight: 700;
+            font-size: 15pt;
+            font-weight: normal;
             margin: 0 0 2px 0;
         }
 
         .dept-name {
+            font-size: 15pt;
+            font-weight: normal;
             color: #333;
             margin: 0;
         }
@@ -132,7 +136,7 @@
 
         table.summary-table th {
             background-color: #f8f9fa;
-            font-weight: 700;
+            font-weight: normal;
             text-align: center;
         }
 
