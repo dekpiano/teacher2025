@@ -102,19 +102,16 @@
         }
 
         .doc-title {
-            font-size: 18pt;
             font-weight: 700;
             margin: 0 0 2px 0;
         }
 
         .school-name {
-            font-size: 16pt;
             font-weight: 700;
             margin: 0 0 2px 0;
         }
 
         .dept-name {
-            font-size: 15pt;
             color: #333;
             margin: 0;
         }
@@ -124,7 +121,6 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 8px;
-            font-size: 14pt;
         }
 
         table.summary-table th, 
@@ -138,28 +134,35 @@
             background-color: #f8f9fa;
             font-weight: 700;
             text-align: center;
-            font-size: 14pt;
         }
 
+        /* Subject & Teacher Name Single Line & Auto-shrink */
         .subject-name-cell {
-            white-space: nowrap;
+            white-space: nowrap !important;
             overflow: hidden;
-            text-overflow: ellipsis;
-            line-height: 1.15;
+            text-overflow: clip;
+            padding: 3px 5px !important;
+            max-width: 220px;
         }
 
-        .teacher-name-container {
-            display: inline-flex;
-            flex-wrap: wrap;
-            column-gap: 5px;
-            row-gap: 1px;
-            line-height: 1.15;
-            word-break: keep-all;
-        }
-        .teacher-firstname,
-        .teacher-lastname {
+        .subject-name-inner {
             display: inline-block;
             white-space: nowrap;
+            transform-origin: left center;
+        }
+
+        .teacher-name-cell {
+            white-space: nowrap !important;
+            overflow: hidden;
+            text-overflow: clip;
+            padding: 3px 6px !important;
+            max-width: 170px;
+        }
+
+        .teacher-name-inner {
+            display: inline-block;
+            white-space: nowrap;
+            transform-origin: left center;
         }
 
         .text-center { text-align: center !important; }
@@ -267,18 +270,18 @@
         <table class="summary-table">
             <thead>
                 <tr>
-                    <th style="width: 4%;">ที่</th>
-                    <th style="width: 18%;">ครูผู้สอน</th>
-                    <th style="width: 10%;">รหัสวิชา</th>
-                    <th style="width: 22%;">รายวิชา</th>
-                    <th style="width: 6%;">พื้นฐาน</th>
-                    <th style="width: 6%;">เพิ่มเติม</th>
-                    <th style="width: 6%;">หน่วยกิต</th>
-                    <th style="width: 7%;">ชั่วโมง/<br>สัปดาห์</th>
-                    <th style="width: 6%;">ชั้น</th>
-                    <th style="width: 7%;">ห้อง</th>
-                    <th style="width: 6%;">รวม</th>
-                    <th style="width: 8%;">หมายเหตุ</th>
+                    <th style="width: 32px;">ที่</th>
+                    <th style="width: 160px;">ครูผู้สอน</th>
+                    <th style="width: 65px;">รหัสวิชา</th>
+                    <th>รายวิชา</th>
+                    <th style="width: 50px;">พื้นฐาน</th>
+                    <th style="width: 50px;">เพิ่มเติม</th>
+                    <th style="width: 55px;">หน่วยกิต</th>
+                    <th style="width: 55px;">ชั่วโมง/<br>สัปดาห์</th>
+                    <th style="width: 45px;">ชั้น</th>
+                    <th style="width: 50px;">ห้อง</th>
+                    <th style="width: 45px;">รวม</th>
+                    <th style="width: 75px;">หมายเหตุ</th>
                 </tr>
             </thead>
             <tbody>
@@ -321,29 +324,21 @@
                                             $prefixFirst = $parts[0] ?? '';
                                             $lastName    = $parts[1] ?? '';
                                         }
+                                        $fullTeacherName = trim($prefixFirst . ' ' . $lastName);
                                     ?>
-                                    <td rowspan="<?= $subjectCount ?>" style="vertical-align: top; padding-top: 5px;">
-                                        <div class="teacher-name-container">
-                                            <span class="teacher-firstname"><strong><?= esc($prefixFirst) ?></strong></span><?php if (!empty($lastName)): ?> <span class="teacher-lastname"><strong><?= esc($lastName) ?></strong></span><?php endif; ?>
-                                        </div>
+                                    <td rowspan="<?= $subjectCount ?>" class="teacher-name-cell" style="vertical-align: top; padding-top: 5px;">
+                                        <span class="teacher-name-inner" title="<?= esc($fullTeacherName) ?>">
+                                            <strong><?= esc($fullTeacherName) ?></strong>
+                                        </span>
                                     </td>
                                 <?php endif; ?>
 
                                 <!-- รหัสวิชา -->
-                                <td class="text-center"><?= esc($row['subject_code']) ?></td>
+                                <td class="text-center" style="white-space: nowrap;"><?= esc($row['subject_code']) ?></td>
 
-                                <!-- รายวิชา (แสดงบรรทัดเดียว + ลดขนาดตัวอักษรหากข้อความยาว) -->
-                                <?php 
-                                    $subNameLen = mb_strlen($row['subject_name'] ?? '');
-                                    $fontSize = '14pt';
-                                    if ($subNameLen > 35) {
-                                        $fontSize = '12pt';
-                                    } elseif ($subNameLen > 25) {
-                                        $fontSize = '13pt';
-                                    }
-                                ?>
-                                <td class="text-start subject-name-cell" style="font-size: <?= $fontSize ?>;" title="<?= esc($row['subject_name']) ?>">
-                                    <?= esc($row['subject_name']) ?>
+                                <!-- รายวิชา (ห้ามขึ้นบรรทัดใหม่ ย่อขนาดอัตโนมัติ) -->
+                                <td class="text-start subject-name-cell">
+                                    <span class="subject-name-inner" title="<?= esc($row['subject_name']) ?>"><?= esc($row['subject_name']) ?></span>
                                 </td>
 
                                 <!-- พื้นฐาน -->
@@ -408,5 +403,57 @@
 
     </div>
 
+    <script>
+    // ปรับลดขนาดตัวอักษรของชื่อวิชา และชื่อครูผู้สอนโดยอัตโนมัติหากข้อความยาวเกินความกว้างของช่อง เพื่อไม่ให้ตัดขึ้นบรรทัดใหม่
+    function adjustFontSizes() {
+        // 1. ปรับขนาดชื่อวิชา
+        document.querySelectorAll('.subject-name-cell').forEach(cell => {
+            const inner = cell.querySelector('.subject-name-inner');
+            if (!inner) return;
+
+            inner.style.fontSize = '15pt';
+            inner.style.letterSpacing = 'normal';
+
+            const maxWidth = cell.clientWidth - 8;
+            let currentWidth = inner.scrollWidth;
+
+            if (currentWidth > maxWidth && maxWidth > 0) {
+                let scaleRatio = maxWidth / currentWidth;
+                let newSize = Math.max(15 * scaleRatio, 11);
+                inner.style.fontSize = newSize.toFixed(1) + 'pt';
+
+                if (inner.scrollWidth > maxWidth) {
+                    inner.style.letterSpacing = '-0.3px';
+                }
+            }
+        });
+
+        // 2. ปรับขนาดชื่อครูผู้สอน
+        document.querySelectorAll('.teacher-name-cell').forEach(cell => {
+            const inner = cell.querySelector('.teacher-name-inner');
+            if (!inner) return;
+
+            inner.style.fontSize = '15pt';
+            inner.style.letterSpacing = 'normal';
+
+            const maxWidth = cell.clientWidth - 10;
+            let currentWidth = inner.scrollWidth;
+
+            if (currentWidth > maxWidth && maxWidth > 0) {
+                let scaleRatio = maxWidth / currentWidth;
+                let newSize = Math.max(15 * scaleRatio, 11);
+                inner.style.fontSize = newSize.toFixed(1) + 'pt';
+
+                if (inner.scrollWidth > maxWidth) {
+                    inner.style.letterSpacing = '-0.3px';
+                }
+            }
+        });
+    }
+
+    window.addEventListener('DOMContentLoaded', adjustFontSizes);
+    window.addEventListener('resize', adjustFontSizes);
+    window.addEventListener('beforeprint', adjustFontSizes);
+    </script>
 </body>
 </html>
