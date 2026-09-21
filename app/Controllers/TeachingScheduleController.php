@@ -477,7 +477,7 @@ class TeachingScheduleController extends BaseController
                     $subjId       = $resolveSubjId($post['subject_id'][$i] ?? null, $cleanCode);
 
                     foreach ($rooms as $singleRoom) {
-                        $singlePlan = $this->resolveStudyPlan($selectedPlan, $gradeLevel, (string)$singleRoom, $classRoomMap);
+                        $singlePlan = count($rooms) > 1 ? null : $this->resolveStudyPlan($selectedPlan, $gradeLevel, (string)$singleRoom, $classRoomMap);
 
                         $batchData[] = [
                             'teacher_id'     => $teacherId,
@@ -519,7 +519,7 @@ class TeachingScheduleController extends BaseController
                     $subjId       = $resolveSubjId($sub['subject_id'] ?? null, $cleanCode);
 
                     foreach ($rooms as $singleRoom) {
-                        $singlePlan = $this->resolveStudyPlan($selectedPlan, $gradeLevel, (string)$singleRoom, $classRoomMap);
+                        $singlePlan = count($rooms) > 1 ? null : $this->resolveStudyPlan($selectedPlan, $gradeLevel, (string)$singleRoom, $classRoomMap);
 
                         $batchData[] = [
                             'teacher_id'     => $teacherId,
@@ -559,7 +559,7 @@ class TeachingScheduleController extends BaseController
             $subjId       = $resolveSubjId($post['subject_id'] ?? null, $cleanCode);
 
             foreach ($rooms as $singleRoom) {
-                $singlePlan = $this->resolveStudyPlan($selectedPlan, $gradeLevel, (string)$singleRoom, $classRoomMap);
+                $singlePlan = count($rooms) > 1 ? null : $this->resolveStudyPlan($selectedPlan, $gradeLevel, (string)$singleRoom, $classRoomMap);
 
                 $batchData[] = [
                     'teacher_id'     => $teacherId,
