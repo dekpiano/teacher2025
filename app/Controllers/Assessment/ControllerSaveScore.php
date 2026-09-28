@@ -422,6 +422,7 @@ class ControllerSaveScore extends BaseController
             ->select('TeacherID')
             ->where('SubjectID', $reportSubjectID)
             ->where('RegisterYear', $reportRegisterYear)
+            ->where('TeacherID', $loginId)
             ->where('TeacherID !=', '')
             ->limit(1)
             ->get()->getRow();

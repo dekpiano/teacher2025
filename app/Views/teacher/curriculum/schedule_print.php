@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= esc($title ?? 'ข้อมูลการจัดตารางสอนรายบุคคล') ?> - <?= esc($teacher->pers_prefix . $teacher->pers_firstname . ' ' . $teacher->pers_lastname) ?></title>
+    <title><?= esc($title ?? 'ข้อมูลการจัดตารางสอนรายบุคคล') ?> -
+        <?= esc($teacher->pers_prefix . $teacher->pers_firstname . ' ' . $teacher->pers_lastname) ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    
+
     <style>
         /* TH Sarabun PSK / New Webfont */
         @font-face {
@@ -48,7 +52,7 @@
             background: #ffffff;
             padding: 12px 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .btn-print {
@@ -65,6 +69,7 @@
             text-decoration: none;
             font-family: inherit;
         }
+
         .btn-print:hover {
             background-color: #0b5ed7;
             color: #fff;
@@ -80,6 +85,7 @@
             text-decoration: none;
             font-family: inherit;
         }
+
         .btn-close-win:hover {
             background-color: #5c636a;
         }
@@ -89,7 +95,7 @@
             max-width: 820px;
             margin: 0 auto;
             padding: 20px 24px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
             border-radius: 2px;
         }
 
@@ -132,7 +138,7 @@
             font-size: 15pt;
         }
 
-        table.schedule-table th, 
+        table.schedule-table th,
         table.schedule-table td {
             border: 1px solid #000;
             padding: 2px 4px;
@@ -152,10 +158,21 @@
             line-height: 1.15;
         }
 
-        .text-center { text-align: center !important; }
-        .text-start  { text-align: left !important; }
-        .text-end    { text-align: right !important; }
-        .fw-bold     { font-weight: 700 !important; }
+        .text-center {
+            text-align: center !important;
+        }
+
+        .text-start {
+            text-align: left !important;
+        }
+
+        .text-end {
+            text-align: right !important;
+        }
+
+        .fw-bold {
+            font-weight: 700 !important;
+        }
 
         /* Grand Total Box */
         .grand-total-box {
@@ -269,6 +286,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <!-- Top Action Bar (hidden when printing) -->
@@ -289,17 +307,21 @@
 
     <!-- Document Sheet (A4) -->
     <div class="sheet-container">
-        
+
         <!-- Header -->
         <div class="doc-header">
             <h1 class="doc-title">ข้อมูลการจัดตารางสอนรายบุคคล</h1>
-            <div class="school-name"><?= esc(!empty($school->SchoolName) ? $school->SchoolName : 'โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์') ?></div>
+            <div class="school-name">
+                <?= esc(!empty($school->SchoolName) ? $school->SchoolName : 'โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์') ?>
+            </div>
             <div class="meta-line">
-                <span><strong>ชื่อ</strong> <?= esc($teacher->pers_prefix . $teacher->pers_firstname . ' ' . $teacher->pers_lastname) ?></span>
+                <span><strong>ชื่อ</strong>
+                    <?= esc($teacher->pers_prefix . $teacher->pers_firstname . ' ' . $teacher->pers_lastname) ?></span>
                 <span><strong>กลุ่มสาระการเรียนรู้</strong> <?= esc($learning_name) ?></span>
             </div>
             <div class="meta-line" style="margin-top: 2px;">
-                <span><strong>ภาคเรียนที่</strong> <?= esc($term) ?> <strong>ปีการศึกษา</strong> <?= esc($year) ?></span>
+                <span><strong>ภาคเรียนที่</strong> <?= esc($term) ?> <strong>ปีการศึกษา</strong>
+                    <?= esc($year) ?></span>
             </div>
         </div>
 
@@ -323,24 +345,25 @@
             </thead>
             <tbody>
                 <?php if (!empty($grouped_subjects)): ?>
-                    <?php 
-                        $i = 1; 
-                        foreach ($grouped_subjects as $sub): 
-                            $isAdditional = mb_strpos($sub['subject_type'] ?? '', 'เพิ่มเติม') !== false;
-                    ?>
+                    <?php
+                    $i = 1;
+                    foreach ($grouped_subjects as $sub):
+                        $isAdditional = mb_strpos($sub['subject_type'] ?? '', 'เพิ่มเติม') !== false;
+                        ?>
                         <tr>
                             <td class="text-center"><?= $i++ ?></td>
                             <td class="text-center fw-bold"><?= esc($sub['subject_code']) ?></td>
-                            <?php 
-                                $subNameLen = mb_strlen($sub['subject_name'] ?? '');
-                                $fontSize = '14pt';
-                                if ($subNameLen > 35) {
-                                    $fontSize = '12pt';
-                                } elseif ($subNameLen > 25) {
-                                    $fontSize = '13pt';
-                                }
+                            <?php
+                            $subNameLen = mb_strlen($sub['subject_name'] ?? '');
+                            $fontSize = '14pt';
+                            if ($subNameLen > 35) {
+                                $fontSize = '12pt';
+                            } elseif ($subNameLen > 25) {
+                                $fontSize = '13pt';
+                            }
                             ?>
-                            <td class="text-start subject-name-cell" style="font-size: <?= $fontSize ?>;" title="<?= esc($sub['subject_name']) ?>">
+                            <td class="text-start subject-name-cell" style="font-size: <?= $fontSize ?>;"
+                                title="<?= esc($sub['subject_name']) ?>">
                                 <?= esc($sub['subject_name']) ?>
                             </td>
                             <td class="text-center"><?= !$isAdditional ? '/' : '' ?></td>
@@ -355,7 +378,8 @@
                     <?php endforeach; ?>
                 <?php else: ?>
                     <tr>
-                        <td colspan="11" class="text-center" style="padding: 15px; color: #888;">- ไม่พบข้อมูลรายวิชาที่สอน -</td>
+                        <td colspan="11" class="text-center" style="padding: 15px; color: #888;">- ไม่พบข้อมูลรายวิชาที่สอน
+                            -</td>
                     </tr>
                 <?php endif; ?>
 
@@ -363,12 +387,13 @@
                 <tr class="fw-bold" style="background-color: #fafafa;">
                     <td colspan="3" class="text-center">รวม ( <?= count($grouped_subjects) ?> รายวิชา )</td>
                     <td class="text-center"><?= $basic_subject_count > 0 ? $basic_subject_count . ' วิชา' : '-' ?></td>
-                    <td class="text-center"><?= $additional_subject_count > 0 ? $additional_subject_count . ' วิชา' : '-' ?></td>
+                    <td class="text-center">
+                        <?= $additional_subject_count > 0 ? $additional_subject_count . ' วิชา' : '-' ?></td>
                     <td class="text-center"><?= number_format($total_credit, 1) ?></td>
                     <td class="text-center">-</td>
                     <td class="text-center">-</td>
                     <td class="text-center">-</td>
-                    <td class="text-center" style="font-size: 14px;"><?= $total_subject_weekly_hours ?></td>
+                    <td class="text-center"><?= $total_subject_weekly_hours ?></td>
                     <td class="text-center">-</td>
                 </tr>
             </tbody>
@@ -389,7 +414,8 @@
             </thead>
             <tbody>
                 <?php if (!empty($activities)): ?>
-                    <?php $k = 1; foreach ($activities as $act): ?>
+                    <?php $k = 1;
+                    foreach ($activities as $act): ?>
                         <tr>
                             <td class="text-center"><?= $k++ ?></td>
                             <td class="text-start fw-bold"><?= esc($act['activity_name']) ?></td>
@@ -416,7 +442,9 @@
 
         <!-- Grand Total Box -->
         <div class="grand-total-box">
-            รวมชั่วโมงทั้งสิ้น &nbsp;&nbsp;<span style="font-size: 16pt; text-decoration: underline;"><?= $grand_total_weekly_hours ?></span>&nbsp;&nbsp; ชั่วโมง / สัปดาห์
+            รวมชั่วโมงทั้งสิ้น &nbsp;&nbsp;<span
+                style="font-size: 16pt; text-decoration: underline;"><?= $grand_total_weekly_hours ?></span>&nbsp;&nbsp;
+            ชั่วโมง / สัปดาห์
         </div>
 
         <!-- Special Duties Section -->
@@ -425,15 +453,19 @@
             <?php if (!empty($duties)): ?>
                 <ol class="duty-list">
                     <?php foreach ($duties as $dt): ?>
-                        <?php 
-                            $cleanDutyName = preg_replace('/^\d+[\.\)]\s*/u', '', trim($dt['duty_name']));
+                        <?php
+                        $cleanDutyName = preg_replace('/^\d+[\.\)]\s*/u', '', trim($dt['duty_name']));
                         ?>
                         <li><?= esc($cleanDutyName) ?></li>
                     <?php endforeach; ?>
                 </ol>
             <?php else: ?>
-                <div class="duty-blank-line">1. ..........................................................................................................................................................</div>
-                <div class="duty-blank-line">2. ..........................................................................................................................................................</div>
+                <div class="duty-blank-line">1.
+                    ..........................................................................................................................................................
+                </div>
+                <div class="duty-blank-line">2.
+                    ..........................................................................................................................................................
+                </div>
             <?php endif; ?>
         </div>
 
@@ -464,4 +496,5 @@
     </div>
 
 </body>
+
 </html>

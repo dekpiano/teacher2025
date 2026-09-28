@@ -80,23 +80,23 @@
             </div>
         </div>
         <div class="card-body p-0">
-            <div class="w-100" style="overflow-x: hidden;">
-                <table class="table table-hover table-bordered table-sm mb-0 align-middle" style="table-layout: fixed; width: 100%; word-break: break-word; font-size: 0.84rem;">
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered table-sm mb-0 align-middle" style="min-width: 1100px; font-size: 0.85rem;">
                     <thead class="table-light text-center align-middle">
                         <tr>
-                            <th style="width: 3%;" class="text-center p-1">ที่</th>
-                            <th style="width: 15%;" class="p-2">ครูผู้สอน</th>
-                            <th style="width: 7%;" class="text-center p-1">รหัสวิชา</th>
-                            <th style="width: 17%;" class="p-2">รายวิชา</th>
-                            <th style="width: 6.5%;" class="text-center p-1">ประเภท</th>
-                            <th style="width: 5%;" class="text-center p-1">หน่วยกิต</th>
-                            <th style="width: 6.5%;" class="text-center p-1">ชม./สัปดาห์</th>
-                            <th style="width: 5%;" class="text-center p-1">ชั้น</th>
-                            <th style="width: 7%;" class="text-center p-1">ห้อง</th>
-                            <th style="width: 9%;" class="text-center p-1">แผนที่เรียน</th>
-                            <th style="width: 5%;" class="text-center p-1">รวม</th>
-                            <th style="width: 8%;" class="p-2">หมายเหตุ</th>
-                            <th style="width: 6%;" class="text-center p-1">จัดการ</th>
+                            <th style="width: 40px;" class="text-center p-2">ที่</th>
+                            <th style="min-width: 220px; width: 220px;" class="p-2 text-start">ครูผู้สอน</th>
+                            <th style="width: 85px;" class="text-center p-2">รหัสวิชา</th>
+                            <th style="min-width: 180px;" class="p-2 text-start">รายวิชา</th>
+                            <th style="width: 75px;" class="text-center p-2">ประเภท</th>
+                            <th style="width: 60px;" class="text-center p-2">หน่วยกิต</th>
+                            <th style="width: 80px;" class="text-center p-2">ชม./สัปดาห์</th>
+                            <th style="width: 60px;" class="text-center p-2">ชั้น</th>
+                            <th style="width: 80px;" class="text-center p-2">ห้อง</th>
+                            <th style="width: 110px;" class="text-center p-2">แผนที่เรียน</th>
+                            <th style="width: 60px;" class="text-center p-2">รวม</th>
+                            <th style="min-width: 110px;" class="p-2">หมายเหตุ</th>
+                            <th style="width: 80px;" class="text-center p-2">จัดการ</th>
                         </tr>
                     </thead>
                     <tbody class="table-border-bottom-0 align-middle">
@@ -117,8 +117,8 @@
                                 ?>
                                 <?php if (empty($subjects)): ?>
                                     <tr>
-                                        <td class="text-center fw-bold p-1"><?= $teacherIndex++ ?></td>
-                                        <td class="align-top p-2">
+                                        <td class="text-center fw-bold p-2 text-muted"><?= $teacherIndex++ ?></td>
+                                        <td class="align-top p-2 bg-light bg-opacity-25">
                                             <?php 
                                                 $teacherImg = !empty($data['pers_img']) 
                                                     ? "https://personnel.skj.ac.th/uploads/admin/Personnal/" . esc($data['pers_img']) 
@@ -128,37 +128,52 @@
                                                 <img src="<?= $teacherImg ?>" 
                                                      onerror="this.onerror=null;this.src='https://skj.nsnpao.go.th/uploads/academic/competitions/images/default-avatar.png';" 
                                                      alt="<?= esc($data['teacher_name']) ?>" 
-                                                     class="rounded-circle shadow-xs border flex-shrink-0" 
-                                                     style="width: 36px; height: 36px; object-fit: cover;">
+                                                     class="rounded-circle shadow-xs border flex-shrink-0 mt-1" 
+                                                     style="width: 40px; height: 40px; object-fit: cover;">
                                                 <div class="flex-grow-1 min-w-0">
-                                                    <div class="d-flex align-items-center flex-wrap gap-1">
-                                                        <span class="fw-bold text-dark" style="font-size: 0.88rem;"><?= esc($data['teacher_name']) ?></span>
-                                                        <?php if (!empty($data['is_leader'])): ?>
-                                                            <span class="badge bg-label-primary rounded-pill fw-bold" style="font-size: 0.68rem; padding: 2px 6px;">
-                                                                <i class="bi bi-star-fill text-warning me-1"></i>หัวหน้ากลุ่มสาระ
+                                                    <div class="fw-bold text-dark text-truncate" style="font-size: 0.9rem;" title="<?= esc($data['teacher_name']) ?>">
+                                                        <?= esc($data['teacher_name']) ?>
+                                                    </div>
+                                                    
+                                                    <?php if (!empty($data['is_leader'])): ?>
+                                                        <div class="mt-1">
+                                                            <span class="badge bg-label-warning fw-bold px-2 py-1" style="font-size: 0.72rem; color: #856404 !important; background-color: #fff3cd !important;">
+                                                                <i class="bi bi-star-fill me-1" style="color: #ff9f43;"></i>หัวหน้ากลุ่มสาระ
                                                             </span>
+                                                        </div>
+                                                    <?php endif; ?>
+
+                                                    <!-- สรุปภาระงานแบบสะอาด อ่านง่าย -->
+                                                    <div class="mt-2 p-1 px-2 rounded bg-white border border-light-subtle small" style="font-size: 0.76rem; line-height: 1.4;">
+                                                        <div class="text-muted d-flex align-items-center justify-content-between">
+                                                            <span><i class="bi bi-flag text-info me-1"></i>กิจกรรม:</span>
+                                                            <span class="fw-semibold text-dark"><?= $data['total_activity_weekly_hours'] ?> คาบ</span>
+                                                        </div>
+                                                        <div class="d-flex align-items-center justify-content-between mt-1 pt-1 border-top border-light-subtle">
+                                                            <span class="fw-bold text-success"><i class="bi bi-clock-history me-1"></i>รวมทั้งสิ้น:</span>
+                                                            <span class="badge bg-success bg-opacity-10 text-success fw-bold px-1.5 py-0.5" style="font-size: 0.74rem;"><?= $data['grand_total_weekly_hours'] ?> คาบ</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <?php if (!empty($data['duties'])): ?>
+                                                        <div class="text-secondary mt-1 text-truncate" style="font-size: 0.72rem;" title="<?= esc(implode(', ', array_column($data['duties'], 'duty_name'))) ?>">
+                                                            <i class="bi bi-award text-warning me-1"></i><?= esc($data['duties'][0]['duty_name']) ?><?= count($data['duties']) > 1 ? ' (' . count($data['duties']) . ' งาน)' : '' ?>
+                                                        </div>
+                                                    <?php endif; ?>
+
+                                                    <!-- ปุ่มแอ็กชัน -->
+                                                    <div class="btn-group btn-group-sm w-100 mt-2 shadow-xs" role="group">
+                                                        <a href="<?= base_url('curriculum/teaching-schedule/teacher/' . $teacherId . '/' . $current_year . '/' . $current_term) ?>" class="btn btn-outline-info py-0 px-1" style="font-size: 0.75rem;" title="ดูข้อมูล">
+                                                            <i class="bi bi-eye me-1"></i>ดู
+                                                        </a>
+                                                        <a href="<?= base_url('curriculum/teaching-schedule/print/' . $teacherId . '/' . $current_year . '/' . $current_term) ?>" target="_blank" class="btn btn-outline-primary py-0 px-1" style="font-size: 0.75rem;" title="พิมพ์">
+                                                            <i class="bi bi-printer me-1"></i>พิมพ์
+                                                        </a>
+                                                        <?php if ($isSystemOpen): ?>
+                                                            <button type="button" class="btn btn-outline-secondary py-0 px-1" style="font-size: 0.75rem;" onclick="openAddModalForTeacher('<?= esc($teacherId) ?>', 'activities')" title="กิจกรรม/หน้าที่พิเศษ">
+                                                                <i class="bi bi-gear"></i>
+                                                            </button>
                                                         <?php endif; ?>
-                                                    </div>
-                                                    <div class="mt-1 d-flex flex-column gap-1">
-                                                        <div class="small text-muted d-flex align-items-center gap-1" style="font-size: 0.75rem;">
-                                                            <i class="bi bi-flag text-info"></i> กิจกรรม <?= $data['total_activity_weekly_hours'] ?> คาบ
-                                                        </div>
-                                                        <div>
-                                                            <span class="badge bg-label-success rounded-pill fw-bold" style="font-size: 0.72rem;">
-                                                                <i class="bi bi-clock-history me-1"></i>รวม <?= $data['grand_total_weekly_hours'] ?> คาบ/สัปดาห์
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="d-flex flex-wrap gap-1 mt-2">
-                                                        <a href="<?= base_url('curriculum/teaching-schedule/teacher/' . $teacherId . '/' . $current_year . '/' . $current_term) ?>" class="btn btn-xs btn-outline-info py-1 px-2" title="ดูข้อมูลตารางสอน">
-                                                            <i class="bi bi-eye"></i> ดูข้อมูล
-                                                        </a>
-                                                        <a href="<?= base_url('curriculum/teaching-schedule/print/' . $teacherId . '/' . $current_year . '/' . $current_term) ?>" target="_blank" class="btn btn-xs btn-outline-primary py-1 px-2" title="พิมพ์ตารางสอน">
-                                                            <i class="bi bi-printer"></i> พิมพ์
-                                                        </a>
-                                                        <button type="button" class="btn btn-xs btn-outline-secondary py-1 px-2" onclick="openTeacherExtraModal('<?= esc($teacherId) ?>', '<?= esc($data['teacher_name']) ?>')" title="จัดการกิจกรรมและหน้าที่พิเศษ">
-                                                            <i class="bi bi-gear"></i> พิเศษ
-                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -180,8 +195,8 @@
                                     <?php foreach ($subjects as $index => $row): ?>
                                         <tr>
                                             <?php if ($first): ?>
-                                                <td class="text-center fw-bold p-1" rowspan="<?= $rowspan ?>"><?= $teacherIndex++ ?></td>
-                                                <td rowspan="<?= $rowspan ?>" class="align-top p-2">
+                                                <td class="text-center fw-bold p-2 text-muted" rowspan="<?= $rowspan ?>"><?= $teacherIndex++ ?></td>
+                                                <td rowspan="<?= $rowspan ?>" class="align-top p-2 bg-light bg-opacity-25">
                                                     <?php 
                                                         $teacherImg = !empty($data['pers_img']) 
                                                             ? "https://personnel.skj.ac.th/uploads/admin/Personnal/" . esc($data['pers_img']) 
@@ -191,50 +206,56 @@
                                                         <img src="<?= $teacherImg ?>" 
                                                              onerror="this.onerror=null;this.src='https://skj.nsnpao.go.th/uploads/academic/competitions/images/default-avatar.png';" 
                                                              alt="<?= esc($data['teacher_name']) ?>" 
-                                                             class="rounded-circle shadow-xs border flex-shrink-0" 
-                                                             style="width: 36px; height: 36px; object-fit: cover;">
+                                                             class="rounded-circle shadow-xs border flex-shrink-0 mt-1" 
+                                                             style="width: 40px; height: 40px; object-fit: cover;">
                                                         <div class="flex-grow-1 min-w-0">
-                                                            <div class="d-flex align-items-center flex-wrap gap-1">
-                                                                <span class="fw-bold text-dark" style="font-size: 0.88rem;"><?= esc($data['teacher_name']) ?></span>
-                                                                <?php if (!empty($data['is_leader'])): ?>
-                                                                    <span class="badge bg-label-primary rounded-pill fw-bold" style="font-size: 0.68rem; padding: 2px 6px;">
-                                                                        <i class="bi bi-star-fill text-warning me-1"></i>หัวหน้ากลุ่มสาระ
-                                                                    </span>
-                                                                <?php endif; ?>
+                                                            <div class="fw-bold text-dark text-truncate" style="font-size: 0.9rem;" title="<?= esc($data['teacher_name']) ?>">
+                                                                <?= esc($data['teacher_name']) ?>
                                                             </div>
                                                             
-                                                            <!-- สรุปภาระงานแบบกระชับ -->
-                                                            <div class="mt-1 d-flex flex-column gap-1">
-                                                                <div class="small text-muted d-flex align-items-center gap-1" style="font-size: 0.75rem;">
-                                                                    <i class="bi bi-book text-primary"></i> สอน <?= count($subjects) ?> วิชา (<?= $data['total_subject_hours'] ?> คาบ)
-                                                                    <?php if (!empty($data['total_activity_weekly_hours'])): ?>
-                                                                        <span class="text-secondary">•</span> <i class="bi bi-flag text-info"></i> กิจกรรม <?= $data['total_activity_weekly_hours'] ?>
-                                                                    <?php endif; ?>
-                                                                </div>
-                                                                <div>
-                                                                    <span class="badge bg-label-success rounded-pill fw-bold" style="font-size: 0.72rem;">
-                                                                        <i class="bi bi-clock-history me-1"></i>รวม <?= $data['grand_total_weekly_hours'] ?> คาบ/สัปดาห์
+                                                            <?php if (!empty($data['is_leader'])): ?>
+                                                                <div class="mt-1">
+                                                                    <span class="badge bg-label-warning fw-bold px-2 py-1" style="font-size: 0.72rem; color: #856404 !important; background-color: #fff3cd !important;">
+                                                                        <i class="bi bi-star-fill me-1" style="color: #ff9f43;"></i>หัวหน้ากลุ่มสาระ
                                                                     </span>
+                                                                </div>
+                                                            <?php endif; ?>
+                                                            
+                                                            <!-- สรุปภาระงานแบบสะอาด อ่านง่าย -->
+                                                            <div class="mt-2 p-1 px-2 rounded bg-white border border-light-subtle small" style="font-size: 0.76rem; line-height: 1.4;">
+                                                                <div class="text-muted d-flex align-items-center justify-content-between">
+                                                                    <span><i class="bi bi-book text-primary me-1"></i>สอน:</span>
+                                                                    <span class="fw-semibold text-dark"><?= count($subjects) ?> วิชา (<?= $data['total_subject_hours'] ?> คาบ)</span>
+                                                                </div>
+                                                                <?php if (!empty($data['total_activity_weekly_hours'])): ?>
+                                                                    <div class="text-muted d-flex align-items-center justify-content-between mt-0.5">
+                                                                        <span><i class="bi bi-flag text-info me-1"></i>กิจกรรม:</span>
+                                                                        <span class="fw-semibold text-dark"><?= $data['total_activity_weekly_hours'] ?> คาบ</span>
+                                                                    </div>
+                                                                <?php endif; ?>
+                                                                <div class="d-flex align-items-center justify-content-between mt-1 pt-1 border-top border-light-subtle">
+                                                                    <span class="fw-bold text-success"><i class="bi bi-clock-history me-1"></i>รวมทั้งสิ้น:</span>
+                                                                    <span class="badge bg-success bg-opacity-10 text-success fw-bold px-1.5 py-0.5" style="font-size: 0.74rem;"><?= $data['grand_total_weekly_hours'] ?> คาบ</span>
                                                                 </div>
                                                             </div>
 
                                                             <?php if (!empty($data['duties'])): ?>
-                                                                <div class="text-muted small mt-1 text-truncate" style="max-width: 180px; font-size: 0.72rem;" title="<?= esc(implode(', ', array_column($data['duties'], 'duty_name'))) ?>">
-                                                                    <i class="bi bi-award text-warning me-1"></i><?= esc($data['duties'][0]['duty_name']) ?><?= count($data['duties']) > 1 ? ' ...' : '' ?>
+                                                                <div class="text-secondary mt-1 text-truncate" style="font-size: 0.72rem;" title="<?= esc(implode(', ', array_column($data['duties'], 'duty_name'))) ?>">
+                                                                    <i class="bi bi-award text-warning me-1"></i><?= esc($data['duties'][0]['duty_name']) ?><?= count($data['duties']) > 1 ? ' (' . count($data['duties']) . ' งาน)' : '' ?>
                                                                 </div>
                                                             <?php endif; ?>
 
-                                                            <!-- ปุ่มจัดการขนาดกะทัดรัด -->
-                                                            <div class="d-flex flex-wrap gap-1 mt-2">
-                                                                <a href="<?= base_url('curriculum/teaching-schedule/teacher/' . $teacherId . '/' . $current_year . '/' . $current_term) ?>" class="btn btn-xs btn-outline-info py-1 px-2" title="ดูข้อมูลตารางสอน">
-                                                                    <i class="bi bi-eye"></i> ดูข้อมูล
+                                                            <!-- ปุ่มแอ็กชัน -->
+                                                            <div class="btn-group btn-group-sm w-100 mt-2 shadow-xs" role="group">
+                                                                <a href="<?= base_url('curriculum/teaching-schedule/teacher/' . $teacherId . '/' . $current_year . '/' . $current_term) ?>" class="btn btn-outline-info py-0 px-1" style="font-size: 0.75rem;" title="ดูข้อมูล">
+                                                                    <i class="bi bi-eye me-1"></i>ดู
                                                                 </a>
-                                                                <a href="<?= base_url('curriculum/teaching-schedule/print/' . $teacherId . '/' . $current_year . '/' . $current_term) ?>" target="_blank" class="btn btn-xs btn-outline-primary py-1 px-2" title="พิมพ์ตารางสอน">
-                                                                    <i class="bi bi-printer"></i> พิมพ์
+                                                                <a href="<?= base_url('curriculum/teaching-schedule/print/' . $teacherId . '/' . $current_year . '/' . $current_term) ?>" target="_blank" class="btn btn-outline-primary py-0 px-1" style="font-size: 0.75rem;" title="พิมพ์">
+                                                                    <i class="bi bi-printer me-1"></i>พิมพ์
                                                                 </a>
                                                                 <?php if ($isSystemOpen): ?>
-                                                                    <button type="button" class="btn btn-xs btn-outline-secondary py-1 px-2" onclick="openTeacherExtraModal('<?= esc($teacherId) ?>', '<?= esc($data['teacher_name']) ?>')" title="จัดการกิจกรรมและหน้าที่พิเศษ">
-                                                                        <i class="bi bi-gear"></i> พิเศษ
+                                                                    <button type="button" class="btn btn-outline-secondary py-0 px-1" style="font-size: 0.75rem;" onclick="openAddModalForTeacher('<?= esc($teacherId) ?>', 'activities')" title="กิจกรรม/หน้าที่พิเศษ">
+                                                                        <i class="bi bi-gear"></i>
                                                                     </button>
                                                                 <?php endif; ?>
                                                             </div>
@@ -378,7 +399,16 @@
                         </li>
                     </ul>
 
-                    <div class="tab-content p-0">
+                    <div class="tab-content p-0 position-relative">
+                        <!-- Tab Loading Overlay -->
+                        <div id="tabLoadingOverlay" class="position-absolute top-0 start-0 w-100 h-100 align-items-center justify-content-center" style="z-index: 10; background: rgba(255,255,255,0.88); min-height: 120px; display: none;">
+                            <div class="text-center">
+                                <div class="spinner-border text-primary mb-2" role="status" style="width: 2rem; height: 2rem;">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <div class="text-muted small fw-semibold">กำลังโหลดข้อมูล...</div>
+                            </div>
+                        </div>
                         <!-- Tab 1: รายวิชาที่สอน -->
                         <div class="tab-pane fade show active" id="tab-subjects" role="tabpanel">
                             <div class="d-flex justify-content-between align-items-center mb-2 px-1">
@@ -592,10 +622,26 @@
         padding: 0.15rem 0.35rem;
         font-size: 0.70rem;
     }
+    
+    /* Ensure SweetAlert is always on top of Bootstrap modals */
+    .swal2-container {
+        z-index: 99999 !important;
+    }
 </style>
 
 <script>
-    const modal = new bootstrap.Modal(document.getElementById('scheduleModal'));
+    let modal = null;
+    function getModal() {
+        if (!modal) {
+            const el = document.getElementById('scheduleModal');
+            if (el) modal = new bootstrap.Modal(el);
+        }
+        return modal;
+    }
+    // Initialize modal when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        modal = getModal();
+    });
     let rowCounter = 0;
     let activityCounter = 0;
     let dutyCounter = 0;
@@ -608,6 +654,17 @@
             dropdownParent: $('#scheduleModal'),
             width: '100%',
             placeholder: '-- ค้นหา/เลือกครูผู้สอน --'
+        });
+
+        // Tab switch loading effect
+        $('#scheduleModalTabs button[data-bs-toggle="tab"]').on('show.bs.tab', function (e) {
+            const overlay = document.getElementById('tabLoadingOverlay');
+            if (overlay) {
+                overlay.style.display = 'flex';
+                setTimeout(function() {
+                    overlay.style.display = 'none';
+                }, 400);
+            }
         });
     });
 
@@ -1362,9 +1419,24 @@
         const year = document.getElementById('year').value;
         const term = document.getElementById('term').value;
 
+        // Don't show full screen loader if just selecting teacher, only on manual click
+        if (triggerAutoSuggest) {
+            Swal.fire({
+                title: 'กำลังโหลดข้อมูล...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+        }
+
         fetch(`<?= base_url('curriculum/teaching-schedule/get-teacher-extra') ?>/${encodeURIComponent(teacherId)}?year=${year}&term=${term}`)
             .then(res => res.json())
             .then(res => {
+                if (triggerAutoSuggest) {
+                    Swal.close();
+                }
+                
                 if (res.status === 'success') {
                     cachedSuggestedDuties = res.suggested_duties || [];
 
@@ -1396,7 +1468,11 @@
                 }
             })
             .catch(err => {
+                if (triggerAutoSuggest) {
+                    Swal.close();
+                }
                 console.error('Error loading teacher extra:', err);
+                Swal.fire('ข้อผิดพลาด!', 'ไม่สามารถดึงข้อมูลได้', 'error');
             });
     }
 
@@ -1425,32 +1501,22 @@
         if (tabBtn) bootstrap.Tab.getOrCreateInstance(tabBtn).show();
 
         document.getElementById('modalTitle').innerHTML = '<i class="bi bi-calendar-plus me-2 text-primary"></i>เพิ่มข้อมูลตารางสอน (ครู 1 ท่าน / หลายวิชา / กิจกรรม / หน้าที่พิเศษ)';
-        modal.show();
+        getModal().show();
     }
 
-    function openAddModalForTeacher(teacherId) {
+    function openAddModalForTeacher(teacherId, focusTab = 'subjects') {
         openAddModal();
         if (teacherId) {
             $('#teacher_id').val(teacherId).trigger('change');
         }
-    }
-
-    function openTeacherExtraModal(teacherId, teacherName = '') {
-        document.getElementById('scheduleForm').reset();
-        document.getElementById('schedule_id').value = '';
-        document.getElementById('existing_schedule_ids').value = '';
-        $('#subjectRowsContainer').empty();
-        $('#btnAddSubjectRow, #bottomAddSubjectWrapper').hide();
-        rowCounter = 0;
-
-        $('#teacher_id').val(teacherId).trigger('change');
-
-        // Switch directly to Tab 2 (Activities)
-        const tabBtn = document.getElementById('tab-activities-btn');
-        if (tabBtn) bootstrap.Tab.getOrCreateInstance(tabBtn).show();
-
-        document.getElementById('modalTitle').innerHTML = `<i class="bi bi-gear-fill me-2 text-primary"></i>จัดการกิจกรรมและหน้าที่พิเศษ - <span class="text-primary">${escapeHtml(teacherName)}</span>`;
-        modal.show();
+        // Switch to the requested tab
+        if (focusTab === 'activities') {
+            const tabBtn = document.getElementById('tab-activities-btn');
+            if (tabBtn) bootstrap.Tab.getOrCreateInstance(tabBtn).show();
+        } else if (focusTab === 'duties') {
+            const tabBtn = document.getElementById('tab-duties-btn');
+            if (tabBtn) bootstrap.Tab.getOrCreateInstance(tabBtn).show();
+        }
     }
 
     function editSchedule(ids) {
@@ -1481,7 +1547,7 @@
                     if (tabBtn) bootstrap.Tab.getOrCreateInstance(tabBtn).show();
 
                     document.getElementById('modalTitle').innerHTML = '<i class="bi bi-pencil-square me-2 text-warning"></i>แก้ไขข้อมูลตารางสอน';
-                    modal.show();
+                    getModal().show();
                 } else {
                     Swal.fire('ข้อผิดพลาด!', result.msg, 'error');
                 }
@@ -1539,6 +1605,14 @@
         btnSave.disabled = true;
         btnSave.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> กำลังบันทึก...';
 
+        Swal.fire({
+            title: 'กำลังบันทึกข้อมูล...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
         fetch('<?= base_url('curriculum/teaching-schedule/save') ?>', {
             method: 'POST',
             body: formData,
@@ -1552,7 +1626,7 @@
             btnSave.innerHTML = '<i class="bi bi-save me-1"></i> บันทึกข้อมูล';
             
             if (result.status === 'success') {
-                modal.hide();
+                getModal().hide();
                 Swal.fire({
                     icon: 'success',
                     title: 'สำเร็จ!',
@@ -1586,13 +1660,13 @@
             confirmButtonColor: '#d33',
             cancelButtonColor: '#8592a3',
             confirmButtonText: 'ใช่, ลบเลย!',
-            cancelButtonText: 'ยกเลิก'
-        }).then((result) => {
-            if (result.isConfirmed) {
+            cancelButtonText: 'ยกเลิก',
+            showLoaderOnConfirm: true,
+            preConfirm: () => {
                 const formData = new FormData();
                 formData.append('ids', ids);
 
-                fetch('<?= base_url('curriculum/teaching-schedule/delete') ?>', {
+                return fetch('<?= base_url('curriculum/teaching-schedule/delete') ?>', {
                     method: 'POST',
                     body: formData,
                     headers: {
@@ -1601,21 +1675,25 @@
                 })
                 .then(response => response.json())
                 .then(result => {
-                    if (result.status === 'success') {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'ลบข้อมูลสำเร็จ',
-                            showConfirmButton: false,
-                            timer: 1500
-                        }).then(() => {
-                            location.reload();
-                        });
-                    } else {
-                        Swal.fire('ข้อผิดพลาด!', result.msg, 'error');
+                    if (result.status !== 'success') {
+                        throw new Error(result.msg || 'ไม่สามารถลบข้อมูลได้');
                     }
+                    return result;
                 })
                 .catch(error => {
-                    Swal.fire('ข้อผิดพลาด!', 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้', 'error');
+                    Swal.showValidationMessage(`ข้อผิดพลาด: ${error.message || error}`);
+                });
+            },
+            allowOutsideClick: () => !Swal.isLoading()
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'ลบข้อมูลสำเร็จ',
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(() => {
+                    location.reload();
                 });
             }
         });
