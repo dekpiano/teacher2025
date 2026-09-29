@@ -165,9 +165,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $filename_part = pathinfo($originalName, PATHINFO_FILENAME);
         $extension = pathinfo($originalName, PATHINFO_EXTENSION);
 
-        // Sanitize the filename part — allow Unicode letters/numbers
-        $filename_part = preg_replace('/[^\p{L}\p{N}_\-]/u', '_', $filename_part);
-        if (empty($filename_part) || preg_match('/^_+$/', $filename_part)) {
+        // Sanitize: strip only dangerous characters (path traversal, null bytes, control chars)
+        // This preserves Thai/Unicode characters while blocking security risks
+        $filename_part = preg_replace('/[\x00-\x1f\x7f\/\\\\:*?"<>|]/', '', $filename_part);
+        $filename_part = str_replace(' ', '_', $filename_part);
+        $filename_part = trim($filename_part, '.-_ ');
+        if (empty($filename_part) || preg_match('/^[_.\-]+$/', $filename_part)) {
             $filename_part = "uploaded_file";
         }
         

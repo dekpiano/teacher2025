@@ -341,11 +341,12 @@ class CurriculumController extends BaseController
             $client = \Config\Services::curlrequest();
 
             $postData = [
-                'path'         => $post['path'],
-                'filename'     => $post['filename'],
-                'chunk_index'  => $post['chunk'],
-                'total_chunks' => $post['chunks'],
-                'file'         => new \CURLFile($file->getTempName(), $file->getMimeType(), $post['filename'])
+                'path'              => $post['path'],
+                'filename'          => $post['filename'],
+                'desired_filename'  => $post['filename'], // ← ส่งชื่อไฟล์ตรง ๆ เพื่อไม่ให้ upload.php sanitize+uniqid
+                'chunk_index'       => $post['chunk'],
+                'total_chunks'      => $post['chunks'],
+                'file'              => new \CURLFile($file->getTempName(), $file->getMimeType(), $post['filename'])
             ];
 
             $headers = [
@@ -414,7 +415,13 @@ class CurriculumController extends BaseController
             }
         }
 
-        // Both failed — get HTTP status for error reporting
+        // Attempt 3: Directory listing + fuzzy match (for old files with mismatched names)
+        $fuzzyResult = $this->_fuzzyMatchRemoteFile($plan, $baseFileUrl);
+        if ($fuzzyResult !== null) {
+            return $fuzzyResult;
+        }
+
+        // All failed — get HTTP status for error reporting
         $httpStatus = '';
         $headers = @get_headers($fileUrl);
         if ($headers && isset($headers[0])) {
@@ -422,6 +429,110 @@ class CurriculumController extends BaseController
         }
 
         return ['success' => false, 'data' => null, 'url' => $fileUrl, 'http_status' => $httpStatus];
+    }
+
+    /**
+     * Attempt to find a file on the server by listing the directory and fuzzy-matching.
+     * This handles cases where upload.php sanitized Thai characters + appended uniqid().
+     * 
+     * DB filename: ชีววิทยา5_โครงการสอน_pers_192_1782721037513.docx
+     * Server file: 5________________________________pers_192_1782721037513_6a422a1044b04.docx
+     * Match key:   pers_192 + 1782721037513
+     */
+    private function _fuzzyMatchRemoteFile(array $plan, string $baseFileUrl): ?array
+    {
+        $dbFile = $plan['seplan_file'] ?? '';
+        if (empty($dbFile)) return null;
+
+        // Extract identifiable parts from DB filename
+        $persId = null;
+        $timestamp = null;
+        $extension = strtolower(pathinfo($dbFile, PATHINFO_EXTENSION));
+
+        if (preg_match('/pers_(\d+)/', $dbFile, $m)) {
+            $persId = $m[1];
+        }
+        if (preg_match('/(\d{13})/', $dbFile, $m)) {
+            $timestamp = $m[1];
+        }
+
+        // Need at least pers_id to attempt matching
+        if (!$persId) return null;
+
+        // Build directory URL
+        $year = $plan['seplan_year'];
+        $term = $plan['seplan_term'];
+        $subject = $plan['seplan_namesubject'];
+        $subjectEncoded = str_replace('%2F', '/', rawurlencode($subject));
+        $dirUrl = rtrim($baseFileUrl, '/') . '/' . $year . '/' . $term . '/' . $subjectEncoded . '/';
+
+        // List directory (Apache auto-index)
+        $dirHtml = @file_get_contents($dirUrl);
+        if ($dirHtml === false) return null;
+
+        // Parse file links from Apache directory listing
+        preg_match_all('/href="([^"]+\.(docx?|pdf|xlsx?))"/', $dirHtml, $matches);
+        $serverFiles = $matches[1] ?? [];
+        if (empty($serverFiles)) return null;
+
+        // Find best match
+        $bestMatch = null;
+        $bestScore = 0;
+
+        foreach ($serverFiles as $serverFile) {
+            $score = 0;
+            $serverExt = strtolower(pathinfo($serverFile, PATHINFO_EXTENSION));
+
+            // Must have same extension
+            if ($serverExt !== $extension) continue;
+
+            // Match pers_id
+            if (strpos($serverFile, 'pers_' . $persId) !== false) {
+                $score += 10;
+            } else {
+                continue; // Different teacher
+            }
+
+            // Match timestamp (strongest signal)
+            if ($timestamp && strpos($serverFile, $timestamp) !== false) {
+                $score += 50;
+            }
+
+            if ($score > $bestScore) {
+                $bestScore = $score;
+                $bestMatch = $serverFile;
+            }
+        }
+
+        // Only accept strong matches (timestamp matched)
+        if ($bestMatch && $bestScore >= 50) {
+            $matchedUrl = $dirUrl . rawurlencode($bestMatch);
+            $fileData = @file_get_contents($matchedUrl);
+            if ($fileData !== false) {
+                // Also update DB silently so future downloads are direct
+                $this->_updateDbFilename($plan, $bestMatch);
+                return ['success' => true, 'data' => $fileData, 'url' => $matchedUrl, 'http_status' => 'HTTP/1.1 200 OK'];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Silently update the seplan_file in DB to match the actual server filename.
+     * This auto-repairs the mismatch so future downloads go directly without fuzzy matching.
+     */
+    private function _updateDbFilename(array $plan, string $actualFilename): void
+    {
+        try {
+            $seplanId = $plan['seplan_ID'] ?? null;
+            if ($seplanId) {
+                $this->curriculumModel->update($seplanId, ['seplan_file' => $actualFilename]);
+                log_message('info', "Auto-repaired seplan_file for ID:{$seplanId}: {$plan['seplan_file']} → {$actualFilename}");
+            }
+        } catch (\Exception $e) {
+            log_message('error', "Failed to auto-repair seplan_file for ID:{$seplanId}: " . $e->getMessage());
+        }
     }
 
     public function downloadPlanFile($seplanID)
@@ -517,6 +628,12 @@ class CurriculumController extends BaseController
             if ($headersRaw && strpos($headersRaw[0], '200') !== false) {
                 return $this->response->setJSON(['status' => 'success']);
             }
+        }
+
+        // Attempt 3: Fuzzy match via directory listing (for old files with mismatched names)
+        $fuzzyResult = $this->_fuzzyMatchRemoteFile($plan, $baseFileUrl);
+        if ($fuzzyResult !== null && $fuzzyResult['success']) {
+            return $this->response->setJSON(['status' => 'success']);
         }
 
         $httpStatus = ($headers && isset($headers[0])) ? $headers[0] : 'ไม่สามารถเชื่อมต่อ Server ได้';

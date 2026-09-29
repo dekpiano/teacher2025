@@ -1099,7 +1099,7 @@ class TeachingScheduleController extends BaseController
 
         $suggestedDuties = [];
 
-        // 1. Homeroom advisor from tb_regclass
+        // 1. Homeroom advisor from tb_regclass (only suggested duty)
         try {
             $regclass = $this->db->table('tb_regclass')
                 ->where('class_teacher', $teacherId)
@@ -1113,27 +1113,6 @@ class TeachingScheduleController extends BaseController
             }
             if ($regclass && !empty($regclass->Reg_Class)) {
                 $suggestedDuties[] = 'ครูที่ปรึกษาชั้นมัธยมศึกษาปีที่ ' . $regclass->Reg_Class;
-            }
-        } catch (\Throwable $e) {
-            // ignore
-        }
-
-        // 2. Department head from tb_personnel
-        try {
-            $teacherPers = $this->db_personnel->table('tb_personnel')
-                ->where('pers_id', $teacherId)
-                ->get()->getRow();
-            if ($teacherPers) {
-                if ($teacherPers->pers_position === 'posi_003' || (!empty($teacherPers->pers_groupleade) && $teacherPers->pers_groupleade == 1)) {
-                    $learName = 'กลุ่มสาระการเรียนรู้';
-                    if ($this->db_skj && !empty($teacherPers->pers_learning)) {
-                        $learRow = $this->db_skj->table('tb_learning')->where('lear_id', $teacherPers->pers_learning)->get()->getRow();
-                        if ($learRow && !empty($learRow->lear_namethai)) {
-                            $learName = $learRow->lear_namethai;
-                        }
-                    }
-                    $suggestedDuties[] = 'หัวหน้า' . $learName;
-                }
             }
         } catch (\Throwable $e) {
             // ignore

@@ -486,7 +486,7 @@
                                 <div class="card-body p-2 d-flex flex-wrap align-items-center justify-content-between gap-2">
                                     <div class="d-flex align-items-center flex-wrap gap-1">
                                         <button type="button" class="btn btn-sm btn-primary shadow-xs" onclick="autoSuggestDuties()">
-                                            <i class="bi bi-magic me-1"></i> ดึงหน้าที่พิเศษอัตโนมัติ (ครูที่ปรึกษา / หัวหน้ากลุ่มสาระ)
+                                            <i class="bi bi-magic me-1"></i> ดึงหน้าที่พิเศษอัตโนมัติ (ครูที่ปรึกษา)
                                         </button>
                                         <button type="button" class="btn btn-xs btn-white border shadow-xs" onclick="quickAddDuty('ครูเวรประจำวัน')">+ ครูเวรประจำวัน</button>
                                         <button type="button" class="btn btn-xs btn-white border shadow-xs" onclick="quickAddDuty('หัวหน้างาน')">+ หัวหน้างาน...</button>
