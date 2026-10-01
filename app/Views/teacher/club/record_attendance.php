@@ -188,8 +188,11 @@
                 <button type="button" class="btn btn-outline-success btn-batch" onclick="batchCheck('มา')">
                     <i class="bi bi-check-all me-1"></i> เช็ค "มา" ทั้งหมด
                 </button>
+                <button type="button" class="btn btn-outline-primary btn-batch" onclick="batchCheck('กิจกรรม')">
+                    <i class="bi bi-star-fill me-1"></i> เช็ค "กิจกรรม" ทั้งหมด
+                </button>
                 <button type="button" class="btn btn-outline-secondary btn-batch" onclick="resetCheck()">
-                    <i class="bi bi-arrow-counterclockwise me-1"></i> คืนค่าทั้งหมด
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> คืนค่าเดิม
                 </button>
                 <div class="ms-auto d-flex align-items-center gap-2">
                     <span class="text-muted smallest fw-bold">แสดงสมาชิกทั้งหมด <?= count($members) ?> คน</span>

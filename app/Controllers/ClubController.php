@@ -435,11 +435,11 @@ class ClubController extends BaseController
 
         // Fetch existing attendance for this schedule
         $existingAttendance = [];
-        $record = $this->clubModel->getAttendanceBySchedule($scheduleId, (int)$clubId);        
-        $data['hasAttendanceRecord'] = !empty($record);
-        if (!empty($record)) {
-            // The model returns an array of records, but we expect only one
-            $record = $record[0]; 
+        $records = $this->clubModel->getAttendanceBySchedule($scheduleId, (int)$clubId);        
+        $data['hasAttendanceRecord'] = !empty($records);
+        if (!empty($records)) {
+            // The model returns an array of records, we take the most recent
+            $record = $records[0]; 
             $statusMap = [
                 'มา' => !empty($record->tcra_ma) ? explode(',', $record->tcra_ma) : [],
                 'ขาด' => !empty($record->tcra_khad) ? explode(',', $record->tcra_khad) : [],
@@ -450,7 +450,10 @@ class ClubController extends BaseController
 
             foreach ($statusMap as $status => $studentIds) {
                 foreach ($studentIds as $studentId) {
-                    $existingAttendance[$studentId] = $status;
+                    $studentId = trim((string)$studentId);
+                    if ($studentId !== '') {
+                        $existingAttendance[$studentId] = $status;
+                    }
                 }
             }
         }
@@ -477,7 +480,7 @@ class ClubController extends BaseController
 
         $attendanceData = $this->request->getPost('attendance'); // Array of student_id => status
 
-        if (!empty($attendanceData)) {
+        if (!empty($attendanceData) && is_array($attendanceData)) {
             // Categorize students by status
             $statusGroups = [
                 'มา' => [],
@@ -488,21 +491,23 @@ class ClubController extends BaseController
             ];
 
             foreach ($attendanceData as $studentId => $status) {
-                if (array_key_exists($status, $statusGroups)) {
+                $studentId = trim((string)$studentId);
+                $status = trim((string)$status);
+                if (array_key_exists($status, $statusGroups) && $studentId !== '') {
                     $statusGroups[$status][] = $studentId;
                 }
             }
 
             // Prepare data for the model
             $dataToSave = [
-                'tcra_club_id' => $clubId,
-                'trca_schedule_id' => $scheduleId,
+                'tcra_club_id' => (int)$clubId,
+                'trca_schedule_id' => (int)$scheduleId,
                 'tcra_teac_id' => $teacherId,
-                'tcra_ma' => implode(',', $statusGroups['มา']),
-                'tcra_khad' => implode(',', $statusGroups['ขาด']),
-                'tcra_rapwy' => implode(',', $statusGroups['ลาป่วย']),
-                'tcra_rakic' => implode(',', $statusGroups['ลากิจ']),
-                'tcra_kickrrm' => implode(',', $statusGroups['กิจกรรม']),
+                'tcra_ma' => implode(',', array_unique($statusGroups['มา'])),
+                'tcra_khad' => implode(',', array_unique($statusGroups['ขาด'])),
+                'tcra_rapwy' => implode(',', array_unique($statusGroups['ลาป่วย'])),
+                'tcra_rakic' => implode(',', array_unique($statusGroups['ลากิจ'])),
+                'tcra_kickrrm' => implode(',', array_unique($statusGroups['กิจกรรม'])),
             ];
 
             if ($this->clubModel->saveScheduleAttendance($dataToSave)) {
@@ -554,11 +559,11 @@ class ClubController extends BaseController
         $data['schedulesByMonth'] = $schedulesByMonth;
         $data['schedules'] = $schedules;
 
-        // Fetch all attendance records for the schedules
+        // Fetch all attendance records for the schedules (filtered by clubId)
         $scheduleIds = array_map(function($s) { return $s->tcs_schedule_id; }, $schedules);
         $allAttendance = [];
         if (!empty($scheduleIds)) {
-            $allAttendance = $this->clubModel->getAttendanceByScheduleIds($scheduleIds);
+            $allAttendance = $this->clubModel->getAttendanceByScheduleIds($scheduleIds, (int)$clubId);
         }
         
         // Create a map for easy lookup: [student_id][schedule_id] => status
@@ -574,7 +579,10 @@ class ClubController extends BaseController
 
             foreach ($statusMap as $status => $studentIds) {
                 foreach ($studentIds as $studentId) {
-                    $attendanceMap[$studentId][$record->trca_schedule_id] = $status;
+                    $studentId = trim((string)$studentId);
+                    if ($studentId !== '') {
+                        $attendanceMap[$studentId][$record->trca_schedule_id] = $status;
+                    }
                 }
             }
         }
@@ -633,11 +641,11 @@ class ClubController extends BaseController
         $data['schedulesByMonth'] = $schedulesByMonth;
         $data['schedules'] = $schedules;
 
-        // Fetch all attendance records for the schedules
+        // Fetch all attendance records for the schedules (filtered by clubId)
         $scheduleIds = array_map(function($s) { return $s->tcs_schedule_id; }, $schedules);
         $allAttendance = [];
         if (!empty($scheduleIds)) {
-            $allAttendance = $this->clubModel->getAttendanceByScheduleIds($scheduleIds);
+            $allAttendance = $this->clubModel->getAttendanceByScheduleIds($scheduleIds, (int)$clubId);
         }
         
         // Create a map for easy lookup: [student_id][schedule_id] => status
@@ -653,7 +661,10 @@ class ClubController extends BaseController
 
             foreach ($statusMap as $status => $studentIds) {
                 foreach ($studentIds as $studentId) {
-                    $attendanceMap[$studentId][$record->trca_schedule_id] = $status;
+                    $studentId = trim((string)$studentId);
+                    if ($studentId !== '') {
+                        $attendanceMap[$studentId][$record->trca_schedule_id] = $status;
+                    }
                 }
             }
         }
@@ -692,7 +703,7 @@ class ClubController extends BaseController
             $totalPresent = 0;
             foreach ($schedules as $schedule) {
                 $status = $attendanceMap[$studentId][$schedule->tcs_schedule_id] ?? '-';
-                if ($status === 'มา') {
+                if ($status === 'มา' || $status === 'กิจกรรม') {
                     $totalPresent++;
                 }
             }
@@ -715,14 +726,14 @@ class ClubController extends BaseController
                 $passedAllObjectives = true;
             }
 
-            // Determine overall status
+            // Determine overall status (Time >= 80% and passed all objectives)
             if ($attendancePercentage >= 80 && $passedAllObjectives) {
                 $totalPassedStudents++;
             } else {
                 $totalFailedStudents++;
             }
 
-            // Basic derivation for long absence and dismissed (can be refined with user input)
+            // Basic derivation for long absence and dismissed
             if ($attendancePercentage < 50 && $attendancePercentage > 0) {
                 $totalLongAbsenceStudents++;
             } elseif ($attendancePercentage == 0) {

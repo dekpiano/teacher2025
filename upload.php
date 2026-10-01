@@ -148,8 +148,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (!empty($_POST['desired_filename'])) {
         // Use the filename provided by the main application, but sanitize it again for security
         $rawFilename = basename($_POST['desired_filename']); // Use basename to strip any path info
-        // Allow Unicode letters (\p{L}), Unicode numbers (\p{N}), and safe special characters
-        $newFileName = preg_replace('/[^\p{L}\p{N}_\-\.]/u', '', $rawFilename);
+        // Strip only dangerous characters — preserve Thai/Unicode filenames
+        $newFileName = preg_replace('/[\x00-\x1f\x7f\/\\\\:*?"<>|]/', '', $rawFilename);
         $newFileName = str_replace(' ', '_', $newFileName);
         
         // Final check in case sanitization results in an empty name

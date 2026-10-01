@@ -225,18 +225,22 @@ class ClubModel extends Model
             $builder->where('tcra_club_id', $clubId);
         }
 
-        return $builder->get()->getResult();
+        return $builder->orderBy('tcra_id', 'DESC')->get()->getResult();
     }
 
-    public function getAttendanceByScheduleIds(array $scheduleIds): array
+    public function getAttendanceByScheduleIds(array $scheduleIds, int $clubId = 0): array
     {
         if (empty($scheduleIds)) {
             return [];
         }
-        return $this->db->table('tb_club_record_activity')
-                        ->whereIn('trca_schedule_id', $scheduleIds)
-                        ->get()
-                        ->getResult();
+        $builder = $this->db->table('tb_club_record_activity')
+                        ->whereIn('trca_schedule_id', $scheduleIds);
+        
+        if ($clubId > 0) {
+            $builder->where('tcra_club_id', $clubId);
+        }
+
+        return $builder->orderBy('tcra_id', 'ASC')->get()->getResult();
     }
 
     /**
@@ -246,14 +250,14 @@ class ClubModel extends Model
      * @param int $studentId The ID of the student.
      * @return string|null The attendance status or null if not found.
      */
-        public function getStudentAttendanceStatus(int $scheduleId, int $studentId): ?string
-        {
-                        $record = $this->db->table('tb_club_record_activity')
-                               ->where('trca_schedule_id', $scheduleId)
-                               ->where('StudentID', $studentId)
-                               ->get()->getRow();
-            return $record->status ?? null;
-        }
+    public function getStudentAttendanceStatus(int $scheduleId, int $studentId): ?string
+    {
+        $record = $this->db->table('tb_club_record_activity')
+               ->where('trca_schedule_id', $scheduleId)
+               ->where('StudentID', $studentId)
+               ->get()->getRow();
+        return $record->status ?? null;
+    }
 
     /**
      * Saves or updates an attendance record.
@@ -265,13 +269,13 @@ class ClubModel extends Model
     {
         // Check if a record already exists for this schedule AND this club
         $builder = $this->db->table('tb_club_record_activity')
-                                   ->where('trca_schedule_id', $data['trca_schedule_id']);
+                            ->where('trca_schedule_id', $data['trca_schedule_id']);
         
-        if (isset($data['tcra_club_id'])) {
+        if (isset($data['tcra_club_id']) && (int)$data['tcra_club_id'] > 0) {
             $builder->where('tcra_club_id', $data['tcra_club_id']);
         }
 
-        $existingRecord = $builder->get()->getRow();
+        $existingRecord = $builder->orderBy('tcra_id', 'DESC')->get()->getRow();
 
         if ($existingRecord) {
             // Update existing record

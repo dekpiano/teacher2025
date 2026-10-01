@@ -816,11 +816,11 @@
                                     foreach ($schedulesByMonth as $month => $schedulesInMonth):
                                         foreach ($schedulesInMonth as $schedule):
                                             $status = $attendanceMap[$member->StudentID][$schedule->tcs_schedule_id] ?? '-';
-                                            if ($status === 'มา')
+                                            if ($status === 'มา' || $status === 'กิจกรรม')
                                                 $totalPresent++;
                                             ?>
                                             <td class="attendance-mark">
-                                                <?= ($status === 'มา') ? '✓' : ($status === 'ขาด' ? 'ข' : ($status === 'ลาป่วย' ? 'ป' : ($status === 'ลากิจ' ? 'ก' : '-'))) ?>
+                                                <?= ($status === 'มา') ? '✓' : ($status === 'ขาด' ? 'ข' : ($status === 'ลาป่วย' ? 'ป' : ($status === 'ลากิจ' ? 'ก' : ($status === 'กิจกรรม' ? 'กจ' : '-')))) ?>
                                             </td>
                                             <?php
                                         endforeach;
@@ -848,8 +848,8 @@
                 </table>
 
                 <div style="font-size: 11pt;">
-                    <span class="fw-bold">หมายเหตุการลงเวลา:</span> ✓ = มาเรียน | ข = ขาดเรียน | ป = ลาป่วย | ก = ลากิจ |
-                    เกณฑ์ผ่าน (ผ) = เวลาเรียนไม่น้อยกว่าร้อยละ 80
+                    <span class="fw-bold">หมายเหตุการลงเวลา:</span> ✓ = มาเรียน | ข = ขาดเรียน | ป = ลาป่วย | ก = ลากิจ | กจ = กิจกรรม |
+                    เกณฑ์ผ่าน (ผ) = เวลาเข้าร่วมกิจกรรมไม่น้อยกว่าร้อยละ 80
                 </div>
             </div>
         <?php endforeach; ?>

@@ -350,15 +350,21 @@
                                         foreach ($schedulesByMonth as $month => $schedulesInMonth):
                                             foreach ($schedulesInMonth as $schedule):
                                                 $status = $attendanceMap[$member->StudentID][$schedule->tcs_schedule_id] ?? '-';
-                                                if ($status === 'มา') {
+                                                if ($status === 'มา' || $status === 'กิจกรรม') {
                                                     $totalPresent++;
                                                 }
                                     ?>
                                         <td class="text-center p-0">
                                             <?php if ($status === 'มา'): ?>
-                                                <i class="bi bi-check-circle-fill text-success mark-icon"></i>
+                                                <i class="bi bi-check-circle-fill text-success mark-icon" title="มาเรียน"></i>
                                             <?php elseif ($status === 'ขาด'): ?>
-                                                <i class="bi bi-x-circle-fill text-danger mark-icon"></i>
+                                                <i class="bi bi-x-circle-fill text-danger mark-icon" title="ขาดเรียน"></i>
+                                            <?php elseif ($status === 'ลาป่วย'): ?>
+                                                <span class="badge bg-warning text-dark px-1 py-0 fw-bold" style="font-size: 0.72rem;" title="ลาป่วย">ป</span>
+                                            <?php elseif ($status === 'ลากิจ'): ?>
+                                                <span class="badge bg-info text-white px-1 py-0 fw-bold" style="font-size: 0.72rem;" title="ลากิจ">ก</span>
+                                            <?php elseif ($status === 'กิจกรรม'): ?>
+                                                <span class="badge bg-primary text-white px-1 py-0 fw-bold" style="font-size: 0.7rem;" title="กิจกรรม">กจ</span>
                                             <?php else: ?>
                                                 <span class="text-muted smallest">-</span>
                                             <?php endif; ?>
@@ -391,6 +397,17 @@
                         <?php endif; ?>
                     </tbody>
                 </table>
+            </div>
+            <div class="card-footer bg-light py-2 px-3 border-top">
+                <div class="d-flex flex-wrap align-items-center gap-3 smallest text-muted">
+                    <span class="fw-bold text-dark"><i class="bi bi-info-circle me-1 text-primary"></i> สัญลักษณ์:</span>
+                    <span><i class="bi bi-check-circle-fill text-success me-1"></i> มาเรียน</span>
+                    <span><i class="bi bi-x-circle-fill text-danger me-1"></i> ขาดเรียน</span>
+                    <span><span class="badge bg-warning text-dark px-1 py-0 me-1">ป</span> ลาป่วย</span>
+                    <span><span class="badge bg-info text-white px-1 py-0 me-1">ก</span> ลากิจ</span>
+                    <span><span class="badge bg-primary text-white px-1 py-0 me-1">กจ</span> กิจกรรม</span>
+                    <span class="ms-auto text-primary fw-bold">เกณฑ์ผ่าน: เวลาเข้าร่วมกิจกรรมไม่น้อยกว่าร้อยละ 80</span>
+                </div>
             </div>
         </div>
     </div>
