@@ -122,13 +122,14 @@
     <div class="scout-header shadow-lg">
         <div class="row align-items-center text-start">
             <div class="col-lg-7">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb breadcrumb-light mb-2">
-                        <li class="breadcrumb-item"><a href="<?= site_url('home') ?>" class="text-white opacity-75">หน้าหลัก</a></li>
-                        <li class="breadcrumb-item text-white opacity-75">งานพัฒนาผู้เรียน</li>
-                        <li class="breadcrumb-item active text-white" aria-current="page">บันทึกลูกเสือ</li>
-                    </ol>
-                </nav>
+                <div class="breadcrumb-light-wrapper mb-2">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb breadcrumb-light mb-0">
+                            <li class="breadcrumb-item"><a href="<?= site_url('scout') ?>"><i class="bi bi-house-door me-1"></i>หน้าหลักลูกเสือ</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">กิจกรรมลูกเสือ - เนตรนารี</li>
+                        </ol>
+                    </nav>
+                </div>
                 <h1 class="display-6 fw-bold text-white mb-2">
                     <i class="bi bi-compass me-2"></i>กิจกรรมลูกเสือ - เนตรนารี
                 </h1>

@@ -86,13 +86,14 @@
                     $isScout = !empty($isScout) || \App\Models\ClubModel::isScoutClub($club->club_name);
                     $routePrefix = !empty($routePrefix) ? $routePrefix : ($isScout ? 'scout' : 'club');
                 ?>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb breadcrumb-light mb-2">
-                        <li class="breadcrumb-item"><a href="<?= site_url('home') ?>" class="text-white opacity-75">หน้าหลัก</a></li>
-                        <li class="breadcrumb-item"><a href="<?= site_url($routePrefix) ?>" class="text-white opacity-75"><?= $isScout ? 'ลูกเสือ' : 'ชุมนุม' ?></a></li>
-                        <li class="breadcrumb-item active text-white" aria-current="page"><?= $isScout ? 'จัดการกองลูกเสือ' : 'จัดการชุมนุม' ?></li>
-                    </ol>
-                </nav>
+                <div class="breadcrumb-light-wrapper mb-2">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb breadcrumb-light mb-0">
+                            <li class="breadcrumb-item"><a href="<?= site_url($routePrefix) ?>"><i class="bi bi-house-door me-1"></i>หน้าหลัก<?= $isScout ? 'ลูกเสือ' : 'ชุมนุม' ?></a></li>
+                            <li class="breadcrumb-item active" aria-current="page"><?= $isScout ? 'จัดการกองลูกเสือ' : 'จัดการชุมนุม' ?></li>
+                        </ol>
+                    </nav>
+                </div>
                 <h2 class="fw-bold mb-1 text-white"><?= esc($club->club_name) ?></h2>
                 <div class="d-flex flex-wrap gap-3 align-items-center mt-3">
                     <p class="mb-0 text-white text-opacity-75 small">

@@ -206,14 +206,15 @@
                     $isScout = !empty($isScout) || \App\Models\ClubModel::isScoutClub($club->club_name);
                     $routePrefix = !empty($routePrefix) ? $routePrefix : ($isScout ? 'scout' : 'club');
                 ?>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb breadcrumb-light mb-2">
-                        <li class="breadcrumb-item"><a href="<?= site_url('home') ?>" class="text-white text-decoration-none">หน้าหลัก</a></li>
-                        <li class="breadcrumb-item"><a href="<?= site_url($routePrefix) ?>" class="text-white text-decoration-none"><?= $isScout ? 'ลูกเสือ' : 'ชุมนุม' ?></a></li>
-                        <li class="breadcrumb-item"><a href="<?= site_url($routePrefix . '/manage/' . $club->club_id) ?>" class="text-white text-decoration-none"><?= $isScout ? 'จัดการกองลูกเสือ' : 'จัดการชุมนุม' ?></a></li>
-                        <li class="breadcrumb-item active text-white fw-bold" aria-current="page"><?= $isScout ? 'ประเมินผลกิจกรรมลูกเสือ' : 'ประเมินผลกิจกรรม' ?></li>
-                    </ol>
-                </nav>
+                <div class="breadcrumb-light-wrapper mb-2">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb breadcrumb-light mb-0">
+                            <li class="breadcrumb-item"><a href="<?= site_url($routePrefix) ?>"><i class="bi bi-house-door me-1"></i>หน้าหลัก<?= $isScout ? 'ลูกเสือ' : 'ชุมนุม' ?></a></li>
+                            <li class="breadcrumb-item"><a href="<?= site_url($routePrefix . '/manage/' . $club->club_id) ?>"><?= $isScout ? 'จัดการกองลูกเสือ' : 'จัดการชุมนุม' ?></a></li>
+                            <li class="breadcrumb-item active" aria-current="page"><?= $isScout ? 'ประเมินผลกิจกรรมลูกเสือ' : 'ประเมินผลกิจกรรม' ?></li>
+                        </ol>
+                    </nav>
+                </div>
                 <h1 class="display-6 fw-bold text-white mb-2">
                     <i class="bi bi-journal-check me-2"></i><?= $isScout ? 'ประเมินผลกิจกรรมลูกเสือ' : 'ประเมินผลกิจกรรมชุมนุม' ?>
                 </h1>

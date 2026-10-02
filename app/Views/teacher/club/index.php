@@ -125,8 +125,8 @@
             <div class="col-lg-7">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb breadcrumb-light mb-2">
-                        <li class="breadcrumb-item"><a href="<?= site_url('home') ?>" class="text-white opacity-75">หน้าหลัก</a></li>
-                        <li class="breadcrumb-item active text-white" aria-current="page">ระบบชุมนุม</li>
+                        <li class="breadcrumb-item text-white opacity-75">งานพัฒนาผู้เรียน</li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">หน้าหลักชุมนุม</li>
                     </ol>
                 </nav>
                 <h1 class="display-6 fw-bold text-white mb-2">

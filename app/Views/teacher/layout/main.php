@@ -584,13 +584,183 @@
             }
         }
 
-        @media (prefers-reduced-motion: reduce) {
+        /* ─── Modern Breadcrumb System ─── */
+        .breadcrumb-header-card {
+            background: #ffffff;
+            border-radius: 1rem;
+            padding: 0.85rem 1.25rem;
+            box-shadow: 0 4px 20px -2px rgba(50, 71, 91, 0.05), 0 0 0 1px rgba(226, 232, 240, 0.8);
+            transition: all 0.3s ease;
+        }
 
-            .ambient-orb,
-            .ambient-shape,
-            .ambient-grid-pattern {
-                animation: none !important;
-            }
+        .page-title-icon-box {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(105, 108, 255, 0.12) 0%, rgba(99, 102, 241, 0.06) 100%);
+            color: #696cff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+            border: 1px solid rgba(105, 108, 255, 0.15);
+        }
+
+        .page-title-text {
+            font-weight: 700;
+            color: #2b3445;
+            font-size: 1.05rem;
+            line-height: 1.25;
+            letter-spacing: -0.01em;
+        }
+
+        .breadcrumb-nav-wrapper {
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+            padding: 2px 0;
+            max-width: 100%;
+        }
+
+        .breadcrumb-nav-wrapper::-webkit-scrollbar {
+            height: 3px;
+        }
+
+        .breadcrumb-nav-wrapper::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .breadcrumb-modern {
+            display: inline-flex;
+            flex-wrap: nowrap;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        .breadcrumb-modern .breadcrumb-item {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.84rem;
+            padding: 0;
+        }
+
+        .breadcrumb-modern .breadcrumb-item + .breadcrumb-item::before {
+            content: "\F285";
+            font-family: "bootstrap-icons" !important;
+            font-size: 0.7rem;
+            color: #94a3b8;
+            padding: 0 0.35rem;
+            font-weight: 700;
+        }
+
+        .breadcrumb-modern .breadcrumb-item a {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.32rem 0.7rem;
+            border-radius: 0.5rem;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            color: #475569;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .breadcrumb-modern .breadcrumb-item a:hover {
+            background: #696cff;
+            border-color: #696cff;
+            color: #ffffff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(105, 108, 255, 0.28);
+        }
+
+        .breadcrumb-modern .breadcrumb-item a:hover i {
+            color: #ffffff;
+        }
+
+        .breadcrumb-modern .breadcrumb-item.active {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.32rem 0.8rem;
+            border-radius: 0.5rem;
+            background: linear-gradient(135deg, rgba(105, 108, 255, 0.12) 0%, rgba(99, 102, 241, 0.08) 100%);
+            border: 1px solid rgba(105, 108, 255, 0.28);
+            color: #4f46e5;
+            font-weight: 600;
+        }
+
+        .breadcrumb-modern .breadcrumb-item.active i {
+            color: #4f46e5;
+        }
+
+        /* In-Page Glassmorphic Breadcrumbs (for dark / gradient headers) */
+        .breadcrumb-light-wrapper {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50rem;
+            padding: 0.25rem 0.75rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            margin-bottom: 0.5rem;
+        }
+
+        .breadcrumb-light {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0;
+            margin: 0;
+            list-style: none;
+            font-size: 0.82rem;
+        }
+
+        .breadcrumb-light .breadcrumb-item {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .breadcrumb-light .breadcrumb-item + .breadcrumb-item::before {
+            content: "\F285";
+            font-family: "bootstrap-icons" !important;
+            font-size: 0.68rem;
+            color: rgba(255, 255, 255, 0.6);
+            padding: 0 0.3rem;
+        }
+
+        .breadcrumb-light .breadcrumb-item a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.12rem 0.45rem;
+            border-radius: 50rem;
+            transition: all 0.2s ease;
+        }
+
+        .breadcrumb-light .breadcrumb-item a:hover {
+            background: rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+            text-decoration: none;
+        }
+
+        .breadcrumb-light .breadcrumb-item.active {
+            color: #ffffff;
+            font-weight: 600;
+            padding: 0.12rem 0.55rem;
+            border-radius: 50rem;
+            background: rgba(255, 255, 255, 0.2);
         }
     </style>
 
@@ -779,23 +949,37 @@
                     'save-score-normal' => 'บันทึกผลการเรียน (ปกติ)',
                     'save-score-repeat' => 'บันทึกผลการเรียน (ซ้ำ)',
                     'save-score-add' => 'บันทึกผลการเรียน',
+                    'save-score-repeat-add' => 'บันทึกคะแนนเรียนซ้ำ',
                     'curriculum' => 'งานหลักสูตร',
                     'send-plan' => 'ส่งแผนการสอน',
+                    'edit-plan' => 'แก้ไขแผนการสอน',
                     'download-plan' => 'ดาวน์โหลดแผนการสอน',
                     'research' => 'งานวิจัยในชั้นเรียน',
                     'teacher' => 'งานครู',
                     'reading_assessment' => 'แบบประเมินอ่านคิดวิเคราะห์',
                     'desirable_assessment' => 'คุณลักษณะอันพึงประสงค์',
-                    'club' => 'งานพัฒนาผู้เรียน / บันทึกชุมนุม',
-                    'scout' => 'งานพัฒนาผู้เรียน / บันทึกลูกเสือ',
+                    'homeroom' => 'ระบบดูแลนักเรียน (โฮมรูม)',
+                    'dashboard' => 'แดชบอร์ด',
+                    'club' => 'บันทึกชุมนุม',
+                    'scout' => 'บันทึกลูกเสือ',
+                    'manage' => 'จัดการสมาชิก/ข้อมูล',
+                    'schedule' => 'ตารางกิจกรรม & เวลาเรียน',
+                    'recordAttendance' => 'บันทึกการเข้าเรียน',
+                    'objectives' => 'ประเมินผลกิจกรรม',
+                    'activities' => 'รายงานสรุปผลกิจกรรม',
+                    'manual' => 'คู่มือการใช้งาน',
                     'attendance' => 'SKJ Check-In',
                     'leave' => 'ระบบการลา',
+                    'generate-leave-form' => 'พิมพ์ใบลา',
                     'evaluation' => 'การประเมินผลการปฏิบัติงาน',
                     'pa-agreement' => 'การประเมินผลการพัฒนางานตามข้อตกลง (PA)',
                     'portfolio' => 'ประวัติการอบรมและผลงาน',
                     'assessment-head' => 'หัวหน้ากลุ่มสาระ',
                     'check-plan' => 'ตรวจแผนการสอน',
+                    'check-plan-detail' => 'รายละเอียดตรวจแผน',
                     'check-score' => 'ตรวจสอบคะแนน',
+                    'check-score-detail' => 'รายละเอียดคะแนน',
+                    'check-score-student' => 'คะแนนรายบุคคล',
                     'teaching-schedule' => 'จัดตารางสอนของกลุ่มสาระ',
                     'my' => 'ตารางสอนรายบุคคล'
                 ];
@@ -1114,34 +1298,275 @@
                         <div class="row">
                             <div class="col-12">
 
-                                <div class="card p-3 mb-4 shadow-sm border-0 bg-white rounded-3">
+                                <div class="breadcrumb-header-card mb-4">
                                     <div
-                                        class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
-                                        <h5 class="mb-0 text-primary fw-bold">
-                                            <i class="bi bi-geo-alt-fill me-2"></i><?= esc($title ?? 'หน้าหลัก') ?>
-                                        </h5>
-                                        <nav aria-label="breadcrumb">
-                                            <ol class="breadcrumb mb-0">
-                                                <li class="breadcrumb-item">
-                                                    <a href="<?= base_url() ?>" class="text-decoration-none">
-                                                        <i class="bi bi-house-door me-1"></i>หน้าหลัก
-                                                    </a>
-                                                </li>
+                                        class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="page-title-icon-box">
+                                                <i class="bi bi-compass"></i>
+                                            </div>
+                                            <div>
+                                                <h5 class="page-title-text mb-0"><?= esc($title ?? 'หน้าหลัก') ?></h5>
+                                                <small class="text-muted d-none d-sm-inline-block">ระบบบริหารจัดการข้อมูลครู สกจ.</small>
+                                            </div>
+                                        </div>
+                                        <nav aria-label="breadcrumb" class="breadcrumb-nav-wrapper">
+                                            <ol class="breadcrumb breadcrumb-modern mb-0">
                                                 <?php
-                                                $builtPath = '';
                                                 $totalSegs = count($segments);
-                                                foreach ($segments as $idx => $seg) {
-                                                    // Skip numeric parameters or room params for cleaner breadcrumbs
-                                                    if (is_numeric($seg) || strpos($seg, '-') !== false)
-                                                        continue;
+                                                $seg0 = $segments[0] ?? '';
+                                                $seg1 = $segments[1] ?? '';
+                                                $seg2 = $segments[2] ?? '';
 
-                                                    $builtPath .= '/' . $seg;
-                                                    $label = $breadcrumbMap[$seg] ?? ucfirst($seg);
-
-                                                    if ($idx === $totalSegs - 1 || ($idx === $totalSegs - 2 && is_numeric($segments[$totalSegs - 1]))) {
-                                                        echo '<li class="breadcrumb-item active" aria-current="page">' . esc($label) . '</li>';
+                                                if (in_array($seg0, ['club', 'scout'])) {
+                                                    // 1. Club & Scout
+                                                    $subRoot = $seg0;
+                                                    $subRootLabel = ($subRoot === 'scout') ? 'หน้าหลักลูกเสือ' : 'หน้าหลักชุมนุม';
+                                                    $manageLabel = ($subRoot === 'scout') ? 'จัดการกองลูกเสือ' : 'จัดการชุมนุม';
+                                                    
+                                                    if ($totalSegs === 1) {
+                                                        echo '<li class="breadcrumb-item active" aria-current="page"><i class="bi bi-house-door me-1"></i>' . esc($subRootLabel) . '</li>';
                                                     } else {
-                                                        echo '<li class="breadcrumb-item"><a href="' . base_url($builtPath) . '" class="text-decoration-none">' . esc($label) . '</a></li>';
+                                                        echo '<li class="breadcrumb-item"><a href="' . base_url($subRoot) . '" class="text-decoration-none"><i class="bi bi-house-door me-1"></i>' . esc($subRootLabel) . '</a></li>';
+                                                        
+                                                        $action = $seg1;
+                                                        $clubId = $seg2;
+
+                                                        if ($action === 'manage') {
+                                                            echo '<li class="breadcrumb-item active" aria-current="page">' . esc($manageLabel) . '</li>';
+                                                        } elseif ($action === 'manual') {
+                                                            echo '<li class="breadcrumb-item active" aria-current="page">คู่มือการใช้งาน</li>';
+                                                        } elseif (in_array($action, ['schedule', 'objectives', 'activities'])) {
+                                                            if ($clubId) {
+                                                                echo '<li class="breadcrumb-item"><a href="' . base_url($subRoot . '/manage/' . $clubId) . '" class="text-decoration-none">' . esc($manageLabel) . '</a></li>';
+                                                            }
+                                                            $label = $breadcrumbMap[$action] ?? ucfirst($action);
+                                                            echo '<li class="breadcrumb-item active" aria-current="page">' . esc($label) . '</li>';
+                                                        } elseif ($action === 'recordAttendance') {
+                                                            if ($clubId) {
+                                                                echo '<li class="breadcrumb-item"><a href="' . base_url($subRoot . '/manage/' . $clubId) . '" class="text-decoration-none">' . esc($manageLabel) . '</a></li>';
+                                                                echo '<li class="breadcrumb-item"><a href="' . base_url($subRoot . '/schedule/' . $clubId) . '" class="text-decoration-none">' . ($breadcrumbMap['schedule'] ?? 'ตารางกิจกรรม') . '</a></li>';
+                                                            }
+                                                            $weekNo = $segments[3] ?? null;
+                                                            $attLabel = $weekNo ? ('เช็คชื่อ สัปดาห์ที่ ' . esc($weekNo)) : 'บันทึกการเข้าเรียน';
+                                                            echo '<li class="breadcrumb-item active" aria-current="page">' . $attLabel . '</li>';
+                                                        } else {
+                                                            $subBuiltPath = $subRoot;
+                                                            for ($i = 1; $i < $totalSegs; $i++) {
+                                                                $seg = $segments[$i];
+                                                                if (is_numeric($seg) || strpos($seg, '-') !== false)
+                                                                    continue;
+
+                                                                $subBuiltPath .= '/' . $seg;
+                                                                $label = $breadcrumbMap[$seg] ?? ucfirst($seg);
+
+                                                                if ($i === $totalSegs - 1 || ($i === $totalSegs - 2 && is_numeric($segments[$totalSegs - 1]))) {
+                                                                    echo '<li class="breadcrumb-item active" aria-current="page">' . esc($label) . '</li>';
+                                                                } else {
+                                                                    echo '<li class="breadcrumb-item"><a href="' . base_url($subBuiltPath) . '" class="text-decoration-none">' . esc($label) . '</a></li>';
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                } elseif ($seg0 === 'teacher' && in_array($seg1, ['reading_assessment', 'desirable_assessment'])) {
+                                                    // 2. Reading Assessment & Desirable Assessment
+                                                    $subRoot = 'teacher/' . $seg1;
+                                                    $subRootLabel = ($seg1 === 'reading_assessment') ? 'หน้าหลักประเมินการอ่านฯ' : 'หน้าหลักคุณลักษณะอันพึงประสงค์';
+                                                    
+                                                    if ($totalSegs <= 2) {
+                                                        echo '<li class="breadcrumb-item active" aria-current="page"><i class="bi bi-house-door me-1"></i>' . esc($subRootLabel) . '</li>';
+                                                    } else {
+                                                        echo '<li class="breadcrumb-item"><a href="' . base_url($subRoot) . '" class="text-decoration-none"><i class="bi bi-house-door me-1"></i>' . esc($subRootLabel) . '</a></li>';
+                                                        $action = $seg2;
+                                                        if ($action === 'assess') {
+                                                            echo '<li class="breadcrumb-item active" aria-current="page">ประเมินชั้นเรียน</li>';
+                                                        } elseif ($action === 'print_report') {
+                                                            echo '<li class="breadcrumb-item active" aria-current="page">พิมพ์รายงาน</li>';
+                                                        } else {
+                                                            echo '<li class="breadcrumb-item active" aria-current="page">' . esc($breadcrumbMap[$action] ?? ucfirst($action)) . '</li>';
+                                                        }
+                                                    }
+                                                } elseif ($seg0 === 'assessment' || $seg0 === 'save-score-repeat') {
+                                                    // 3. Assessment / Save Score
+                                                    if ($seg1 === 'save-score-repeat' || $seg0 === 'save-score-repeat') {
+                                                        $subRoot = 'assessment/save-score-repeat';
+                                                        $subRootLabel = 'หน้าหลักบันทึกผลการเรียนซ้ำ';
+                                                        if ($totalSegs === 1 || ($seg0 === 'assessment' && $totalSegs === 2)) {
+                                                            echo '<li class="breadcrumb-item active" aria-current="page"><i class="bi bi-house-door me-1"></i>' . esc($subRootLabel) . '</li>';
+                                                        } else {
+                                                            echo '<li class="breadcrumb-item"><a href="' . base_url($subRoot) . '" class="text-decoration-none"><i class="bi bi-house-door me-1"></i>' . esc($subRootLabel) . '</a></li>';
+                                                            echo '<li class="breadcrumb-item active" aria-current="page">บันทึกคะแนนเรียนซ้ำ</li>';
+                                                        }
+                                                    } else {
+                                                        $subRoot = 'assessment/save-score-normal';
+                                                        $subRootLabel = 'หน้าหลักบันทึกผลการเรียน';
+                                                        if ($totalSegs === 1 || ($totalSegs === 2 && in_array($seg1, ['save-score-normal', 'save-score-main', '']))) {
+                                                            echo '<li class="breadcrumb-item active" aria-current="page"><i class="bi bi-house-door me-1"></i>' . esc($subRootLabel) . '</li>';
+                                                        } else {
+                                                            echo '<li class="breadcrumb-item"><a href="' . base_url($subRoot) . '" class="text-decoration-none"><i class="bi bi-house-door me-1"></i>' . esc($subRootLabel) . '</a></li>';
+                                                            echo '<li class="breadcrumb-item active" aria-current="page">บันทึกคะแนนรายวิชา</li>';
+                                                        }
+                                                    }
+                                                } elseif ($seg0 === 'curriculum') {
+                                                    // 4. Curriculum
+                                                    if ($seg1 === 'teaching-schedule') {
+                                                        $subRoot = 'curriculum/teaching-schedule';
+                                                        $subRootLabel = 'หน้าหลักจัดตารางสอน';
+                                                        if ($totalSegs <= 2) {
+                                                            echo '<li class="breadcrumb-item active" aria-current="page"><i class="bi bi-house-door me-1"></i>' . esc($subRootLabel) . '</li>';
+                                                        } else {
+                                                            echo '<li class="breadcrumb-item"><a href="' . base_url($subRoot) . '" class="text-decoration-none"><i class="bi bi-house-door me-1"></i>' . esc($subRootLabel) . '</a></li>';
+                                                            if ($seg2 === 'my') {
+                                                                echo '<li class="breadcrumb-item active" aria-current="page">ตารางสอนรายบุคคล</li>';
+                                                            } elseif ($seg2 === 'teacher') {
+                                                                echo '<li class="breadcrumb-item active" aria-current="page">ตารางสอนครูรายบุคคล</li>';
+                                                            } else {
+                                                                echo '<li class="breadcrumb-item active" aria-current="page">ตารางสอนกลุ่มสาระ</li>';
+                                                            }
+                                                        }
+                                                    } elseif ($seg1 === 'download-plan') {
+                                                        echo '<li class="breadcrumb-item active" aria-current="page"><i class="bi bi-house-door me-1"></i>หน้าหลักดาวน์โหลดแผนการสอน</li>';
+                                                    } else {
+                                                        $subRoot = 'curriculum/send-plan';
+                                                        $subRootLabel = 'หน้าหลักส่งแผนการสอน';
+                                                        if ($totalSegs <= 2 && in_array($seg1, ['', 'send-plan', 'SendPlan'])) {
+                                                            echo '<li class="breadcrumb-item active" aria-current="page"><i class="bi bi-house-door me-1"></i>' . esc($subRootLabel) . '</li>';
+                                                        } else {
+                                                            echo '<li class="breadcrumb-item"><a href="' . base_url($subRoot) . '" class="text-decoration-none"><i class="bi bi-house-door me-1"></i>' . esc($subRootLabel) . '</a></li>';
+                                                            if ($seg1 === 'edit-plan') {
+                                                                echo '<li class="breadcrumb-item active" aria-current="page">แก้ไขแผนการสอน</li>';
+                                                            } else {
+                                                                echo '<li class="breadcrumb-item active" aria-current="page">' . esc($breadcrumbMap[$seg1] ?? ucfirst($seg1)) . '</li>';
+                                                            }
+                                                        }
+                                                    }
+                                                } elseif ($seg0 === 'research') {
+                                                    // 5. Research
+                                                    if ($seg1 === 'load-research') {
+                                                        echo '<li class="breadcrumb-item active" aria-current="page"><i class="bi bi-house-door me-1"></i>หน้าหลักดาวน์โหลดงานวิจัย</li>';
+                                                    } elseif ($seg1 === 'setting') {
+                                                        echo '<li class="breadcrumb-item active" aria-current="page"><i class="bi bi-house-door me-1"></i>หน้าหลักตั้งค่างานวิจัย</li>';
+                                                    } else {
+                                                        $subRoot = 'research';
+                                                        $subRootLabel = 'หน้าหลักส่งงานวิจัย';
+                                                        if ($totalSegs === 1) {
+                                                            echo '<li class="breadcrumb-item active" aria-current="page"><i class="bi bi-house-door me-1"></i>' . esc($subRootLabel) . '</li>';
+                                                        } else {
+                                                            echo '<li class="breadcrumb-item"><a href="' . base_url($subRoot) . '" class="text-decoration-none"><i class="bi bi-house-door me-1"></i>' . esc($subRootLabel) . '</a></li>';
+                                                            if ($seg1 === 'edit-research') {
+                                                                echo '<li class="breadcrumb-item active" aria-current="page">แก้ไขงานวิจัย</li>';
+                                                            } else {
+                                                                echo '<li class="breadcrumb-item active" aria-current="page">' . esc($breadcrumbMap[$seg1] ?? ucfirst($seg1)) . '</li>';
+                                                            }
+                                                        }
+                                                    }
+                                                } elseif ($seg0 === 'homeroom') {
+                                                    // 6. Homeroom
+                                                    $subRoot = 'homeroom';
+                                                    $subRootLabel = 'หน้าหลักระบบโฮมรูม';
+                                                    if ($totalSegs === 1) {
+                                                        echo '<li class="breadcrumb-item active" aria-current="page"><i class="bi bi-house-door me-1"></i>' . esc($subRootLabel) . '</li>';
+                                                    } else {
+                                                        echo '<li class="breadcrumb-item"><a href="' . base_url($subRoot) . '" class="text-decoration-none"><i class="bi bi-house-door me-1"></i>' . esc($subRootLabel) . '</a></li>';
+                                                        if ($seg1 === 'dashboard') {
+                                                            $roomName = $seg2 ? ('ชั้น ม.' . esc($seg2)) : 'แดชบอร์ด';
+                                                            echo '<li class="breadcrumb-item active" aria-current="page">แดชบอร์ด ' . $roomName . '</li>';
+                                                        } elseif ($seg1 === 'add') {
+                                                            echo '<li class="breadcrumb-item active" aria-current="page">บันทึกข้อมูลโฮมรูม</li>';
+                                                        } else {
+                                                            echo '<li class="breadcrumb-item active" aria-current="page">' . esc($breadcrumbMap[$seg1] ?? ucfirst($seg1)) . '</li>';
+                                                        }
+                                                    }
+                                                } elseif ($seg0 === 'leave' || $seg0 === 'generate-leave-form') {
+                                                    // 7. Leave
+                                                    $subRoot = 'leave';
+                                                    $subRootLabel = 'หน้าหลักระบบการลา';
+                                                    if ($seg0 === 'leave' && $totalSegs === 1) {
+                                                        echo '<li class="breadcrumb-item active" aria-current="page"><i class="bi bi-house-door me-1"></i>' . esc($subRootLabel) . '</li>';
+                                                    } else {
+                                                        echo '<li class="breadcrumb-item"><a href="' . base_url($subRoot) . '" class="text-decoration-none"><i class="bi bi-house-door me-1"></i>' . esc($subRootLabel) . '</a></li>';
+                                                        if ($seg0 === 'generate-leave-form') {
+                                                            echo '<li class="breadcrumb-item active" aria-current="page">พิมพ์ใบลา</li>';
+                                                        } else {
+                                                            echo '<li class="breadcrumb-item active" aria-current="page">' . esc($breadcrumbMap[$seg1] ?? ucfirst($seg1)) . '</li>';
+                                                        }
+                                                    }
+                                                } elseif ($seg0 === 'attendance') {
+                                                    // 8. Attendance (Check-in)
+                                                    $subRoot = 'attendance';
+                                                    $subRootLabel = 'หน้าหลัก SKJ Check-In';
+                                                    if ($totalSegs === 1) {
+                                                        echo '<li class="breadcrumb-item active" aria-current="page"><i class="bi bi-house-door me-1"></i>' . esc($subRootLabel) . '</li>';
+                                                    } else {
+                                                        echo '<li class="breadcrumb-item"><a href="' . base_url($subRoot) . '" class="text-decoration-none"><i class="bi bi-house-door me-1"></i>' . esc($subRootLabel) . '</a></li>';
+                                                        if ($seg1 === 'history') {
+                                                            echo '<li class="breadcrumb-item active" aria-current="page">ประวัติการลงเวลา</li>';
+                                                        } elseif ($seg1 === 'report') {
+                                                            echo '<li class="breadcrumb-item active" aria-current="page">รายงานประจำเดือน</li>';
+                                                        } else {
+                                                            echo '<li class="breadcrumb-item active" aria-current="page">' . esc($breadcrumbMap[$seg1] ?? ucfirst($seg1)) . '</li>';
+                                                        }
+                                                    }
+                                                } elseif ($seg0 === 'assessment-head') {
+                                                    // 9. Assessment Head (หัวหน้ากลุ่มสาระ)
+                                                    if (strpos($seg1, 'check-plan') !== false) {
+                                                        $subRoot = 'assessment-head/check-plan';
+                                                        $subRootLabel = 'หน้าหลักตรวจแผนการสอน';
+                                                        if ($seg1 === 'check-plan' && $totalSegs <= 2) {
+                                                            echo '<li class="breadcrumb-item active" aria-current="page"><i class="bi bi-house-door me-1"></i>' . esc($subRootLabel) . '</li>';
+                                                        } else {
+                                                            echo '<li class="breadcrumb-item"><a href="' . base_url($subRoot) . '" class="text-decoration-none"><i class="bi bi-house-door me-1"></i>' . esc($subRootLabel) . '</a></li>';
+                                                            echo '<li class="breadcrumb-item active" aria-current="page">รายละเอียดตรวจแผน</li>';
+                                                        }
+                                                    } else {
+                                                        $subRoot = 'assessment-head/check-score';
+                                                        $subRootLabel = 'หน้าหลักตรวจสอบคะแนน';
+                                                        if ($seg1 === 'check-score' && $totalSegs <= 2) {
+                                                            echo '<li class="breadcrumb-item active" aria-current="page"><i class="bi bi-house-door me-1"></i>' . esc($subRootLabel) . '</li>';
+                                                        } elseif ($seg1 === 'check-score-detail') {
+                                                            echo '<li class="breadcrumb-item"><a href="' . base_url($subRoot) . '" class="text-decoration-none"><i class="bi bi-house-door me-1"></i>' . esc($subRootLabel) . '</a></li>';
+                                                            echo '<li class="breadcrumb-item active" aria-current="page">รายละเอียดคะแนนรายวิชา</li>';
+                                                        } elseif ($seg1 === 'check-score-student') {
+                                                            echo '<li class="breadcrumb-item"><a href="' . base_url($subRoot) . '" class="text-decoration-none"><i class="bi bi-house-door me-1"></i>' . esc($subRootLabel) . '</a></li>';
+                                                            if ($seg2) {
+                                                                echo '<li class="breadcrumb-item"><a href="' . base_url('assessment-head/check-score-detail/' . $seg2) . '" class="text-decoration-none">รายละเอียดคะแนนรายวิชา</a></li>';
+                                                            }
+                                                            echo '<li class="breadcrumb-item active" aria-current="page">คะแนนรายบุคคล</li>';
+                                                        } else {
+                                                            echo '<li class="breadcrumb-item"><a href="' . base_url($subRoot) . '" class="text-decoration-none"><i class="bi bi-house-door me-1"></i>' . esc($subRootLabel) . '</a></li>';
+                                                            echo '<li class="breadcrumb-item active" aria-current="page">' . esc($breadcrumbMap[$seg1] ?? ucfirst($seg1)) . '</li>';
+                                                        }
+                                                    }
+                                                } elseif (in_array($seg0, ['portfolio', 'pa-agreement', 'evaluation'])) {
+                                                    // 10. Portfolio, PA, Evaluation
+                                                    $subRoot = $seg0;
+                                                    $subRootLabel = ($seg0 === 'portfolio') ? 'หน้าหลักประวัติและผลงาน' : (($seg0 === 'pa-agreement') ? 'หน้าหลักการประเมิน PA' : 'หน้าหลักประเมินผลการปฏิบัติงาน');
+                                                    if ($totalSegs === 1) {
+                                                        echo '<li class="breadcrumb-item active" aria-current="page"><i class="bi bi-house-door me-1"></i>' . esc($subRootLabel) . '</li>';
+                                                    } else {
+                                                        echo '<li class="breadcrumb-item"><a href="' . base_url($subRoot) . '" class="text-decoration-none"><i class="bi bi-house-door me-1"></i>' . esc($subRootLabel) . '</a></li>';
+                                                        if ($seg1 === 'competition-detail') {
+                                                            echo '<li class="breadcrumb-item active" aria-current="page">รายละเอียดผลงาน</li>';
+                                                        } else {
+                                                            echo '<li class="breadcrumb-item active" aria-current="page">' . esc($breadcrumbMap[$seg1] ?? ucfirst($seg1)) . '</li>';
+                                                        }
+                                                    }
+                                                } else {
+                                                    // Default fallback
+                                                    echo '<li class="breadcrumb-item"><a href="' . base_url('home') . '" class="text-decoration-none"><i class="bi bi-house-door me-1"></i>หน้าหลัก</a></li>';
+                                                    $builtPath = '';
+                                                    foreach ($segments as $idx => $seg) {
+                                                        if (is_numeric($seg) || strpos($seg, '-') !== false)
+                                                            continue;
+
+                                                        $builtPath .= '/' . $seg;
+                                                        $label = $breadcrumbMap[$seg] ?? ucfirst($seg);
+
+                                                        if ($idx === $totalSegs - 1 || ($idx === $totalSegs - 2 && is_numeric($segments[$totalSegs - 1]))) {
+                                                            echo '<li class="breadcrumb-item active" aria-current="page">' . esc($label) . '</li>';
+                                                        } else {
+                                                            echo '<li class="breadcrumb-item"><a href="' . base_url($builtPath) . '" class="text-decoration-none">' . esc($label) . '</a></li>';
+                                                        }
                                                     }
                                                 }
                                                 ?>

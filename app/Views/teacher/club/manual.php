@@ -227,7 +227,17 @@
 
 <div class="container-fluid">
     <div class="manual-header shadow-lg text-center">
-        <h1 class="display-5 fw-bold mb-3">คู่มือการใช้งานระบบชุมนุม</h1>
+        <?php 
+            $isScout = !empty($isScout) || (isset($routePrefix) && $routePrefix === 'scout');
+            $routePrefix = !empty($routePrefix) ? $routePrefix : ($isScout ? 'scout' : 'club');
+        ?>
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb breadcrumb-light mb-0 justify-content-center">
+                <li class="breadcrumb-item"><a href="<?= site_url($routePrefix) ?>" class="text-white opacity-75"><i class="bi bi-house-door me-1"></i>หน้าหลัก<?= $isScout ? 'ลูกเสือ' : 'ชุมนุม' ?></a></li>
+                <li class="breadcrumb-item active text-white fw-bold" aria-current="page">คู่มือการใช้งาน</li>
+            </ol>
+        </nav>
+        <h1 class="display-5 fw-bold mb-3"><?= $isScout ? 'คู่มือการใช้งานระบบลูกเสือ - เนตรนารี' : 'คู่มือการใช้งานระบบชุมนุม' ?></h1>
         <p class="lead mb-0 opacity-75">ขั้นตอนและวิธีการจัดการกิจกรรมชุมนุมสำหรับคุณครูที่ปรึกษา</p>
         <div class="mt-4 d-flex justify-content-center gap-3">
             <span class="badge bg-white text-primary px-3 py-2 rounded-pill">ระบบใหม่ 2025</span>

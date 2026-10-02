@@ -62,12 +62,14 @@
     <div class="glass-header shadow-lg">
         <div class="row align-items-center">
             <div class="col-lg-8">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb breadcrumb-light mb-2">
-                        <li class="breadcrumb-item"><a href="<?= site_url('home') ?>" class="text-white opacity-75">หน้าหลัก</a></li>
-                        <li class="breadcrumb-item active text-white" aria-current="page">แบบประเมินคุณลักษณะฯ</li>
-                    </ol>
-                </nav>
+                <div class="breadcrumb-light-wrapper mb-2">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb breadcrumb-light mb-0">
+                            <li class="breadcrumb-item"><a href="<?= site_url('teacher/desirable_assessment') ?>"><i class="bi bi-house-door me-1"></i>หน้าหลักคุณลักษณะอันพึงประสงค์</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">รายการรายวิชา</li>
+                        </ol>
+                    </nav>
+                </div>
                 <h1 class="display-6 fw-bold text-white mb-2">
                     <i class="bi bi-star-fill me-2"></i><?= esc($title ?? 'ประเมินคุณลักษณะอันพึงประสงค์') ?>
                 </h1>
