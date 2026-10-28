@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+        content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
     <title>เข้าสู่ระบบ | ระบบบริหารจัดการงานครู สกจ.9</title>
 
     <!-- Favicon -->
@@ -33,9 +33,10 @@
         body {
             font-family: 'K2D', sans-serif;
             background: radial-gradient(circle at 10% 20%, #f0f3ff 0%, #dce3fa 90%);
-            height: 100vh;
+            min-height: 100vh;
+            min-height: 100dvh;
             margin: 0;
-            overflow: hidden;
+            overflow-x: hidden;
             position: relative;
         }
 
@@ -76,7 +77,7 @@
         .info-panel {
             flex: 1.2;
             background-color: #696cff;
-            background-image: 
+            background-image:
                 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23ffffff' fill-opacity='0.05' d='M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,250.7C672,235,768,181,864,181.3C960,181,1056,235,1152,234.7C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3Cpath fill='%23ffffff' fill-opacity='0.08' d='M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,165.3C1248,171,1344,149,1392,138.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E"),
                 linear-gradient(135deg, rgba(105, 108, 255, 0.92) 0%, rgba(63, 66, 181, 0.96) 100%);
             background-size: cover, cover;
@@ -381,16 +382,39 @@
         }
 
         @keyframes float-3d-1 {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(5deg); }
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-20px) rotate(5deg);
+            }
         }
+
         @keyframes float-3d-2 {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-15px) rotate(-5deg); }
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-15px) rotate(-5deg);
+            }
         }
+
         @keyframes float-3d-3 {
-            0%, 100% { transform: translateY(0) scale(1); }
-            50% { transform: translateY(-25px) scale(1.05); }
+
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+            }
+
+            50% {
+                transform: translateY(-25px) scale(1.05);
+            }
         }
 
         .floating-academic-1 {
@@ -399,7 +423,7 @@
             right: 5%;
             width: 140px;
             opacity: 0.85;
-            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.2));
+            filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.2));
             animation: float-3d-1 6s ease-in-out infinite;
             z-index: 1;
             pointer-events: none;
@@ -411,7 +435,7 @@
             left: 5%;
             width: 120px;
             opacity: 0.7;
-            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.2));
+            filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.2));
             animation: float-3d-2 7s ease-in-out infinite;
             z-index: 1;
             pointer-events: none;
@@ -423,7 +447,7 @@
             right: 15%;
             width: 100px;
             opacity: 0.6;
-            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.15));
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.15));
             animation: float-3d-3 5s ease-in-out infinite;
             z-index: 1;
             pointer-events: none;
@@ -433,56 +457,67 @@
             body {
                 overflow-y: auto;
                 height: auto;
+                min-height: 100vh;
+                min-height: 100dvh;
             }
 
             .login-wrapper {
                 flex-direction: column-reverse;
                 height: auto;
                 min-height: 100vh;
+                min-height: 100dvh;
+            }
+
+            .login-panel {
+                flex: none;
+                padding: 2.5rem 1.25rem;
+                background: transparent;
+                min-height: auto;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .login-card {
+                padding: 2.5rem 1.75rem;
+                border-radius: 1.5rem;
+                background: rgba(255, 255, 255, 0.96);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                width: 100%;
+                max-width: 440px;
+                margin: 0 auto;
+                box-shadow: 0 20px 45px rgba(0, 0, 0, 0.08);
             }
 
             .info-panel {
-                padding: 3rem 1.5rem;
+                padding: 2.5rem 1.25rem 3rem 1.25rem;
                 flex: none;
                 box-shadow: none;
                 text-align: center;
             }
 
             .info-content {
-                text-align: left;
-            }
-
-            .login-panel {
-                flex: none;
-                padding: 2rem 1rem;
-                background: transparent;
-                min-height: auto;
-                display: flex;
-                align-items: center;
-            }
-
-            .login-card {
-                padding: 2.5rem 1.5rem;
-                border-radius: 1.5rem;
-                background: rgba(255, 255, 255, 0.95);
-                width: 100%;
-                margin-top: 1rem;
+                text-align: center;
+                max-width: 600px;
+                margin: 0 auto;
             }
 
             .system-title {
-                font-size: 1.8rem;
+                font-size: clamp(1.75rem, 5vw, 2.4rem);
                 text-align: center;
             }
 
             .system-subtitle {
-                font-size: 1rem;
+                font-size: 0.95rem;
                 margin-bottom: 2rem;
                 text-align: center;
             }
 
             .school-logo {
                 display: block;
-                margin: 0 auto 1.5rem auto;
+                margin: 0 auto 1.25rem auto;
+                height: 80px;
             }
 
             .login-header-logo {
@@ -492,23 +527,75 @@
                 filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
             }
 
-            /* Adjust floating academic images for mobile */
-            .floating-academic-1 {
-                width: 80px;
-                top: 5%;
-                right: 2%;
+            .feature-list {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.85rem;
+                text-align: left;
             }
 
-            .floating-academic-2 {
-                width: 70px;
-                bottom: 2%;
-                left: 2%;
+            .feature-item {
+                padding: 0.9rem;
+                border-radius: 1rem;
             }
 
+            .feature-icon {
+                width: 38px;
+                height: 38px;
+                font-size: 1.35rem;
+                margin-right: 0.75rem;
+                border-radius: 0.75rem;
+            }
+
+            .feature-text h6 {
+                font-size: 0.9rem;
+            }
+
+            .feature-text p {
+                font-size: 0.75rem;
+            }
+
+            /* Hide heavy floating 3D icons on mobile to prevent clutter and overflow */
+            .floating-academic-1,
+            .floating-academic-2,
             .floating-academic-3 {
-                width: 60px;
-                bottom: 10%;
-                right: 5%;
+                display: none;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .login-panel {
+                padding: 1.5rem 0.85rem;
+            }
+
+            .login-card {
+                padding: 2rem 1.25rem;
+                border-radius: 1.25rem;
+            }
+
+            .btn-google-login {
+                font-size: 0.95rem;
+                padding: 13px 16px;
+                min-height: 48px;
+            }
+
+            .btn-google-login img {
+                height: 22px;
+                margin-right: 8px;
+            }
+
+            .feature-list {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            .info-note {
+                padding: 1rem;
+                font-size: 0.8rem;
+            }
+
+            .bg-glow-bubble-1,
+            .bg-glow-bubble-2 {
+                display: none;
             }
         }
     </style>
@@ -522,9 +609,12 @@
     <!-- Left Panel -->
     <div class="info-panel">
         <!-- 3D Academic Decorative Elements -->
-        <img src="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/1f393.svg" alt="Graduation Cap" class="floating-academic-1">
-        <img src="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/1f4da.svg" alt="Books" class="floating-academic-2">
-        <img src="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/1f52c.svg" alt="Microscope" class="floating-academic-3">
+        <img src="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/1f393.svg" alt="Graduation Cap"
+            class="floating-academic-1">
+        <img src="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/1f4da.svg" alt="Books"
+            class="floating-academic-2">
+        <img src="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/1f52c.svg" alt="Microscope"
+            class="floating-academic-3">
 
         <div class="info-content">
             <img src="https://skj.ac.th/uploads/logoSchool/LogoSKJ_4.png" alt="SKJ Logo" class="school-logo">
@@ -582,7 +672,8 @@
 
 
             <a href="<?= $google_login_url ?>" class="btn-google-login">
-                <img src="https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png" alt="Google Logo">
+                <img src="https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png"
+                    alt="Google Logo">
                 <span>เข้าสู่ระบบด้วย @skj.ac.th</span>
             </a>
 
@@ -592,10 +683,12 @@
 
             <!-- Forgot Password & Guide Buttons -->
             <div class="d-flex flex-column gap-2 mb-3 text-center">
-                <a href="<?= base_url('guide') ?>" class="btn btn-outline-info w-100 rounded-pill font-weight-bold py-2 shadow-sm">
+                <a href="<?= base_url('guide') ?>"
+                    class="btn btn-outline-info w-100 rounded-pill font-weight-bold py-2 shadow-sm">
                     <i class="bi bi-book me-1"></i> คู่มือการใช้งานสำหรับครู (อ่านง่าย)
                 </a>
-                <a href="<?= base_url('verify-email') ?>" class="btn btn-outline-primary w-100 rounded-pill font-weight-bold py-2 shadow-sm">
+                <a href="<?= base_url('verify-email') ?>"
+                    class="btn btn-outline-primary w-100 rounded-pill font-weight-bold py-2 shadow-sm">
                     <i class="bi bi-key me-1"></i> ลืมรหัสผ่าน / รีเซ็ตรหัสผ่านครู
                 </a>
             </div>
@@ -604,7 +697,8 @@
                 <div class="d-flex align-items-start">
                     <i class="bi bi-info-circle-fill me-2 mt-1" style="font-size: 1.15rem; flex-shrink: 0;"></i>
                     <div>
-                        <strong>หมายเหตุ:</strong> หากลืมรหัสผ่านหรือจำรหัสผ่านไม่ได้ สามารถใช้ปุ่ม <strong>"ลืมรหัสผ่าน / รีเซ็ตรหัสผ่านครู"</strong> เพื่อสุ่มรับรหัสผ่านใหม่ได้ทันที
+                        <strong>หมายเหตุ:</strong> หากลืมรหัสผ่านหรือจำรหัสผ่านไม่ได้ สามารถใช้ปุ่ม <strong>"ลืมรหัสผ่าน
+                            / รีเซ็ตรหัสผ่านครู"</strong> เพื่อสุ่มรับรหัสผ่านใหม่ได้ทันที
                     </div>
                 </div>
             </div>

@@ -16,13 +16,12 @@ $routes->get('login/googleCallback', 'Login::googleCallback');
 // Teacher Email Verification & Password Reset Routes
 $routes->get('verify-email', 'ControlTeacherVerification::index');
 $routes->get('guide', 'ControlTeacherVerification::guide');
-$routes->post('verify-email/check', 'ControlTeacherVerification::verifyAndGetEmail');
 $routes->post('verify-email/reset-password', 'ControlTeacherVerification::resetPassword');
 
 // Placeholder for the page after login. We will create this controller next.
     $routes->get('home', 'Home::index');
 
-    // Attendance Routes (เช็คชื่อเข้างานบุคลากร)
+    // Attendance Routes (à¹€à¸Šà¹‡à¸„à¸Šà¸·à¹ˆà¸­à¹€à¸‚à¹‰à¸²à¸‡à¸²à¸™à¸šà¸¸à¸„à¸¥à¸²à¸à¸£)
     $routes->group('attendance', static function ($routes) {
         $routes->get('', 'AttendanceController::index');
         $routes->post('checkin', 'AttendanceController::checkInsert');
@@ -46,7 +45,7 @@ $routes->post('verify-email/reset-password', 'ControlTeacherVerification::resetP
     $routes->get('generate-leave-form', 'GenerateLeaveFormController::index');
     $routes->get('generate-leave-form/preview', 'GenerateLeaveFormController::preview');
 
-    // Homeroom Routes (ระบบครูที่ปรึกษา)
+    // Homeroom Routes (à¸£à¸°à¸šà¸šà¸„à¸£à¸¹à¸—à¸µà¹ˆà¸›à¸£à¸¶à¸à¸©à¸²)
     $routes->group('homeroom', static function ($routes) {
         $routes->get('', 'HomeroomController::index');
         $routes->get('students', 'HomeroomController::students');
@@ -98,7 +97,7 @@ $routes->post('verify-email/reset-password', 'ControlTeacherVerification::resetP
         $routes->post('deletePhoto/(:num)/(:num)', 'ClubController::deletePhoto/$1/$2');
     });
 
-    // Scout Routes (งานพัฒนาผู้เรียน - กิจกรรมลูกเสือ)
+    // Scout Routes (à¸‡à¸²à¸™à¸žà¸±à¸’à¸™à¸²à¸œà¸¹à¹‰à¹€à¸£à¸µà¸¢à¸™ - à¸à¸´à¸ˆà¸à¸£à¸£à¸¡à¸¥à¸¹à¸à¹€à¸ªà¸·à¸­)
     $routes->group('scout', static function ($routes) {
         $routes->get('', 'ScoutController::index');
         $routes->get('manage/(:num)', 'ScoutController::manage/$1');

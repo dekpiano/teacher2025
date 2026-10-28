@@ -131,3 +131,9 @@ nb-configuration.xml
 
 .serena/
 
+# Google Service Account Key
+google_service_account.json
+keys/
+writable/keys/*
+
+

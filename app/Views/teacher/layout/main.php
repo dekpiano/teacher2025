@@ -606,35 +606,77 @@
             }
         }
 
-        /* ─── Modern Breadcrumb System ─── */
+        /* ─── Mobile-First Sleek Breadcrumb System ─── */
         .breadcrumb-header-card {
             background: #ffffff;
-            border-radius: 1rem;
-            padding: 0.85rem 1.25rem;
-            box-shadow: 0 4px 20px -2px rgba(50, 71, 91, 0.05), 0 0 0 1px rgba(226, 232, 240, 0.8);
-            transition: all 0.3s ease;
+            border-radius: 0.85rem;
+            padding: 0.6rem 1.15rem;
+            box-shadow: 0 2px 10px rgba(50, 71, 91, 0.04), 0 0 0 1px rgba(226, 232, 240, 0.75);
+            margin-bottom: 0.85rem;
+            transition: all 0.25s ease;
+        }
+
+        @media (max-width: 576px) {
+            .breadcrumb-header-card {
+                padding: 0.5rem 0.85rem;
+                margin-bottom: 0.65rem;
+                border-radius: 0.75rem;
+            }
         }
 
         .page-title-icon-box {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
             background: linear-gradient(135deg, rgba(105, 108, 255, 0.12) 0%, rgba(99, 102, 241, 0.06) 100%);
             color: #696cff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             flex-shrink: 0;
             border: 1px solid rgba(105, 108, 255, 0.15);
         }
 
+        @media (max-width: 576px) {
+            .page-title-icon-box {
+                width: 32px;
+                height: 32px;
+                font-size: 1rem;
+                border-radius: 7px;
+            }
+        }
+
         .page-title-text {
             font-weight: 700;
-            color: #2b3445;
-            font-size: 1.05rem;
+            color: #1e293b;
+            font-size: 0.95rem;
             line-height: 1.25;
             letter-spacing: -0.01em;
+        }
+
+        @media (min-width: 768px) {
+            .page-title-text {
+                font-size: 1.05rem;
+            }
+        }
+
+        .breadcrumb-date-badge {
+            background: rgba(105, 108, 255, 0.08);
+            color: #696cff;
+            font-weight: 600;
+            font-size: 0.78rem;
+            padding: 0.28rem 0.7rem;
+            border-radius: 50rem;
+            border: 1px solid rgba(105, 108, 255, 0.15);
+            white-space: nowrap;
+        }
+
+        @media (max-width: 576px) {
+            .breadcrumb-date-badge {
+                font-size: 0.72rem;
+                padding: 0.2rem 0.55rem;
+            }
         }
 
         .breadcrumb-nav-wrapper {
@@ -643,22 +685,18 @@
             -webkit-overflow-scrolling: touch;
             padding: 2px 0;
             max-width: 100%;
+            scrollbar-width: none;
         }
 
         .breadcrumb-nav-wrapper::-webkit-scrollbar {
-            height: 3px;
-        }
-
-        .breadcrumb-nav-wrapper::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 3px;
+            display: none;
         }
 
         .breadcrumb-modern {
             display: inline-flex;
             flex-wrap: nowrap;
             align-items: center;
-            gap: 0.25rem;
+            gap: 0.2rem;
             padding: 0;
             margin: 0;
             list-style: none;
@@ -667,25 +705,26 @@
         .breadcrumb-modern .breadcrumb-item {
             display: inline-flex;
             align-items: center;
-            font-size: 0.84rem;
+            font-size: 0.8rem;
             padding: 0;
+            white-space: nowrap;
         }
 
         .breadcrumb-modern .breadcrumb-item + .breadcrumb-item::before {
             content: "\F285";
             font-family: "bootstrap-icons" !important;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: #94a3b8;
-            padding: 0 0.35rem;
-            font-weight: 700;
+            padding: 0 0.3rem;
+            font-weight: 600;
         }
 
         .breadcrumb-modern .breadcrumb-item a {
             display: inline-flex;
             align-items: center;
-            gap: 0.35rem;
-            padding: 0.32rem 0.7rem;
-            border-radius: 0.5rem;
+            gap: 0.3rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 0.45rem;
             background: #f8fafc;
             border: 1px solid #e2e8f0;
             color: #475569;
@@ -709,9 +748,9 @@
         .breadcrumb-modern .breadcrumb-item.active {
             display: inline-flex;
             align-items: center;
-            gap: 0.35rem;
-            padding: 0.32rem 0.8rem;
-            border-radius: 0.5rem;
+            gap: 0.3rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 0.45rem;
             background: linear-gradient(135deg, rgba(105, 108, 255, 0.12) 0%, rgba(99, 102, 241, 0.08) 100%);
             border: 1px solid rgba(105, 108, 255, 0.28);
             color: #4f46e5;
@@ -846,6 +885,130 @@
         .flatpickr-input[readonly] {
             background-color: #ffffff !important;
             cursor: pointer;
+        }
+    </style>
+
+        <!-- ═══════════════════════════════════════════════════════════
+         Mobile-First Global Responsive Styling & Bottom Navigation
+         ═══════════════════════════════════════════════════════════ -->
+    <style>
+        .mobile-bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1075;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-top: 1px solid rgba(226, 232, 240, 0.9);
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        .mobile-bottom-nav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            height: 60px;
+            max-width: 540px;
+            margin: 0 auto;
+            padding: 0 0.5rem;
+        }
+
+        .mobile-nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            text-decoration: none;
+            padding: 6px 0 4px 0;
+            transition: all 0.2s ease;
+            position: relative;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .mobile-nav-item .mobile-nav-icon {
+            font-size: 1.25rem;
+            line-height: 1;
+            margin-bottom: 2px;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .mobile-nav-item .mobile-nav-label {
+            font-size: 0.68rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+
+        .mobile-nav-item:active {
+            transform: scale(0.92);
+        }
+
+        .mobile-nav-item.active {
+            color: #696cff !important;
+        }
+
+        .mobile-nav-item.active .mobile-nav-icon {
+            transform: translateY(-2px);
+            color: #696cff;
+        }
+
+        .mobile-nav-item.active .mobile-nav-label {
+            font-weight: 700;
+            color: #696cff;
+        }
+
+        .mobile-nav-item.active::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            width: 16px;
+            height: 3px;
+            background: #696cff;
+            border-radius: 3px;
+        }
+
+        /* Sneat Overlay mobile fix */
+        .layout-overlay {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background-color: rgba(67, 89, 113, 0.5);
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+            cursor: pointer;
+            z-index: 1079;
+            display: none;
+        }
+
+        .layout-menu-expanded .layout-overlay {
+            display: block;
+        }
+
+        @media (max-width: 1199.98px) {
+            .content-wrapper {
+                padding-bottom: calc(65px + env(safe-area-inset-bottom, 0px)) !important;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .navbar-search-wrapper {
+                max-width: 180px !important;
+            }
+
+            #global-search-input {
+                font-size: 0.85rem !important;
+            }
+
+            #global-search-input::placeholder {
+                font-size: 0.78rem !important;
+            }
         }
     </style>
 
@@ -1275,7 +1438,7 @@
 
                     <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
                         <!-- Global Quick Search -->
-                        <div class="navbar-nav align-items-center me-auto position-relative"
+                        <div class="navbar-nav align-items-center me-auto position-relative navbar-search-wrapper"
                             style="max-width: 320px; width: 100%;">
                             <div
                                 class="nav-item d-flex align-items-center w-100 bg-light rounded-pill px-3 py-1 border border-transparent focus-ring">
@@ -1370,20 +1533,38 @@
                         <div class="row">
                             <div class="col-12">
 
-                                <div class="breadcrumb-header-card mb-4">
-                                    <div
-                                        class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-                                        <div class="d-flex align-items-center gap-3">
-                                            <div class="page-title-icon-box">
-                                                <i class="bi bi-compass"></i>
+                                <?php $isHomePage = empty($segments) || (count($segments) === 1 && $segments[0] === 'home'); ?>
+                                <div class="breadcrumb-header-card">
+                                    <?php if ($isHomePage): ?>
+                                        <div class="d-flex align-items-center justify-content-between gap-2">
+                                            <div class="d-flex align-items-center gap-2 gap-sm-3 min-w-0">
+                                                <div class="page-title-icon-box">
+                                                    <i class="bi bi-compass"></i>
+                                                </div>
+                                                <div class="min-w-0">
+                                                    <h5 class="page-title-text mb-0 text-truncate"><?= esc($title ?? 'หน้าแรก') ?></h5>
+                                                    <small class="text-muted d-none d-md-inline-block">ระบบบริหารจัดการข้อมูลครู สกจ.</small>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <h5 class="page-title-text mb-0"><?= esc($title ?? 'หน้าหลัก') ?></h5>
-                                                <small class="text-muted d-none d-sm-inline-block">ระบบบริหารจัดการข้อมูลครู สกจ.</small>
+                                            <div class="breadcrumb-date-badge d-flex align-items-center gap-1 flex-shrink-0">
+                                                <i class="bi bi-calendar-check me-1"></i>
+                                                <span class="d-none d-sm-inline"><?= date('j') ?> <?= ['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][(int)date('n')] ?> <?= date('Y')+543 ?></span>
+                                                <span class="d-sm-none"><?= date('j') ?>/<?= date('n') ?>/<?= (date('Y')+543)%100 ?></span>
                                             </div>
                                         </div>
-                                        <nav aria-label="breadcrumb" class="breadcrumb-nav-wrapper">
-                                            <ol class="breadcrumb breadcrumb-modern mb-0">
+                                    <?php else: ?>
+                                        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap flex-md-nowrap">
+                                            <div class="d-flex align-items-center gap-2 gap-sm-3 min-w-0">
+                                                <div class="page-title-icon-box">
+                                                    <i class="bi bi-compass"></i>
+                                                </div>
+                                                <div class="min-w-0">
+                                                    <h5 class="page-title-text mb-0 text-truncate"><?= esc($title ?? 'หน้าหลัก') ?></h5>
+                                                    <small class="text-muted d-none d-lg-inline-block">ระบบบริหารจัดการข้อมูลครู สกจ.</small>
+                                                </div>
+                                            </div>
+                                            <nav aria-label="breadcrumb" class="breadcrumb-nav-wrapper ms-auto">
+                                                <ol class="breadcrumb breadcrumb-modern mb-0">
                                                 <?php
                                                 $totalSegs = count($segments);
                                                 $seg0 = $segments[0] ?? '';
@@ -1426,7 +1607,7 @@
                                                             $subBuiltPath = $subRoot;
                                                             for ($i = 1; $i < $totalSegs; $i++) {
                                                                 $seg = $segments[$i];
-                                                                if (is_numeric($seg) || strpos($seg, '-') !== false)
+                                                                if ($seg === 'home' || is_numeric($seg) || strpos($seg, '-') !== false)
                                                                     continue;
 
                                                                 $subBuiltPath .= '/' . $seg;
@@ -1634,7 +1815,7 @@
                                                     echo '<li class="breadcrumb-item"><a href="' . base_url('home') . '" class="text-decoration-none"><i class="bi bi-house-door me-1"></i>หน้าหลัก</a></li>';
                                                     $builtPath = '';
                                                     foreach ($segments as $idx => $seg) {
-                                                        if (is_numeric($seg) || strpos($seg, '-') !== false)
+                                                        if ($seg === 'home' || is_numeric($seg) || strpos($seg, '-') !== false)
                                                             continue;
 
                                                         $builtPath .= '/' . $seg;
@@ -1649,11 +1830,10 @@
                                                 }
                                                 ?>
                                             </ol>
-                                        </nav>
-                                    </div>
+                                            </nav>
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
-
-
                             </div>
                         </div>
                         <?= $this->renderSection('content') ?>
@@ -1703,7 +1883,44 @@
         </div>
 
         <!-- Overlay -->
-        <!-- <div class="layout-overlay layout-menu-toggle"></div> -->
+        <!-- Overlay for mobile drawer menu dismiss -->
+        <div class="layout-overlay layout-menu-toggle"></div>
+
+        <!-- Mobile Bottom Navigation Bar (Sticky Bottom for Mobile & Tablet) -->
+        <nav class="mobile-bottom-nav d-xl-none" aria-label="แถบเมนูหลักบนมือถือ">
+            <div class="mobile-bottom-nav-inner">
+                <a href="<?= base_url('home') ?>" class="mobile-nav-item <?= is_active_segment([], $segments) ?>">
+                    <div class="mobile-nav-icon">
+                        <i class="bi bi-house-door-fill"></i>
+                    </div>
+                    <span class="mobile-nav-label">หน้าแรก</span>
+                </a>
+                <a href="<?= base_url('attendance') ?>" class="mobile-nav-item <?= is_active_segment(['attendance'], $segments) ?>">
+                    <div class="mobile-nav-icon">
+                        <i class="bi bi-fingerprint"></i>
+                    </div>
+                    <span class="mobile-nav-label">ลงเวลา</span>
+                </a>
+                <a href="<?= base_url('assessment/save-score-normal') ?>" class="mobile-nav-item <?= is_active_segment(['assessment'], $segments) ?>">
+                    <div class="mobile-nav-icon">
+                        <i class="bi bi-journal-check"></i>
+                    </div>
+                    <span class="mobile-nav-label">บันทึกเกรด</span>
+                </a>
+                <a href="<?= base_url('homeroom') ?>" class="mobile-nav-item <?= is_active_segment(['homeroom'], $segments) ?>">
+                    <div class="mobile-nav-icon">
+                        <i class="bi bi-person-badge-fill"></i>
+                    </div>
+                    <span class="mobile-nav-label">โฮมรูม</span>
+                </a>
+                <a href="javascript:void(0);" class="mobile-nav-item layout-menu-toggle" id="mobile-menu-drawer-btn">
+                    <div class="mobile-nav-icon">
+                        <i class="bi bi-grid-fill"></i>
+                    </div>
+                    <span class="mobile-nav-label">เมนู</span>
+                </a>
+            </div>
+        </nav>
     </div>
     <!-- / Layout wrapper -->
 

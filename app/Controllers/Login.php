@@ -19,12 +19,12 @@ class Login extends BaseController
 
         $config = config('Google');
         $params = [
-            'client_id'     => $config->clientId,
-            'redirect_uri'  => base_url('login/googleCallback'),
+            'client_id' => $config->clientId,
+            'redirect_uri' => base_url('login/googleCallback'),
             'response_type' => 'code',
-            'scope'         => 'email profile openid',
-            'access_type'   => 'online',
-            'prompt'        => 'select_account'
+            'scope' => 'email profile openid',
+            'access_type' => 'online',
+            'prompt' => 'select_account'
         ];
         $data['google_login_url'] = 'https://accounts.google.com/o/oauth2/v2/auth?' . http_build_query($params);
 
@@ -36,24 +36,32 @@ class Login extends BaseController
         $session = session();
         $model = new LoginModel();
 
-        $username = $this->request->getPost('username');
-        $password = $this->request->getPost('password');
+        $username = trim($this->request->getPost('username') ?? '');
+        $password = trim($this->request->getPost('password') ?? '');
 
+        if (empty($username) || empty($password)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'กรุณากรอกชื่อผู้ใช้งานและรหัสผ่าน']);
+        }
+
+        // Try exact username first, then auto-append domain if needed
         $user = $model->checkLogin($username, $password);
+        if (!$user && strpos($username, '@') === false) {
+            $user = $model->checkLogin($username . '@skj.ac.th', $password);
+        }
 
         if ($user) {
             $ses_data = [
-                'person_id'      => $user['pers_id'],
-                'gmail_account'  => $user['pers_username'],
-                'fullname'       => $user['fullname'],
-                'person_img'     => $user['pers_img'],
-                'position'       => $user['position'] ?? 'ครูผู้สอน',
-                'isLoggedIn'     => TRUE
+                'person_id' => $user['pers_id'],
+                'gmail_account' => $user['pers_username'],
+                'fullname' => $user['fullname'],
+                'person_img' => $user['pers_img'],
+                'position' => $user['position'] ?? 'ครูผู้สอน',
+                'isLoggedIn' => TRUE
             ];
             $session->set($ses_data);
-            return $this->response->setJSON(['success' => true, 'message' => 'Login successful']);
+            return $this->response->setJSON(['success' => true, 'message' => 'เข้าสู่ระบบสำเร็จ']);
         } else {
-            return $this->response->setJSON(['success' => false, 'message' => 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง']);
+            return $this->response->setJSON(['success' => false, 'message' => 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง หรือบัญชียังไม่เปิดใช้งาน']);
         }
     }
 
@@ -67,12 +75,12 @@ class Login extends BaseController
     {
         $config = config('Google');
         $params = [
-            'client_id'     => $config->clientId,
-            'redirect_uri'  => base_url('login/googleCallback'),
+            'client_id' => $config->clientId,
+            'redirect_uri' => base_url('login/googleCallback'),
             'response_type' => 'code',
-            'scope'         => 'email profile openid',
-            'access_type'   => 'online',
-            'prompt'        => 'select_account'
+            'scope' => 'email profile openid',
+            'access_type' => 'online',
+            'prompt' => 'select_account'
         ];
         return redirect()->to('https://accounts.google.com/o/oauth2/v2/auth?' . http_build_query($params));
     }
@@ -81,7 +89,7 @@ class Login extends BaseController
     {
         $session = session();
         $model = new LoginModel();
-        
+
         $code = $this->request->getVar('code');
         if (!$code) {
             $session->setFlashdata('msg', 'ไม่ได้รับรหัสการอนุญาตจาก Google');
@@ -101,14 +109,14 @@ class Login extends BaseController
                 try {
                     $response = $curl->post('https://oauth2.googleapis.com/token', [
                         'form_params' => [
-                            'code'          => $code,
-                            'client_id'     => $config->clientId,
+                            'code' => $code,
+                            'client_id' => $config->clientId,
                             'client_secret' => $config->clientSecret,
-                            'redirect_uri'  => base_url('login/googleCallback'),
-                            'grant_type'    => 'authorization_code',
+                            'redirect_uri' => base_url('login/googleCallback'),
+                            'grant_type' => 'authorization_code',
                         ],
-                        'timeout'          => 10,
-                        'connect_timeout'  => 5,
+                        'timeout' => 10,
+                        'connect_timeout' => 5,
                         'force_ip_resolve' => 'v4',
                     ]);
                     $tokens = json_decode($response->getBody(), true);
@@ -126,8 +134,8 @@ class Login extends BaseController
             }
 
             if (isset($tokens['error']) || !isset($tokens['access_token'])) {
-                 $session->setFlashdata('msg', 'Google Token Error: ' . ($tokens['error_description'] ?? $tokens['error'] ?? 'ไม่ได้รับ access_token'));
-                 return redirect()->to('login');
+                $session->setFlashdata('msg', 'Google Token Error: ' . ($tokens['error_description'] ?? $tokens['error'] ?? 'ไม่ได้รับ access_token'));
+                return redirect()->to('login');
             }
 
             // 2. Get user profile using access_token (with retry)
@@ -140,8 +148,8 @@ class Login extends BaseController
                         'headers' => [
                             'Authorization' => 'Bearer ' . $tokens['access_token'],
                         ],
-                        'timeout'          => 10,
-                        'connect_timeout'  => 5,
+                        'timeout' => 10,
+                        'connect_timeout' => 5,
                         'force_ip_resolve' => 'v4',
                     ]);
                     $userData = json_decode($response->getBody(), true);
@@ -178,14 +186,14 @@ class Login extends BaseController
             $model->updateGoogleUserData($email, $userData['sub']);
 
             $ses_data = [
-                'person_id'       => $user['pers_id'],
-                'gmail_account'   => $user['pers_username'],
-                'fullname'        => $user['fullname'],
-                'person_img'      => $user['pers_img'],
-                'position'        => $user['position'] ?? 'ครูผู้สอน',
+                'person_id' => $user['pers_id'],
+                'gmail_account' => $user['pers_username'],
+                'fullname' => $user['fullname'],
+                'person_img' => $user['pers_img'],
+                'position' => $user['position'] ?? 'ครูผู้สอน',
                 'pers_groupleade' => $user['pers_groupleade'],
-                'pers_learning'   => $user['pers_learning'],
-                'isLoggedIn'      => TRUE
+                'pers_learning' => $user['pers_learning'],
+                'isLoggedIn' => TRUE
             ];
             $session->set($ses_data);
 

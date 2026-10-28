@@ -13,7 +13,7 @@
 
     <style>
         .dashboard-container {
-            padding-top: 1rem;
+            padding-top: 0.15rem;
         }
         /* Welcome Card Refinement - Mobile-First Premium Redesign */
         .welcome-hero {
@@ -26,14 +26,54 @@
             transition: all 0.3s ease;
         }
         .welcome-hero .hero-content {
-            padding: 2.5rem;
+            padding: 1.85rem 2.25rem;
             z-index: 2;
             position: relative;
             color: #ffffff;
         }
         @media (max-width: 576px) {
+            .welcome-hero {
+                border-radius: 1.15rem !important;
+            }
             .welcome-hero .hero-content {
-                padding: 1.5rem 1.25rem;
+                padding: 0.85rem 1rem !important;
+            }
+            .teacher-avatar-luxe {
+                width: 58px !important;
+                height: 58px !important;
+                border-radius: 1rem !important;
+                border-width: 2.5px !important;
+            }
+            .welcome-hero .welcome-title {
+                font-size: 1.12rem !important;
+                line-height: 1.25 !important;
+            }
+            .welcome-hero .welcome-subtitle {
+                font-size: 0.72rem !important;
+                margin-bottom: 0.5rem !important;
+            }
+            .info-capsule {
+                padding: 0.32rem 0.55rem !important;
+                width: auto !important;
+                border-radius: 0.75rem !important;
+                gap: 0.45rem !important;
+            }
+            .info-capsule-icon {
+                width: 26px !important;
+                height: 26px !important;
+                font-size: 0.8rem !important;
+                border-radius: 0.45rem !important;
+            }
+            .info-capsule-label {
+                font-size: 0.6rem !important;
+            }
+            .info-capsule-value {
+                font-size: 0.76rem !important;
+            }
+            .welcome-hero .hod-badge-luxe {
+                font-size: 0.65rem !important;
+                padding: 0.15rem 0.45rem !important;
+                margin-bottom: 0.2rem !important;
             }
         }
         .hero-bg-decoration {
@@ -45,6 +85,7 @@
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.12) 100%);
             clip-path: polygon(20% 0%, 100% 0%, 100% 100%, 0% 100%);
             z-index: 1;
+            pointer-events: none;
         }
         @media (max-width: 768px) {
             .hero-bg-decoration {
@@ -58,8 +99,8 @@
             display: inline-block;
         }
         .teacher-avatar-luxe {
-            width: 120px;
-            height: 120px;
+            width: 100px;
+            height: 100px;
             border-radius: 2rem;
             object-fit: cover;
             border: 4px solid rgba(255, 255, 255, 0.8);
@@ -75,7 +116,7 @@
             }
         }
         .welcome-hero .welcome-title {
-            font-size: 2.25rem;
+            font-size: 1.95rem;
             font-weight: 800;
             color: #ffffff;
             letter-spacing: -0.02em;
@@ -83,7 +124,7 @@
         }
         @media (max-width: 768px) {
             .welcome-hero .welcome-title {
-                font-size: 1.6rem;
+                font-size: 1.4rem;
             }
         }
         .welcome-hero .welcome-subtitle {
@@ -497,54 +538,188 @@
             gap: 0.5rem;
             margin-bottom: 1rem;
         }
+        /* ═══════════════════════════════════════════════════════════
+           Mobile App Mode: Super Compact App Grid & Touch Friendly
+           ═══════════════════════════════════════════════════════════ */
+        @media (max-width: 767.98px) {
+            /* Compact Check-In Banner */
+            .checkin-banner-card {
+                border-radius: 1rem !important;
+            }
+            .checkin-banner-content {
+                padding: 0.75rem 0.85rem !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                text-align: left !important;
+                gap: 0.5rem !important;
+            }
+            .checkin-status-info {
+                flex-direction: row !important;
+                align-items: center !important;
+                gap: 0.65rem !important;
+                text-align: left !important;
+            }
+            .checkin-pulse-icon {
+                width: 38px !important;
+                height: 38px !important;
+                font-size: 1.2rem !important;
+                border-radius: 0.65rem !important;
+            }
+            .checkin-text-group {
+                text-align: left !important;
+            }
+            .checkin-text-group h5 {
+                font-size: 0.82rem !important;
+                margin-bottom: 0 !important;
+                line-height: 1.25 !important;
+            }
+            .checkin-text-group p {
+                display: none !important;
+            }
+            .checkin-action-btn {
+                padding: 0.4rem 0.85rem !important;
+                font-size: 0.75rem !important;
+                border-radius: 2rem !important;
+                white-space: nowrap !important;
+                flex-shrink: 0 !important;
+            }
+
+            /* Compact Stat Cards */
+            .stat-badge-card {
+                padding: 0.65rem 0.75rem !important;
+                border-radius: 0.85rem !important;
+            }
+            .stat-badge-card .icon-box {
+                width: 32px !important;
+                height: 32px !important;
+                font-size: 1.05rem !important;
+                border-radius: 0.5rem !important;
+                margin-bottom: 0.35rem !important;
+            }
+            .stat-badge-card h3 {
+                font-size: 1.25rem !important;
+                margin-bottom: 0 !important;
+            }
+            .stat-badge-card .small {
+                font-size: 0.68rem !important;
+                line-height: 1.2 !important;
+            }
+
+            /* Section Titles */
+            .menu-title-row {
+                margin-top: 1.25rem !important;
+                margin-bottom: 0.55rem !important;
+            }
+            .menu-title-row h5 {
+                font-size: 0.92rem !important;
+            }
+
+            /* Mobile App Grid Luxe Cards (2-Columns) */
+            .luxe-card {
+                padding: 0.75rem 0.7rem !important;
+                border-radius: 0.95rem !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: flex-start !important;
+                align-items: flex-start !important;
+                background: #ffffff !important;
+                box-shadow: 0 2px 8px rgba(50, 71, 91, 0.04), 0 0 0 1px rgba(226, 232, 240, 0.75) !important;
+                min-height: 92px !important;
+            }
+            .luxe-card:active {
+                transform: scale(0.96) !important;
+            }
+            .luxe-card .card-icon {
+                width: 36px !important;
+                height: 36px !important;
+                font-size: 1.2rem !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                border-radius: 0.65rem !important;
+                background: rgba(105, 108, 255, 0.08) !important;
+                margin-bottom: 0.45rem !important;
+                flex-shrink: 0 !important;
+            }
+            .luxe-card .card-text {
+                width: 100% !important;
+            }
+            .luxe-card .card-text h6 {
+                font-size: 0.8rem !important;
+                font-weight: 700 !important;
+                color: #1e293b !important;
+                line-height: 1.3 !important;
+                margin-bottom: 0 !important;
+                display: -webkit-box !important;
+                -webkit-line-clamp: 2 !important;
+                -webkit-box-orient: vertical !important;
+                overflow: hidden !important;
+            }
+            .luxe-card .card-text p {
+                display: none !important; /* Hide long paragraph on phone screen for clean app tiles */
+            }
+            .luxe-card .badge {
+                font-size: 0.62rem !important;
+                padding: 0.15rem 0.4rem !important;
+                margin-top: 0.25rem !important;
+                display: inline-block !important;
+            }
+        }
     </style>
 
     <div class="container-xxl dashboard-container">
         <!-- Hero Section -->
-        <div class="row mb-4">
+        <div class="row mb-3">
             <div class="col-12">
                 <div class="welcome-hero">
                     <div class="hero-bg-decoration"></div>
                     <div class="hero-content">
-                        <div class="row align-items-center">
-                            <div class="col-md-auto d-flex justify-content-center mb-3 mb-md-0">
+                        <!-- Top Row: Welcome Info on Left, Avatar on Right -->
+                        <div class="row align-items-center justify-content-between g-2">
+                            <div class="col min-w-0 text-start">
+                                <?php if (session()->get('pers_groupleade') !== null && session()->get('pers_groupleade') !== ''): ?>
+                                    <div class="hod-badge-luxe">
+                                        <i class="bi bi-shield-shaded"></i> หัวหน้ากลุ่มสาระ
+                                    </div>
+                                <?php endif; ?>
+                                <h1 class="welcome-title mb-1 mb-md-2">
+                                    <span class="d-none d-md-inline">ยินดีต้อนรับ, </span><span class="d-md-none text-white-50 small fw-normal d-block" style="font-size: 0.72rem;">ยินดีต้อนรับ</span><span class="fw-black text-warning"><?= session()->get('fullname') ?></span>
+                                </h1>
+                                <p class="welcome-subtitle mb-0 text-truncate">
+                                    <i class="bi bi-geo-alt-fill me-1 text-danger"></i> โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์
+                                </p>
+                            </div>
+                            <div class="col-auto d-flex justify-content-center flex-shrink-0">
                                 <div class="avatar-container">
                                     <img src="https://personnel.skj.ac.th/uploads/admin/Personnal/<?= esc($teacher[0]->pers_img ?? '') ?>" 
-                                         class="teacher-avatar-luxe"
+                                         class="teacher-avatar-luxe" 
                                          onerror="this.onerror=null;this.src='https://placehold.co/200x200/696cff/ffffff?text=SKJ';">
                                 </div>
                             </div>
-                            <div class="col text-center text-md-start">
-                                <?php if (session()->get('pers_groupleade') !== null && session()->get('pers_groupleade') !== ''): ?>
-                                    <div class="hod-badge-luxe">
-                                        <i class="bi bi-shield-shaded"></i> หัวหน้ากลุ่มสาระการเรียนรู้
+                        </div>
+
+                        <!-- Bottom Row: Info Capsules (Side by side 50% / 50%) -->
+                        <div class="row g-2 g-sm-3 mt-2 pt-1">
+                            <div class="col-6">
+                                <div class="info-capsule w-100">
+                                    <div class="info-capsule-icon">
+                                        <i class="bi bi-book-half"></i>
                                     </div>
-                                <?php endif; ?>
-                                <h1 class="welcome-title mb-2">
-                                    ยินดีต้อนรับ,<br class="d-md-none"> <span class="fw-black text-warning"><?= session()->get('fullname') ?></span>
-                                </h1>
-                                <p class="welcome-subtitle mb-4">
-                                    <i class="bi bi-geo-alt-fill me-1 text-danger"></i> โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์
-                                </p>
-                                
-                                <div class="d-flex flex-column flex-sm-row justify-content-center justify-content-md-start gap-3 mt-2">
-                                    <div class="info-capsule">
-                                        <div class="info-capsule-icon">
-                                            <i class="bi bi-book-half"></i>
-                                        </div>
-                                        <div class="info-capsule-content">
-                                            <span class="info-capsule-label">กลุ่มสาระการเรียนรู้</span>
-                                            <span class="info-capsule-value"><?= esc($learningGroupName) ?></span>
-                                        </div>
+                                    <div class="info-capsule-content min-w-0">
+                                        <span class="info-capsule-label">กลุ่มสาระ</span>
+                                        <span class="info-capsule-value text-truncate"><?= esc($learningGroupName) ?></span>
                                     </div>
-                                    <div class="info-capsule">
-                                        <div class="info-capsule-icon">
-                                            <i class="bi bi-calendar-event-fill"></i>
-                                        </div>
-                                        <div class="info-capsule-content">
-                                            <span class="info-capsule-label">ปีการศึกษา</span>
-                                            <span class="info-capsule-value"><?= esc($latestEntry) ?></span>
-                                        </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="info-capsule w-100">
+                                    <div class="info-capsule-icon">
+                                        <i class="bi bi-calendar-event-fill"></i>
+                                    </div>
+                                    <div class="info-capsule-content min-w-0">
+                                        <span class="info-capsule-label">ปีการศึกษา</span>
+                                        <span class="info-capsule-value text-truncate"><?= esc($latestEntry) ?></span>
                                     </div>
                                 </div>
                             </div>
@@ -629,7 +804,7 @@
         <?php endif; ?>
 
         <!-- Quick Stats Indicators -->
-        <div class="row g-4 mb-2">
+        <div class="row g-2 g-md-4 mb-2">
             <div class="col-lg-3 col-6">
                 <div class="stat-badge-card">
                     <div class="icon-box bg-label-primary text-primary">
@@ -698,8 +873,8 @@
                     <h5>งานวัดผลและวิชาการ</h5>
                     <div class="menu-line"></div>
                 </div>
-                <div class="row g-4">
-                    <div class="col-lg-3 col-md-6">
+                <div class="row g-2 g-md-4">
+                    <div class="col-6 col-md-6 col-lg-3">
                         <a href="<?= base_url('assessment/save-score-normal') ?>" class="luxe-card">
                             <i class="bi bi-clipboard-data card-icon"></i>
                             <div class="card-text">
@@ -708,7 +883,7 @@
                             </div>
                         </a>
                     </div>
-                    <div class="col-lg-3 col-md-6">
+                    <div class="col-6 col-md-6 col-lg-3">
                         <a href="<?= base_url('assessment/save-score-repeat') ?>" class="luxe-card">
                             <i class="bi bi-arrow-repeat card-icon"></i>
                             <div class="card-text">
@@ -717,7 +892,7 @@
                             </div>
                         </a>
                     </div>
-                    <div class="col-lg-3 col-md-6">
+                    <div class="col-6 col-md-6 col-lg-3">
                         <a href="<?= base_url('teacher/reading_assessment') ?>" class="luxe-card">
                             <i class="bi bi-book card-icon"></i>
                             <div class="card-text">
@@ -726,7 +901,7 @@
                             </div>
                         </a>
                     </div>
-                    <div class="col-lg-3 col-md-6">
+                    <div class="col-6 col-md-6 col-lg-3">
                         <a href="<?= base_url('teacher/desirable_assessment') ?>" class="luxe-card">
                             <i class="bi bi-award card-icon"></i>
                             <div class="card-text">
@@ -742,8 +917,8 @@
                     <h5>งานหลักสูตรและพัฒนาครู</h5>
                     <div class="menu-line"></div>
                 </div>
-                <div class="row g-4">
-                    <div class="col-lg-4 col-md-6">
+                <div class="row g-2 g-md-4">
+                    <div class="col-6 col-md-6 col-lg-4">
                         <a href="<?= base_url('curriculum/SendPlan') ?>" class="luxe-card">
                             <i class="bi bi-file-earmark-arrow-up card-icon"></i>
                             <div class="card-text">
@@ -752,7 +927,7 @@
                             </div>
                         </a>
                     </div>
-                    <div class="col-lg-4 col-md-6">
+                    <div class="col-6 col-md-6 col-lg-4">
                         <a href="<?= base_url('research') ?>" class="luxe-card">
                             <i class="bi bi-layers card-icon"></i>
                             <div class="card-text">
@@ -761,7 +936,7 @@
                             </div>
                         </a>
                     </div>
-                    <div class="col-lg-4 col-md-6">
+                    <div class="col-6 col-md-6 col-lg-4">
                         <a href="<?= base_url('curriculum/download-plan') ?>" class="luxe-card">
                             <i class="bi bi-cloud-download card-icon"></i>
                             <div class="card-text">
@@ -777,8 +952,8 @@
                     <h5>กิจกรรมและพัฒนาผู้เรียน</h5>
                     <div class="menu-line"></div>
                 </div>
-                <div class="row g-4 mb-4">
-                    <div class="col-lg-4 col-md-6">
+                <div class="row g-2 g-md-4 mb-3 mb-md-4">
+                    <div class="col-6 col-md-6 col-lg-4">
                         <a href="<?= base_url('club') ?>" class="luxe-card">
                             <i class="bi bi-people card-icon"></i>
                             <div class="card-text">
@@ -787,7 +962,7 @@
                             </div>
                         </a>
                     </div>
-                    <div class="col-lg-4 col-md-6">
+                    <div class="col-6 col-md-6 col-lg-4">
                         <a href="<?= base_url('scout') ?>" class="luxe-card">
                             <i class="bi bi-compass card-icon"></i>
                             <div class="card-text">
@@ -803,8 +978,8 @@
                     <h5>งานบุคลากร</h5>
                     <div class="menu-line"></div>
                 </div>
-                <div class="row g-4 mb-5">
-                    <div class="col-lg-4 col-md-6">
+                <div class="row g-2 g-md-4 mb-4 mb-md-5">
+                    <div class="col-6 col-md-6 col-lg-4">
                         <a href="<?= base_url('attendance') ?>" class="luxe-card">
                             <i class="bi bi-clock-history card-icon text-primary"></i>
                             <div class="card-text">
@@ -813,7 +988,7 @@
                             </div>
                         </a>
                     </div>
-                    <div class="col-lg-4 col-md-6">
+                    <div class="col-6 col-md-6 col-lg-4">
                         <a href="<?= base_url('leave') ?>" class="luxe-card">
                             <i class="bi bi-calendar-check card-icon text-success"></i>
                             <div class="card-text">
@@ -824,7 +999,7 @@
                     </div>
                     <?php if ($isPAPermitted): ?>
                     <?php /* ปิดชั่วคราว - evaluation card
-                    <div class="col-lg-4 col-md-6">
+                    <div class="col-6 col-md-6 col-lg-4">
                         <a href="<?= base_url('evaluation') ?>" class="luxe-card">
                             <i class="bi bi-file-earmark-pdf card-icon text-danger"></i>
                             <div class="card-text">
@@ -834,7 +1009,7 @@
                         </a>
                     </div>
                     */ ?>
-                    <div class="col-lg-4 col-md-6">
+                    <div class="col-6 col-md-6 col-lg-4">
                         <a href="<?= base_url('pa-agreement') ?>" class="luxe-card">
                             <i class="bi bi-journal-bookmark-fill card-icon text-primary"></i>
                             <div class="card-text">
@@ -851,7 +1026,7 @@
                         </a>
                     </div>
                     <?php endif; ?>
-                    <div class="col-lg-4 col-md-6">
+                    <div class="col-6 col-md-6 col-lg-4">
                         <a href="<?= base_url('portfolio') ?>" class="luxe-card">
                             <i class="bi bi-person-workspace card-icon text-info"></i>
                             <div class="card-text">

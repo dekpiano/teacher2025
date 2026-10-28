@@ -1,22 +1,23 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $title ?? 'รีเซ็ตรหัสผ่านครูและบุคลากร' ?> | โรงเรียนสวนกุหลาบวิทยาลัย (จิรประวัติ) นครสวรรค์</title>
     <link rel="icon" type="image/x-icon" href="https://skj.ac.th/uploads/logoSchool/LogoSKJ_4.png" />
-    
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=K2D:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
-    
+
     <!-- Core CSS -->
     <link rel="stylesheet" href="<?= base_url('public/assets/sneat/vendor/css/core.css') ?>" />
     <link rel="stylesheet" href="<?= base_url('public/assets/sneat/vendor/css/theme-default.css') ?>" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    
+
     <style>
         :root {
             --primary-purple: #696cff;
@@ -82,8 +83,13 @@
         }
 
         @keyframes orbFloat {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(45px, 35px) scale(1.1); }
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            100% {
+                transform: translate(45px, 35px) scale(1.1);
+            }
         }
 
         .verify-card {
@@ -112,7 +118,7 @@
             width: 85px;
             height: 85px;
             object-fit: contain;
-            filter: drop-shadow(0 6px 15px rgba(0,0,0,0.3));
+            filter: drop-shadow(0 6px 15px rgba(0, 0, 0, 0.3));
             margin-bottom: 12px;
         }
 
@@ -211,8 +217,15 @@
         }
 
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(16px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .email-display-card {
@@ -261,7 +274,7 @@
             width: 100%;
             text-decoration: none;
             transition: all 0.2s;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         }
 
         .back-home-btn {
@@ -281,6 +294,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <div class="bg-animation-container">
@@ -298,6 +312,12 @@
                 <div class="badge-step">
                     <i class="bi bi-key-fill"></i> รีเซ็ตรหัสผ่านผ่านระบบ Google Workspace (@skj.ac.th)
                 </div>
+                <?php if (!empty($googleApiConfigured)): ?>
+                    <div class="mt-2 text-white small" style="opacity: 0.85;">
+                        <i class="bi bi-check-circle-fill text-success"></i> ระบบเชื่อมต่อ Google Workspace Directory API
+                        เรียบร้อย
+                    </div>
+                <?php endif; ?>
             </div>
 
             <!-- Form Body -->
@@ -309,7 +329,8 @@
                         </label>
                         <div class="input-group-custom">
                             <i class="bi bi-envelope input-icon"></i>
-                            <input type="email" class="form-control" id="email_input" name="email" placeholder="ตัวอย่าง: teacher@skj.ac.th" required autocomplete="off">
+                            <input type="email" class="form-control" id="email_input" name="email"
+                                placeholder="ตัวอย่าง: teacher@skj.ac.th" required autocomplete="off">
                         </div>
                     </div>
 
@@ -319,10 +340,12 @@
                         </label>
                         <div class="input-group-custom">
                             <i class="bi bi-telephone input-icon"></i>
-                            <input type="tel" class="form-control" id="phone_input" name="phone" placeholder="ตัวอย่าง: 0812345678" maxlength="12" required autocomplete="off">
+                            <input type="tel" class="form-control" id="phone_input" name="phone"
+                                placeholder="ตัวอย่าง: 0812345678" maxlength="12" required autocomplete="off">
                         </div>
                         <div class="form-text text-muted small mt-2">
-                            <i class="bi bi-shield-lock-fill text-success me-1"></i> ยืนยัน 2 ชั้นด้วยอีเมลและเบอร์โทรศัพท์เพื่อความปลอดภัยสูงสุด
+                            <i class="bi bi-shield-lock-fill text-success me-1"></i> ยืนยัน 2
+                            ชั้นด้วยอีเมลและเบอร์โทรศัพท์เพื่อความปลอดภัยสูงสุด
                         </div>
                     </div>
 
@@ -333,11 +356,20 @@
 
                 <!-- Result Box -->
                 <div class="result-box" id="resultBox">
-                    <div class="d-inline-flex align-items-center justify-content-center bg-success text-white rounded-circle p-2 mb-2" style="width: 46px; height: 46px;">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-success text-white rounded-circle p-2 mb-2"
+                        style="width: 46px; height: 46px;">
                         <i class="bi bi-check-lg fs-2"></i>
                     </div>
                     <h5 class="fw-bold text-success mb-1">รีเซ็ตรหัสผ่านสำเร็จ!</h5>
-                    <p class="text-muted small mb-3">รหัสผ่านใหม่ของคุณได้รับการอัปเดตในระบบเรียบร้อยแล้ว</p>
+                    <p class="text-muted small mb-2">รหัสผ่านใหม่ของคุณได้รับการอัปเดตในระบบและ Google Workspace
+                        เรียบร้อยแล้ว</p>
+                    <div class="mb-3">
+                        <span class="badge bg-label-success px-3 py-2 rounded-pill small"
+                            style="background-color: #e8fadf; color: #71dd37; font-weight: 600;">
+                            <i class="bi bi-cloud-check-fill me-1"></i> ซิงค์รหัสผ่านกับ Google Workspace (@skj.ac.th)
+                            สำเร็จ
+                        </span>
+                    </div>
 
                     <div class="text-start bg-white p-3 rounded-3 mb-3 border">
                         <div class="d-flex justify-content-between mb-1">
@@ -369,11 +401,13 @@
                     <div class="alert alert-info text-start small mb-3" role="alert">
                         <i class="bi bi-info-circle me-1"></i>
                         <strong>ข้อแนะนำ:</strong><br>
-                        นำอีเมลและรหัสผ่านใหม่ไปเข้าสู่ระบบที่หน้าเว็บครู หรือ <strong>Gmail</strong> เพื่อเริ่มใช้งานได้ทันที
+                        นำอีเมลและรหัสผ่านใหม่ไปเข้าสู่ระบบที่หน้าเว็บครู หรือ <strong>Gmail</strong>
+                        เพื่อเริ่มใช้งานได้ทันที
                     </div>
 
                     <a href="<?= base_url('login') ?>" class="btn btn-google-login">
-                        <img src="https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png" alt="Google Logo" style="height:20px;">
+                        <img src="https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png" alt="Google Logo"
+                            style="height:20px;">
                         กลับไปหน้าเข้าสู่ระบบครู
                     </a>
                 </div>
@@ -391,7 +425,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // Submit Reset Form
-        $('#resetForm').on('submit', function(e) {
+        $('#resetForm').on('submit', function (e) {
             e.preventDefault();
             const btn = $('#btnSubmitReset');
             const origHtml = btn.html();
@@ -413,7 +447,7 @@
                         type: 'POST',
                         data: $('#resetForm').serialize(),
                         dataType: 'json',
-                        success: function(res) {
+                        success: function (res) {
                             btn.prop('disabled', false).html(origHtml);
                             if (res.status === 1) {
                                 $('#resName').text(res.data.person_name);
@@ -441,7 +475,7 @@
                                 });
                             }
                         },
-                        error: function() {
+                        error: function () {
                             btn.prop('disabled', false).html(origHtml);
                             Swal.fire({
                                 icon: 'error',
@@ -456,7 +490,7 @@
         });
 
         // Copy Email
-        $('#btnCopyEmail').on('click', function() {
+        $('#btnCopyEmail').on('click', function () {
             const email = $('#resEmail').text();
             navigator.clipboard.writeText(email).then(() => {
                 const btn = $(this);
@@ -469,7 +503,7 @@
         });
 
         // Copy Password
-        $('#btnCopyPassword').on('click', function() {
+        $('#btnCopyPassword').on('click', function () {
             const pass = $('#resPassword').text();
             navigator.clipboard.writeText(pass).then(() => {
                 const btn = $(this);
@@ -482,4 +516,5 @@
         });
     </script>
 </body>
+
 </html>
