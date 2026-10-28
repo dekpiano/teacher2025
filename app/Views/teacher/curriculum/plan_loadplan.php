@@ -48,7 +48,68 @@
     .file-link:hover .file-icon-luxe {
         transform: scale(1.2);
     }
+
+    /* Select2 Luxe Styling */
+    .select2-container .select2-selection--single {
+        height: 50px !important;
+        border: 1px solid #d9dee3 !important;
+        border-radius: 0.75rem !important;
+        background-color: #f8f9fa !important;
+        display: flex !important;
+        align-items: center !important;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, background-color 0.15s ease-in-out;
+    }
+    .select2-container--default .select2-selection--single:hover {
+        border-color: #696cff !important;
+        background-color: #ffffff !important;
+    }
+    .select2-container--default.select2-container--open .select2-selection--single,
+    .select2-container--default.select2-container--focus .select2-selection--single {
+        border-color: #696cff !important;
+        box-shadow: 0 0 0 0.25rem rgba(105, 108, 255, 0.15) !important;
+        background-color: #ffffff !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 48px !important;
+        padding-left: 1.1rem !important;
+        padding-right: 2.2rem !important;
+        color: #566a7f !important;
+        font-weight: 500;
+        font-size: 0.95rem;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 48px !important;
+        right: 14px !important;
+    }
+    .select2-dropdown {
+        border-radius: 0.75rem !important;
+        border: 1px solid #e0e4e8 !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+        overflow: hidden;
+        z-index: 9999 !important;
+    }
+    .select2-search--dropdown {
+        padding: 0.75rem !important;
+    }
+    .select2-search--dropdown .select2-search__field {
+        border-radius: 0.5rem !important;
+        border: 1px solid #d9dee3 !important;
+        padding: 0.55rem 0.85rem !important;
+    }
+    .select2-search--dropdown .select2-search__field:focus {
+        border-color: #696cff !important;
+        outline: none !important;
+    }
+    .select2-results__option {
+        padding: 0.65rem 1rem !important;
+        font-size: 0.95rem;
+    }
+    .select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+        background-color: #696cff !important;
+        color: #ffffff !important;
+    }
 </style>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
 <div class="container-xxl flex-grow-1">
     <?php
@@ -70,35 +131,35 @@
     <!-- Filters -->
     <div class="card filter-card-luxe">
         <div class="card-body p-4">
-            <div class="row g-3 align-items-center">
+            <div class="row g-3 align-items-end">
                 <div class="col-md-5">
-                    <div class="form-floating">
-                        <select name="SelTeacher" id="SelTeacher" class="form-select border-0 bg-light">
-                            <option value="All">เลือกครูผู้สอนเพื่อเริ่มต้น...</option>
-                            <?php foreach ($SelTeacher as $v_SelTeacher): ?>
-                                <option <?= ($CheckTeach == $v_SelTeacher->pers_id) ? "selected":"" ?> value="<?= esc($v_SelTeacher->pers_id) ?>">
-                                    <?= esc($v_SelTeacher->pers_prefix . $v_SelTeacher->pers_firstname . ' ' . $v_SelTeacher->pers_lastname) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                        <label for="SelTeacher">ครูผู้สอน</label>
-                    </div>
+                    <label for="SelTeacher" class="form-label fw-bold text-muted small mb-2">
+                        <i class="bi bi-person-badge-fill text-primary me-1"></i> ครูผู้สอน
+                    </label>
+                    <select name="SelTeacher" id="SelTeacher" class="form-select select2">
+                        <option value="All">-- ค้นหาและเลือกครูผู้สอน --</option>
+                        <?php foreach ($SelTeacher as $v_SelTeacher): ?>
+                            <option <?= ($CheckTeach == $v_SelTeacher->pers_id) ? "selected":"" ?> value="<?= esc($v_SelTeacher->pers_id) ?>">
+                                <?= esc($v_SelTeacher->pers_prefix . $v_SelTeacher->pers_firstname . ' ' . $v_SelTeacher->pers_lastname) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
                 <div class="col-md-4">
-                    <div class="form-floating">
-                        <select name="CheckYear" id="CheckYear" class="form-select border-0 bg-light">
-                            <?php foreach ($CheckYear as $v_CheckYear): ?>
-                                <option <?= ($current_year == $v_CheckYear->seplan_year && $current_term == $v_CheckYear->seplan_term) ? "selected":"" ?>
-                                    value="<?= esc($v_CheckYear->seplan_year.'/'.$v_CheckYear->seplan_term) ?>">
-                                    ภาคเรียนที่ <?= esc($v_CheckYear->seplan_term.'/'.$v_CheckYear->seplan_year) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                        <label for="CheckYear">ปีการศึกษา/ภาคเรียน</label>
-                    </div>
+                    <label for="CheckYear" class="form-label fw-bold text-muted small mb-2">
+                        <i class="bi bi-calendar-event-fill text-primary me-1"></i> ปีการศึกษา / ภาคเรียน
+                    </label>
+                    <select name="CheckYear" id="CheckYear" class="form-select select2">
+                        <?php foreach ($CheckYear as $v_CheckYear): ?>
+                            <option <?= ($current_year == $v_CheckYear->seplan_year && $current_term == $v_CheckYear->seplan_term) ? "selected":"" ?>
+                                value="<?= esc($v_CheckYear->seplan_year.'/'.$v_CheckYear->seplan_term) ?>">
+                                ภาคเรียนที่ <?= esc($v_CheckYear->seplan_term.'/'.$v_CheckYear->seplan_year) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
                 <div class="col-md-3">
-                    <button type="button" id="SearchPlan" class="btn btn-primary btn-lg w-100 rounded-pill shadow-sm py-3">
+                    <button type="button" id="SearchPlan" class="btn btn-primary btn-lg w-100 rounded-pill shadow-sm" style="height: 50px;">
                         <i class="bi bi-search me-2"></i> ค้นหาข้อมูล
                     </button>
                 </div>
@@ -196,12 +257,25 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
 $(document).ready(function() {
+    // Initialize Select2 on filter dropdowns
+    $('#SelTeacher').select2({
+        placeholder: '-- ค้นหาและเลือกครูผู้สอน --',
+        width: '100%'
+    });
+
+    $('#CheckYear').select2({
+        width: '100%'
+    });
+
     $('#SearchPlan').on('click', function() {
         const teacher = $('#SelTeacher').val();
         const yearTerm = $('#CheckYear').val();
-        if (teacher === 'All') {
+        if (teacher === 'All' || !teacher) {
             Swal.fire('แนะนำ', 'กรุณาเลือกครูผู้สอนก่อนทำการค้นหา', 'info');
             return;
         }

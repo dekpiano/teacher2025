@@ -601,5 +601,87 @@ class ClubModel extends Model
         }
         return 'มัธยมศึกษา ' . $level;
     }
+
+    // --- ClubPhotos methods ---
+
+    /**
+     * Fetches photos for a specific club.
+     *
+     * @param int $clubId The ID of the club.
+     * @param int|null $scheduleId Optional schedule ID filter.
+     * @return array An array of photo objects with optional schedule info.
+     */
+    public function getClubPhotos(int $clubId, ?int $scheduleId = null): array
+    {
+        $builder = $this->db->table('tb_club_photos tcp')
+                            ->select('tcp.*, tcs.tcs_week_number, tcs.tcs_start_date, tca.act_name')
+                            ->join('tb_club_settings_schedule tcs', 'tcs.tcs_schedule_id = tcp.schedule_id', 'left')
+                            ->join('tb_club_activities tca', 'tca.act_date = tcs.tcs_start_date AND tca.act_club_id = tcp.club_id', 'left')
+                            ->where('tcp.club_id', $clubId);
+
+        if ($scheduleId !== null) {
+            $builder->where('tcp.schedule_id', $scheduleId);
+        }
+
+        return $builder->orderBy('tcp.photo_order', 'ASC')
+                       ->orderBy('tcp.photo_id', 'DESC')
+                       ->get()
+                       ->getResult();
+    }
+
+    /**
+     * Inserts a new club photo.
+     *
+     * @param array $data Photo data.
+     * @return int|bool Insert ID on success, false on failure.
+     */
+    public function insertClubPhoto(array $data)
+    {
+        if ($this->db->table('tb_club_photos')->insert($data)) {
+            return $this->db->insertID();
+        }
+        return false;
+    }
+
+    /**
+     * Finds a club photo by its ID.
+     *
+     * @param int $photoId
+     * @return object|null
+     */
+    public function findClubPhoto(int $photoId): ?object
+    {
+        return $this->db->table('tb_club_photos')
+                        ->where('photo_id', $photoId)
+                        ->get()
+                        ->getRow();
+    }
+
+    /**
+     * Updates a club photo.
+     *
+     * @param int $photoId
+     * @param array $data
+     * @return bool
+     */
+    public function updateClubPhoto(int $photoId, array $data): bool
+    {
+        return $this->db->table('tb_club_photos')
+                        ->where('photo_id', $photoId)
+                        ->update($data);
+    }
+
+    /**
+     * Deletes a club photo.
+     *
+     * @param int $photoId
+     * @return bool
+     */
+    public function deleteClubPhoto(int $photoId): bool
+    {
+        return $this->db->table('tb_club_photos')
+                        ->where('photo_id', $photoId)
+                        ->delete();
+    }
 }
 

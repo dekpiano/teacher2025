@@ -46,12 +46,19 @@ $routes->post('verify-email/reset-password', 'ControlTeacherVerification::resetP
     $routes->get('generate-leave-form', 'GenerateLeaveFormController::index');
     $routes->get('generate-leave-form/preview', 'GenerateLeaveFormController::preview');
 
-    // Homeroom Routes
+    // Homeroom Routes (ระบบครูที่ปรึกษา)
     $routes->group('homeroom', static function ($routes) {
         $routes->get('', 'HomeroomController::index');
+        $routes->get('students', 'HomeroomController::students');
+        $routes->get('student-detail/(:any)', 'HomeroomController::studentDetail/$1');
         $routes->get('add', 'HomeroomController::add');
+        $routes->get('add/(:any)', 'HomeroomController::add/$1');
         $routes->post('insert', 'HomeroomController::insert');
         $routes->post('update/(:num)', 'HomeroomController::update/$1');
+        $routes->get('history', 'HomeroomController::history');
+        $routes->get('academic-tracking', 'HomeroomController::academicTracking');
+        $routes->get('academic-tracking/(:any)', 'HomeroomController::academicTracking/$1');
+        $routes->get('dashboard', 'HomeroomController::dashboard');
         $routes->get('dashboard/(:any)', 'HomeroomController::dashboard/$1');
     });
 
@@ -84,6 +91,11 @@ $routes->post('verify-email/reset-password', 'ControlTeacherVerification::resetP
         $routes->post('saveObjectiveDefinition/(:num)', 'ClubController::saveObjectiveDefinition/$1');
         $routes->get('deleteObjective/(:num)/(:num)', 'ClubController::deleteObjective/$1/$2');
         $routes->get('manual', 'ClubController::manual');
+
+        // Photo Routes
+        $routes->post('uploadPhoto/(:num)', 'ClubController::uploadPhoto/$1');
+        $routes->post('updatePhoto/(:num)/(:num)', 'ClubController::updatePhoto/$1/$2');
+        $routes->post('deletePhoto/(:num)/(:num)', 'ClubController::deletePhoto/$1/$2');
     });
 
     // Scout Routes (งานพัฒนาผู้เรียน - กิจกรรมลูกเสือ)
@@ -114,6 +126,11 @@ $routes->post('verify-email/reset-password', 'ControlTeacherVerification::resetP
         $routes->post('saveObjectiveDefinition/(:num)', 'ScoutController::saveObjectiveDefinition/$1');
         $routes->get('deleteObjective/(:num)/(:num)', 'ScoutController::deleteObjective/$1/$2');
         $routes->get('manual', 'ScoutController::manual');
+
+        // Photo Routes
+        $routes->post('uploadPhoto/(:num)', 'ScoutController::uploadPhoto/$1');
+        $routes->post('updatePhoto/(:num)/(:num)', 'ScoutController::updatePhoto/$1/$2');
+        $routes->post('deletePhoto/(:num)/(:num)', 'ScoutController::deletePhoto/$1/$2');
     });
 
     // Assessment Routes for Head of Department

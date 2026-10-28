@@ -1008,6 +1008,52 @@
 
         </div>
 
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <!-- หน้า 6: ภาคผนวก ภาพถ่ายสรุปผลการจัดกิจกรรม (PORTRAIT)           -->
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <?php if (!empty($photos)): ?>
+            <?php 
+                $photoPages = array_chunk($photos, 6);
+                $pageIndex = 1;
+                $totalPhotoPages = count($photoPages);
+            ?>
+            <?php foreach ($photoPages as $pagePhotos): ?>
+                <div class="printable-page portrait-page">
+                    <div class="text-center doc-header-block mb-3">
+                        <div class="doc-header-title">ภาคผนวก: ภาพถ่ายสรุปผลการจัดกิจกรรมการเรียนรู้</div>
+                        <div class="doc-header-subtitle"><?= esc($formattedClubName) ?> (<?= esc($activityTypeLabel) ?>)</div>
+                        <div class="text-muted" style="font-size: 13pt;">
+                            ภาคเรียนที่ <?= esc($club->club_trem) ?> ปีการศึกษา <?= esc($club->club_year) ?> 
+                            <?php if ($totalPhotoPages > 1): ?>
+                                (แผ่นที่ <?= $pageIndex++ ?> / <?= $totalPhotoPages ?>)
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8mm 8mm; margin-top: 3mm;">
+                        <?php foreach ($pagePhotos as $p): ?>
+                            <div style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 5px; background: #fff; text-align: center;">
+                                <div style="width: 100%; height: 55mm; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #f8fafc; border-radius: 4px; margin-bottom: 4px;">
+                                    <img src="<?= base_url('public/uploads/clubs/' . esc($p->photo_file)) ?>" 
+                                         style="max-width: 100%; max-height: 100%; object-fit: contain;" 
+                                         alt="<?= esc($p->photo_title) ?>">
+                                </div>
+                                <div style="font-size: 12pt; font-weight: bold; line-height: 1.2; color: #1e293b;">
+                                    <?= esc($p->photo_title) ?>
+                                </div>
+                                <?php if (!empty($p->photo_description)): ?>
+                                    <div style="font-size: 10.5pt; color: #64748b; line-height: 1.2; margin-top: 2px;">
+                                        <?= esc($p->photo_description) ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+
+
     </div>
 
     <script>

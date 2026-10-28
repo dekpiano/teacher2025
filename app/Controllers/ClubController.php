@@ -296,6 +296,8 @@ class ClubController extends BaseController
         $data['club'] = $club;
         $data['members'] = $this->clubModel->getClubMembers($clubId);
         $data['advisors'] = $this->clubModel->getAdvisorsDetails($club->club_faculty_advisor);
+        $data['photos'] = $this->clubModel->getClubPhotos($clubId);
+        $data['schedules'] = $this->clubModel->getSchedulesByYear($club->club_year, $club->club_trem, $clubId);
 
         return $this->renderClubView('teacher/club/manage', $data);
     }
@@ -810,6 +812,7 @@ class ClubController extends BaseController
 
         // Fetch activities for the new page
         $data['activities'] = $this->clubModel->getActivitiesByClub($clubId);
+        $data['photos'] = $this->clubModel->getClubPhotos($clubId);
 
         return $this->renderClubView('teacher/club/print_activities', $data);
     }
@@ -1076,5 +1079,201 @@ class ClubController extends BaseController
         $data['title'] = $isScout ? "คู่มือการใช้งานระบบกิจกรรมลูกเสือ - เนตรนารี" : "คู่มือการใช้งานระบบชุมนุม";
         
         return $this->renderClubView('teacher/club/manual', $data);
+    }
+
+    // --- Activity Photos Management ---
+
+    public function uploadPhoto($clubId)
+    {
+        $session = session();
+        if (!$session->get('isLoggedIn')) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'กรุณาเข้าสู่ระบบใหม่']);
+            }
+            return redirect()->to('login');
+        }
+
+        $teacherId = $this->getTeacherId();
+        $club = $this->clubModel->find($clubId);
+
+        if (!$this->isClubAdvisor($teacherId, $club)) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'คุณไม่มีสิทธิ์จัดการข้อมูลชุมนุมนี้']);
+            }
+            session()->setFlashdata('error', 'ไม่พบข้อมูลหรือคุณไม่มีสิทธิ์จัดการ');
+            return redirect()->to($this->getRoutePrefix());
+        }
+
+        $photoTitle = trim((string)$this->request->getPost('photo_title'));
+        $photoDescription = trim((string)$this->request->getPost('photo_description'));
+
+        $uploadFiles = $this->request->getFileMultiple('photos');
+        if (empty($uploadFiles)) {
+            $singleFile = $this->request->getFile('photo');
+            if ($singleFile) {
+                $uploadFiles = [$singleFile];
+            }
+        }
+
+        $uploadedCount = 0;
+        $errors = [];
+        $uploadDir = ROOTPATH . 'public/uploads/clubs';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        if (!empty($uploadFiles)) {
+            $validFiles = array_filter($uploadFiles, function($f) { return $f && $f->isValid() && !$f->hasMoved(); });
+            $totalValid = count($validFiles);
+
+            foreach ($uploadFiles as $file) {
+                if ($file && $file->isValid() && !$file->hasMoved()) {
+                    $ext = strtolower($file->guessExtension() ?? $file->getExtension());
+                    if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'])) {
+                        $errors[] = "ไฟล์ {$file->getClientName()} ไม่ใช่รูปภาพที่รองรับ (ต้องเป็น JPG, PNG, WEBP หรือ GIF)";
+                        continue;
+                    }
+
+                    $safeName = 'club_' . $clubId . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+                    $file->move($uploadDir, $safeName);
+
+                    $baseTitle = !empty($photoTitle) ? $photoTitle : 'ภาพกิจกรรมสรุปผล';
+                    $title = ($totalValid > 1) ? ($baseTitle . ' (' . ($uploadedCount + 1) . ')') : $baseTitle;
+
+                    $insertData = [
+                        'club_id' => (int)$clubId,
+                        'schedule_id' => null,
+                        'photo_file' => $safeName,
+                        'photo_title' => $title,
+                        'photo_description' => !empty($photoDescription) ? $photoDescription : null,
+                        'photo_order' => $uploadedCount + 1,
+                        'created_by' => $teacherId,
+                    ];
+
+                    $this->clubModel->insertClubPhoto($insertData);
+                    $uploadedCount++;
+                }
+            }
+        }
+
+        if ($uploadedCount > 0) {
+            $msg = "เพิ่มรูปภาพกิจกรรมสรุปผลสำเร็จ {$uploadedCount} รูป";
+            if (!empty($errors)) {
+                $msg .= ' (พบข้อผิดพลาดบางไฟล์: ' . implode(', ', $errors) . ')';
+            }
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['status' => 'success', 'message' => $msg]);
+            }
+            session()->setFlashdata('success', $msg);
+        } else {
+            $errMsg = !empty($errors) ? implode(', ', $errors) : 'ไม่พบไฟล์รูปภาพที่ถูกต้อง กรุณาเลือกรูปภาพก่อนบันทึก';
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['status' => 'error', 'message' => $errMsg]);
+            }
+            session()->setFlashdata('error', $errMsg);
+        }
+
+        return redirect()->to($this->getRoutePrefix() . '/manage/' . $clubId);
+    }
+
+    public function updatePhoto($clubId, $photoId)
+    {
+        $session = session();
+        if (!$session->get('isLoggedIn')) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'กรุณาเข้าสู่ระบบใหม่']);
+            }
+            return redirect()->to('login');
+        }
+
+        $teacherId = $this->getTeacherId();
+        $club = $this->clubModel->find($clubId);
+
+        if (!$this->isClubAdvisor($teacherId, $club)) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'คุณไม่มีสิทธิ์จัดการข้อมูล']);
+            }
+            session()->setFlashdata('error', 'คุณไม่มีสิทธิ์จัดการข้อมูล');
+            return redirect()->to($this->getRoutePrefix());
+        }
+
+        $photo = $this->clubModel->findClubPhoto($photoId);
+        if (!$photo || (int)$photo->club_id !== (int)$clubId) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'ไม่พบข้อมูลรูปภาพ']);
+            }
+            session()->setFlashdata('error', 'ไม่พบข้อมูลรูปภาพ');
+            return redirect()->to($this->getRoutePrefix() . '/manage/' . $clubId);
+        }
+
+        $updateData = [
+            'photo_title' => trim((string)$this->request->getPost('photo_title')),
+            'photo_description' => trim((string)$this->request->getPost('photo_description')),
+        ];
+
+        if ($this->clubModel->updateClubPhoto($photoId, $updateData)) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['status' => 'success', 'message' => 'แก้ไขข้อมูลรูปภาพสำเร็จ']);
+            }
+            session()->setFlashdata('success', 'แก้ไขข้อมูลรูปภาพสำเร็จ');
+        } else {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'ไม่สามารถแก้ไขข้อมูลรูปภาพได้']);
+            }
+            session()->setFlashdata('error', 'ไม่สามารถแก้ไขข้อมูลรูปภาพได้');
+        }
+
+        return redirect()->to($this->getRoutePrefix() . '/manage/' . $clubId);
+    }
+
+    public function deletePhoto($clubId, $photoId)
+    {
+        $session = session();
+        if (!$session->get('isLoggedIn')) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'กรุณาเข้าสู่ระบบใหม่']);
+            }
+            return redirect()->to('login');
+        }
+
+        $teacherId = $this->getTeacherId();
+        $club = $this->clubModel->find($clubId);
+
+        if (!$this->isClubAdvisor($teacherId, $club)) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'คุณไม่มีสิทธิ์จัดการข้อมูล']);
+            }
+            session()->setFlashdata('error', 'คุณไม่มีสิทธิ์จัดการข้อมูล');
+            return redirect()->to($this->getRoutePrefix());
+        }
+
+        $photo = $this->clubModel->findClubPhoto($photoId);
+        if (!$photo || (int)$photo->club_id !== (int)$clubId) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'ไม่พบข้อมูลรูปภาพ']);
+            }
+            session()->setFlashdata('error', 'ไม่พบข้อมูลรูปภาพ');
+            return redirect()->to($this->getRoutePrefix() . '/manage/' . $clubId);
+        }
+
+        // Delete physical file
+        $filePath = ROOTPATH . 'public/uploads/clubs/' . $photo->photo_file;
+        if (file_exists($filePath)) {
+            @unlink($filePath);
+        }
+
+        if ($this->clubModel->deleteClubPhoto($photoId)) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['status' => 'success', 'message' => 'ลบรูปภาพกิจกรรมสำเร็จ']);
+            }
+            session()->setFlashdata('success', 'ลบรูปภาพกิจกรรมสำเร็จ');
+        } else {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'ไม่สามารถลบรูปภาพได้']);
+            }
+            session()->setFlashdata('error', 'ไม่สามารถลบรูปภาพได้');
+        }
+
+        return redirect()->to($this->getRoutePrefix() . '/manage/' . $clubId);
     }
 }

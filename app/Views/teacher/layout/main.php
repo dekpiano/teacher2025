@@ -77,6 +77,28 @@
             z-index: 1080;
         }
 
+        #layout-menu .menu-header {
+            margin-top: 1.35rem !important;
+            margin-bottom: 0.45rem !important;
+            padding-left: 1.5rem !important;
+            padding-right: 1.5rem !important;
+        }
+
+        #layout-menu .menu-header .menu-header-text {
+            font-size: 0.76rem !important;
+            font-weight: 700 !important;
+            color: #64748b !important;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        #layout-menu .menu-header .menu-header-text i {
+            color: #696cff !important;
+            font-size: 0.9rem;
+        }
+
         /* ─── Premium Loading State Styling ─── */
         .btn-loading {
             position: relative;
@@ -958,7 +980,10 @@
                     'teacher' => 'งานครู',
                     'reading_assessment' => 'แบบประเมินอ่านคิดวิเคราะห์',
                     'desirable_assessment' => 'คุณลักษณะอันพึงประสงค์',
-                    'homeroom' => 'ระบบดูแลนักเรียน (โฮมรูม)',
+                    'homeroom' => 'ระบบครูที่ปรึกษา',
+                    'students' => 'ข้อมูลนักเรียนในห้อง',
+                    'history' => 'ประวัติ & สถิติการมาเรียน',
+                    'academic-tracking' => 'ติดตามผลการเรียน & กิจกรรม',
                     'dashboard' => 'แดชบอร์ด',
                     'club' => 'บันทึกชุมนุม',
                     'scout' => 'บันทึกลูกเสือ',
@@ -985,19 +1010,26 @@
                 ];
                 ?>
                 <ul class="menu-inner py-1">
+                    <!-- เมนูทั่วไป -->
                     <li class="menu-item <?= is_active_segment([], $segments) ?>">
                         <a href="<?= base_url() ?>" class="menu-link">
-                            <i class="menu-icon tf-icons bi-house-door-fill"></i>
+                            <i class="menu-icon tf-icons bi-house-door-fill text-primary"></i>
                             <div data-i18n="หน้าหลัก">หน้าหลัก</div>
                         </a>
                     </li>
-                    <li class="menu-header small text-uppercase"><span class="menu-header-text">งานวิชาการ</span></li>
+
+                    <!-- ============================================== -->
+                    <!-- 1. ฝ่ายบริหารวิชาการ -->
+                    <!-- ============================================== -->
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text"><i class="bi bi-mortarboard-fill me-1"></i> ฝ่ายบริหารวิชาการ</span>
+                    </li>
 
                     <!-- งานวัดผล -->
                     <li class="menu-item <?= is_open_segment([['assessment']], $segments) ?>">
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
                             <i class="menu-icon tf-icons bi-file-earmark-ruled-fill"></i>
-                            <div data-i18n="งานวัดผล">งานวัดผล</div>
+                            <div data-i18n="งานวัดผลและประเมินผล">งานวัดผลและประเมินผล</div>
                         </a>
                         <ul class="menu-sub">
                             <li
@@ -1020,7 +1052,7 @@
                         class="menu-item <?= is_open_segment([['curriculum'], ['research']], $segments) && !in_array('teaching-schedule', $segments) ? 'open active' : '' ?>">
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
                             <i class="menu-icon tf-icons bi-book-fill"></i>
-                            <div data-i18n="งานหลักสูตร">งานหลักสูตร</div>
+                            <div data-i18n="งานหลักสูตรและวิจัย">งานหลักสูตรและวิจัย</div>
                         </a>
                         <ul class="menu-sub">
                             <li
@@ -1040,16 +1072,6 @@
                                     <div data-i18n="ส่งงานวิจัยในชั้นเรียน">ส่งงานวิจัยในชั้นเรียน</div>
                                 </a>
                             </li>
-                            <!-- <li class="menu-item <?= is_active_segment(['research', 'load-research'], $segments) ?>">
-                                <a href="<?= base_url('research/load-research') ?>" class="menu-link">
-                                    <div data-i18n="ดาวน์โหลดงานวิจัย">ดาวน์โหลดงานวิจัย</div>
-                                </a>
-                            </li> -->
-                            <!-- <li class="menu-item <?= is_active_segment(['research', 'setting'], $segments) ?>">
-                                <a href="<?= base_url('research/setting') ?>" class="menu-link">
-                                    <div data-i18n="ตั้งค่าส่งงานวิจัย">ตั้งค่าส่งงานวิจัย</div>
-                                </a>
-                            </li> -->
                         </ul>
                     </li>
 
@@ -1058,7 +1080,7 @@
                         class="menu-item <?= is_open_segment([['teacher', 'reading_assessment'], ['teacher', 'desirable_assessment']], $segments) ?>">
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
                             <i class="menu-icon tf-icons bi-clipboard-check"></i>
-                            <div data-i18n="งานประเมินนักเรียน">งานประเมินนักเรียน</div>
+                            <div data-i18n="งานประเมินคุณลักษณะ">งานประเมินคุณลักษณะ</div>
                         </a>
                         <ul class="menu-sub">
                             <li
@@ -1076,11 +1098,11 @@
                         </ul>
                     </li>
 
-                    <!-- งานพัฒนาผู้เรียน -->
+                    <!-- กิจกรรมพัฒนาผู้เรียน -->
                     <li class="menu-item <?= is_open_segment([['club'], ['scout']], $segments) ?>">
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
                             <i class="menu-icon tf-icons bi-person-arms-up"></i>
-                            <div data-i18n="งานพัฒนาผู้เรียน">งานพัฒนาผู้เรียน</div>
+                            <div data-i18n="กิจกรรมพัฒนาผู้เรียน">กิจกรรมพัฒนาผู้เรียน</div>
                         </a>
                         <ul class="menu-sub">
                             <li class="menu-item <?= is_active_segment(['club'], $segments) ?>">
@@ -1096,52 +1118,102 @@
                         </ul>
                     </li>
 
+                    <!-- ============================================== -->
+                    <!-- 2. ฝ่ายบริหารงานบุคคล -->
+                    <!-- ============================================== -->
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text"><i class="bi bi-person-badge-fill me-1"></i> ฝ่ายบริหารงานบุคคล</span>
+                    </li>
+
                     <li
                         class="menu-item <?= is_open_segment([['leave'], ['evaluation'], ['pa-agreement'], ['generate-leave-form'], ['portfolio'], ['attendance']], $segments) ?>">
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
-                            <i class="menu-icon tf-icons bi-person-badge-fill"></i>
-                            <div data-i18n="งานบุคลากร">งานบุคลากร</div>
+                            <i class="menu-icon tf-icons bi-person-lines-fill"></i>
+                            <div data-i18n="ระบบงานบุคลากร">ระบบงานบุคลากร</div>
                         </a>
                         <ul class="menu-sub">
                             <li class="menu-item <?= is_active_segment(['attendance'], $segments) ?>">
                                 <a href="<?= base_url('attendance') ?>" class="menu-link">
                                     <i class="bi bi-clock-history me-2"></i>
-                                    <div data-i18n="SKJ Check-In">SKJ Check-In</div>
+                                    <div data-i18n="SKJ Check-In (ลงเวลา)">SKJ Check-In (ลงเวลา)</div>
                                 </a>
                             </li>
                             <li
                                 class="menu-item <?= is_active_segment(['leave'], $segments) || is_active_segment(['generate-leave-form'], $segments) ? 'active' : '' ?>">
                                 <a href="<?= base_url('leave') ?>" class="menu-link">
                                     <i class="bi bi-calendar-check me-2"></i>
-                                    <div data-i18n="ระบบการลา">ระบบการลา</div>
+                                    <div data-i18n="ระบบการลาออนไลน์">ระบบการลาออนไลน์</div>
                                 </a>
                             </li>
-                            <?php /* ปิดชั่วคราว - evaluation menu
-                       <li class="menu-item <?= is_active_segment(['evaluation'], $segments) ? 'active' : '' ?>">
-                           <a href="<?= base_url('evaluation') ?>" class="menu-link">
-                               <i class="bi bi-file-earmark-pdf me-2"></i>
-                               <div data-i18n="การประเมินผลการปฏิบัติงาน">การประเมินผลการปฏิบัติงาน</div>
-                           </a>
-                       </li>
-                       */ ?>
                             <li class="menu-item <?= is_active_segment(['pa-agreement'], $segments) ? 'active' : '' ?>">
                                 <a href="<?= base_url('pa-agreement') ?>" class="menu-link">
                                     <i class="bi bi-journal-bookmark-fill me-2 text-primary"></i>
-                                    <div data-i18n="การประเมินผลการพัฒนางานตามข้อตกลง (PA)">
-                                        การประเมินผลการพัฒนางานตามข้อตกลง (PA)</div>
+                                    <div data-i18n="การประเมินผล PA">
+                                        การประเมินผล PA</div>
                                 </a>
                             </li>
                             <li class="menu-item <?= is_active_segment(['portfolio'], $segments) ? 'active' : '' ?>">
                                 <a href="<?= base_url('portfolio') ?>" class="menu-link">
                                     <i class="bi bi-person-workspace me-2"></i>
-                                    <div data-i18n="ประวัติการอบรมและผลงาน">ประวัติการอบรมและผลงาน</div>
+                                    <div data-i18n="ประวัติการอบรม/ผลงาน">ประวัติการอบรม/ผลงาน</div>
                                 </a>
                             </li>
                         </ul>
                     </li>
 
+                    <!-- ============================================== -->
+                    <!-- 3. ฝ่ายบริหารกิจการนักเรียน (ครูที่ปรึกษา) -->
+                    <!-- ============================================== -->
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text"><i class="bi bi-people-fill me-1"></i> ฝ่ายกิจการนักเรียน / ครูที่ปรึกษา</span>
+                    </li>
+
+                    <!-- ระบบครูที่ปรึกษา (โฮมรูม) -->
+                    <li class="menu-item <?= is_open_segment([['homeroom']], $segments) ?>">
+                        <a href="javascript:void(0);" class="menu-link menu-toggle">
+                            <i class="menu-icon tf-icons bi-house-heart-fill"></i>
+                            <div data-i18n="ระบบครูที่ปรึกษา">ระบบครูที่ปรึกษา</div>
+                        </a>
+                        <ul class="menu-sub">
+                            <li class="menu-item <?= empty($segments[1]) && ($segments[0] ?? '') === 'homeroom' ? 'active' : '' ?>">
+                                <a href="<?= base_url('homeroom') ?>" class="menu-link">
+                                    <i class="bi bi-grid-fill me-2"></i>
+                                    <div data-i18n="ภาพรวมโฮมรูม">ภาพรวมโฮมรูม</div>
+                                </a>
+                            </li>
+                            <li class="menu-item <?= is_active_segment(['homeroom', 'students'], $segments) ?>">
+                                <a href="<?= base_url('homeroom/students') ?>" class="menu-link">
+                                    <i class="bi bi-people-fill me-2"></i>
+                                    <div data-i18n="ข้อมูลนักเรียนในห้อง">ข้อมูลนักเรียนในห้อง</div>
+                                </a>
+                            </li>
+                            <li class="menu-item <?= is_active_segment(['homeroom', 'add'], $segments) ?>">
+                                <a href="<?= base_url('homeroom/add') ?>" class="menu-link">
+                                    <i class="bi bi-calendar-check me-2"></i>
+                                    <div data-i18n="เช็คชื่อโฮมรูม">เช็คชื่อโฮมรูม</div>
+                                </a>
+                            </li>
+                            <li class="menu-item <?= is_active_segment(['homeroom', 'history'], $segments) ?>">
+                                <a href="<?= base_url('homeroom/history') ?>" class="menu-link">
+                                    <i class="bi bi-clock-history me-2"></i>
+                                    <div data-i18n="ประวัติ & สถิติการมาเรียน">ประวัติ & สถิติการมาเรียน</div>
+                                </a>
+                            </li>
+                            <li class="menu-item <?= is_active_segment(['homeroom', 'academic-tracking'], $segments) ?>">
+                                <a href="<?= base_url('homeroom/academic-tracking') ?>" class="menu-link">
+                                    <i class="bi bi-mortarboard-fill me-2"></i>
+                                    <div data-i18n="ติดตามผลการเรียน & กิจกรรม">ติดตามผลการเรียน & กิจกรรม</div>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- ============================================== -->
+                    <!-- 4. สำหรับหัวหน้ากลุ่มสาระฯ (ตามสิทธิ์) -->
+                    <!-- ============================================== -->
                     <?php if (session()->get('pers_groupleade') !== null && session()->get('pers_groupleade') !== ''): ?>
-                        <li class="menu-header small text-uppercase"><span class="menu-header-text">หัวหน้ากลุ่มสาระ</span>
+                        <li class="menu-header small text-uppercase">
+                            <span class="menu-header-text"><i class="bi bi-shield-lock-fill me-1"></i> หัวหน้ากลุ่มสาระการเรียนรู้</span>
                         </li>
                         <li class="menu-item <?= is_open_segment([['assessment-head']], $segments) ?>">
                             <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -1461,9 +1533,9 @@
                                                         }
                                                     }
                                                 } elseif ($seg0 === 'homeroom') {
-                                                    // 6. Homeroom
+                                                    // 6. Homeroom (ระบบครูที่ปรึกษา)
                                                     $subRoot = 'homeroom';
-                                                    $subRootLabel = 'หน้าหลักระบบโฮมรูม';
+                                                    $subRootLabel = 'หน้าหลักระบบครูที่ปรึกษา';
                                                     if ($totalSegs === 1) {
                                                         echo '<li class="breadcrumb-item active" aria-current="page"><i class="bi bi-house-door me-1"></i>' . esc($subRootLabel) . '</li>';
                                                     } else {
@@ -1471,8 +1543,14 @@
                                                         if ($seg1 === 'dashboard') {
                                                             $roomName = $seg2 ? ('ชั้น ม.' . esc($seg2)) : 'แดชบอร์ด';
                                                             echo '<li class="breadcrumb-item active" aria-current="page">แดชบอร์ด ' . $roomName . '</li>';
+                                                        } elseif ($seg1 === 'students') {
+                                                            echo '<li class="breadcrumb-item active" aria-current="page">ข้อมูลนักเรียนในห้อง</li>';
                                                         } elseif ($seg1 === 'add') {
-                                                            echo '<li class="breadcrumb-item active" aria-current="page">บันทึกข้อมูลโฮมรูม</li>';
+                                                            echo '<li class="breadcrumb-item active" aria-current="page">เช็คชื่อโฮมรูม</li>';
+                                                        } elseif ($seg1 === 'history') {
+                                                            echo '<li class="breadcrumb-item active" aria-current="page">ประวัติ & สถิติการมาเรียน</li>';
+                                                        } elseif ($seg1 === 'academic-tracking') {
+                                                            echo '<li class="breadcrumb-item active" aria-current="page">ติดตามผลการเรียน & กิจกรรม</li>';
                                                         } else {
                                                             echo '<li class="breadcrumb-item active" aria-current="page">' . esc($breadcrumbMap[$seg1] ?? ucfirst($seg1)) . '</li>';
                                                         }

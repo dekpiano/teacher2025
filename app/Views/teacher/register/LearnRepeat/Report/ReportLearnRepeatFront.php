@@ -166,8 +166,8 @@ if ($count_all > 0) {
     $avgR = round(($gradeR*100)/$count_all,2);
     $avgMS = round(($gradeMS*100)/$count_all,2);
     
-    $avg3_up = $avg3 + $avg35 + $avg4;
-    $avg_NoPass = $avg0 + $avgR + $avgMS;
+    $avg3_up = round((($grade3 + $grade35 + $grade4) * 100) / $count_all, 2);
+    $avg_NoPass = round((($grade0 + $gradeR + $gradeMS) * 100) / $count_all, 2);
     $avgSubject = round(((($grade4*4)+($grade35*3.5)+($grade3*3)+($grade25*2.5)+($grade2*2)+($grade15*1.5)+($grade1*1)+($grade0*0))/$count_all),2);
 } else {
     $avg4 = 0; $avg35 = 0; $avg3 = 0; $avg25 = 0; $avg2 = 0; $avg15 = 0; $avg1 = 0; $avg0 = 0; $avgR = 0; $avgMS = 0;
