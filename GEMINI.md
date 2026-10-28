@@ -139,3 +139,10 @@ Based on the controllers and views, the application appears to have the followin
 
 ## 7. Git Workflow & Branching Strategy
 - **Rule:** เมื่อจะเริ่มพัฒนาฟีเจอร์ใหม่ (Feature), แก้ไขข้อผิดพลาดเฉพาะจุด (Bugfix), หรือปรับปรุงโครงสร้างใหญ่ (Major Refactor) ให้พิจารณาและแตก Git Branch ใหม่เสมอ (เช่น `feature/...`, `fix/...`) เพื่อความปลอดภัยและแยกส่วนการพัฒนาออกจากกิ่งหลักอย่างเป็นระเบียบ
+
+## 8. Superpowers Engineering Workflow
+- **Rule:** ยึดแนวทางปฏิบัติของ **Superpowers (`.agents/skills/`)** จาก https://github.com/obra/superpowers เป็นมาตรฐานหลักในการพัฒนาและปรับปรุงระบบ:
+  1. **Systematic Debugging (`systematic-debugging`):** เมื่อพบข้อผิดพลาดหรือพฤติกรรมที่ไม่พึงประสงค์ ให้ค้นหาสาเหตุที่แท้จริง (Root Cause) และตรวจสอบโครงสร้างข้อมูลจริงก่อนเสนอแนวทางแก้เสมอ ไม่เดาหรือแก้แบบผิวเผิน
+  2. **Brainstorming & Planning (`brainstorming`, `writing-plans`):** ก่อนเริ่มพัฒนาฟีเจอร์ใหม่หรือปรับเปลี่ยนพฤติกรรมระบบ ให้วางแผนขั้นตอนการทำงานอย่างเป็นระบบ ชี้แจงทางเลือกที่เหมาะสม และตกลงแนวทางกับผู้ใช้ก่อนลงมือเขียนโค้ด
+  3. **Verification Before Completion (`verification-before-completion`):** ก่อนสรุปว่างานเสร็จสิ้น ต้องรันคำสั่งตรวจสอบความถูกต้อง (เช่น `php -l`, ทดสอบ Query, ตรวจสอบ UI) เสมอ มีหลักฐานยืนยันก่อนสรุปผล
+  4. **Discipline & Consistency:** รักษาความสอดคล้องกับ Sneat Bootstrap 5 Admin Template, CodeIgniter 4, และกฎเกณฑ์ความปลอดภัยของระบบ
