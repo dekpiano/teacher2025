@@ -17,6 +17,87 @@ class ControllerSaveScore extends BaseController
         $this->session = \Config\Services::session(); // Initialize the session service
     }
 
+    private function compareRegisterYears(string $a, string $b): int
+    {
+        [$termA, $yearA] = array_pad(explode('/', $a, 2), 2, '0');
+        [$termB, $yearB] = array_pad(explode('/', $b, 2), 2, '0');
+        $yearComparison = (int) $yearB <=> (int) $yearA;
+        return $yearComparison !== 0 ? $yearComparison : ((int) $termB <=> (int) $termA);
+    }
+
+    private function getCurrentSchoolYear(): string
+    {
+        $years = $this->db->table('tb_schoolyear')->select('schyear_year')->get()->getResultArray();
+        if (empty($years)) {
+            return '';
+        }
+
+        usort($years, fn ($a, $b) => $this->compareRegisterYears((string) $a['schyear_year'], (string) $b['schyear_year']));
+        return (string) $years[0]['schyear_year'];
+    }
+
+    private function getTeacherSchoolYears(string $teacherId): array
+    {
+        if ($teacherId === '') {
+            return [];
+        }
+
+        $rows = $this->db->table('tb_register')->select('RegisterYear')->where('TeacherID', $teacherId)
+            ->groupBy('RegisterYear')->get()->getResultArray();
+        $years = array_values(array_unique(array_filter(array_map(static fn ($row) => (string) ($row['RegisterYear'] ?? ''), $rows))));
+        usort($years, fn ($a, $b) => $this->compareRegisterYears($a, $b));
+        return $years;
+    }
+
+    private function isAcademicAccessManager(?string $personId = null): bool
+    {
+        $personId = $personId ?? (string) $this->session->get('person_id');
+        if ($personId === '') {
+            return false;
+        }
+
+        return $this->db->table('tb_admin_rloes')->where('admin_rloes_userid', $personId)
+            ->groupStart()
+                ->like('admin_rloes_academic_position', 'งานวัดและประเมินผล')
+                ->orLike('admin_rloes_academic_position', 'งานวัดผล')
+                ->orLike('admin_rloes_academic_position', 'รองผู้อำนวยการฝ่ายวิชาการ')
+                ->orLike('admin_rloes_academic_position', 'รองวิชาการ')
+            ->groupEnd()->countAllResults() > 0;
+    }
+
+    private function hasTeacherPeriodRegistration(string $teacherId, string $registerYear, ?string $subjectId = null): bool
+    {
+        $builder = $this->db->table('tb_register')->where('TeacherID', $teacherId)->where('RegisterYear', $registerYear);
+        if ($subjectId !== null) {
+            $builder->where('SubjectID', $subjectId);
+        }
+        return $builder->countAllResults() > 0;
+    }
+
+    private function canEditRegisterPeriod(string $teacherId, string $registerYear): bool
+    {
+        $scoreRecordingStatus = $this->db->table('tb_register_onoff')->select('onoff_status')
+            ->where('onoff_id', 10)->get()->getRowArray();
+        if (empty($scoreRecordingStatus['onoff_status']) || $scoreRecordingStatus['onoff_status'] === 'off') {
+            return false;
+        }
+
+        if ($registerYear !== '' && $registerYear === $this->getCurrentSchoolYear()) {
+            return true;
+        }
+
+        return $this->db->table('tb_register_score_access')->where('teacher_id', $teacherId)
+            ->where('register_year', $registerYear)->where('is_enabled', 1)->countAllResults() > 0;
+    }
+
+    private function rejectHistoricalWrite()
+    {
+        return $this->response->setStatusCode(403)->setJSON([
+            'status' => 'error',
+            'message' => 'ปีการศึกษานี้ถูกล็อกไว้สำหรับดูข้อมูลเท่านั้น หรือสิทธิ์แก้ไขถูกเพิกถอนแล้ว',
+        ]);
+    }
+
     public function normal()
     {
         // Track page visit
@@ -26,35 +107,31 @@ class ControllerSaveScore extends BaseController
         $data = [];
         $data['title'] = "หน้าบันทึกผลการเรียนหลัก";
 
-        // Get current school year (Robust sorting for latest term/year)
-        $allEntries = $this->db->table('tb_schoolyear')->select('schyear_year')->get()->getResultArray();
-        $currentSchoolYear = null;
-        if (!empty($allEntries)) {
-            usort($allEntries, function($a, $b) {
-                $partsA = explode('/', $a['schyear_year']);
-                $partsB = explode('/', $b['schyear_year']);
-                if (count($partsA) < 2 || count($partsB) < 2) return 0;
-                
-                $termA = $partsA[0] ?? '';
-                $yearA = $partsA[1] ?? '';
-                $termB = $partsB[0] ?? '';
-                $yearB = $partsB[1] ?? '';
-                
-                if ($yearB != $yearA) {
-                    return $yearB <=> $yearA;
-                }
-                return $termB <=> $termA;
-            });
-            $currentSchoolYear = $allEntries[0]['schyear_year'];
-        }
+        $currentSchoolYear = $this->getCurrentSchoolYear();
+        $data['current_school_year'] = $currentSchoolYear ?? '';
 
         // Get onoff status
         $data['onoff'] = $this->db->table('tb_register_onoff')->where('onoff_id', 10)->get()->getResult();
 
         // Get check_subject
         $loginId = $this->session->get('person_id'); 
+        $availableSchoolYears = $this->getTeacherSchoolYears((string) $loginId);
+        if ($currentSchoolYear !== '' && !in_array($currentSchoolYear, $availableSchoolYears, true)) {
+            $availableSchoolYears[] = $currentSchoolYear;
+            usort($availableSchoolYears, fn ($a, $b) => $this->compareRegisterYears($a, $b));
+        }
+        // Use a dedicated filter parameter so stale school_year query strings do not override the system default.
+        $requestedSchoolYear = (string) $this->request->getGet('score_period');
+        $selectedSchoolYear = in_array($requestedSchoolYear, $availableSchoolYears, true)
+            ? $requestedSchoolYear
+            : ($currentSchoolYear !== '' ? $currentSchoolYear : ($availableSchoolYears[0] ?? ''));
+        $data['available_school_years'] = $availableSchoolYears;
+        $data['selected_school_year'] = $selectedSchoolYear;
+        $data['selected_is_historical'] = $selectedSchoolYear !== '' && $selectedSchoolYear !== $currentSchoolYear;
+        $data['selected_is_read_only'] = $selectedSchoolYear !== '' && !$this->canEditRegisterPeriod((string) $loginId, $selectedSchoolYear);
+        $data['can_manage_historical_access'] = $this->isAcademicAccessManager((string) $loginId);
 
-        if ($loginId && $currentSchoolYear) {
+        if ($loginId && $selectedSchoolYear) {
             $data['check_subject'] = $this->db->table('tb_register')
                 ->select('
                     tb_register.SubjectID,
@@ -69,7 +146,7 @@ class ControllerSaveScore extends BaseController
                 ')
                 ->join('tb_subjects', 'tb_subjects.SubjectID = tb_register.SubjectID')
                 ->where('tb_register.TeacherID', $loginId)
-                ->where('tb_register.RegisterYear', $currentSchoolYear)
+                ->where('tb_register.RegisterYear', $selectedSchoolYear)
                 ->groupBy('tb_register.SubjectID')
                 ->groupBy('tb_register.RegisterYear')
                 ->groupBy('tb_register.TeacherID')
@@ -92,6 +169,12 @@ class ControllerSaveScore extends BaseController
         $RegisterYear = $year . '/' . $term;
 
         $loginId = $this->session->get('person_id');
+        if (!$loginId || !$this->hasTeacherPeriodRegistration((string) $loginId, $RegisterYear, (string) $subject)) {
+            return $this->response->setStatusCode(404)->setBody('ไม่พบรายวิชานี้ในรายการที่คุณรับผิดชอบ');
+        }
+        $data['is_historical_period'] = $RegisterYear !== $this->getCurrentSchoolYear();
+        $data['is_read_only'] = !$this->canEditRegisterPeriod((string) $loginId, $RegisterYear);
+        $data['register_year'] = $RegisterYear;
         $data['teacher'] = $this->personnelDb->table('tb_personnel')->select('pers_id,pers_img')->where('pers_id', $loginId)->get()->getResult();
         $data['OnOff'] = $this->db->table('tb_send_plan_setup')->get()->getResult();
 
@@ -192,9 +275,14 @@ class ControllerSaveScore extends BaseController
         $list = ['before_middle', 'test_midterm', 'after_midterm', 'final_exam'];
         $score_fields = ['before_middle_score', 'test_midterm_score', 'after_midterm_score', 'final_exam_score'];
         $subjectID = $this->request->getPost("regscore_subjectID");
+        $registerYear = trim((string) $this->request->getPost('register_year'));
+        $teacherId = (string) $this->session->get('person_id');
         
-        if (!$subjectID) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'ไม่พบข้อมูลรหัสวิชา']);
+        if (!$subjectID || !$registerYear || !$this->hasTeacherPeriodRegistration($teacherId, $registerYear, (string) $subjectID)) {
+            return $this->response->setStatusCode(403)->setJSON(['status' => 'error', 'message' => 'ไม่พบรายวิชาที่คุณมีสิทธิ์จัดการ']);
+        }
+        if (!$this->canEditRegisterPeriod($teacherId, $registerYear)) {
+            return $this->rejectHistoricalWrite();
         }
 
         try {
@@ -229,7 +317,11 @@ class ControllerSaveScore extends BaseController
         if (!$this->request->isAJAX()) {
             return $this->response->setStatusCode(403, 'Forbidden');
         }
+        $teacherId = (string) $this->session->get('person_id');
         $subjectId = $this->request->getPost('subid');
+        if (!$subjectId || !$this->db->table('tb_register')->where('TeacherID', $teacherId)->where('SubjectID', $subjectId)->countAllResults()) {
+            return $this->response->setStatusCode(403)->setJSON(['status' => 'error', 'message' => 'ไม่มีสิทธิ์ดูการตั้งค่ารายวิชานี้']);
+        }
         $edit_score = $this->db->table('tb_register_score')->where('regscore_subjectID', $subjectId)->get()->getResult();
         
         if ($edit_score) {
@@ -247,6 +339,22 @@ class ControllerSaveScore extends BaseController
         $studentIDs = $this->request->getPost('StudentID');
         $timeNum = $this->request->getPost('TimeNum');
         $study_times = $this->request->getPost('study_time');
+        $teacherId = (string) $this->session->get('person_id');
+        $subjectId = (string) $this->request->getPost('SubjectID');
+        $registerYear = trim((string) $this->request->getPost('RegisterYear'));
+
+        if (!is_array($studentIDs) || empty($studentIDs) || !$subjectId || !$registerYear
+            || !$this->hasTeacherPeriodRegistration($teacherId, $registerYear, $subjectId)) {
+            return $this->response->setStatusCode(403)->setJSON(['status' => 'error', 'message' => 'ไม่พบรายวิชาที่คุณมีสิทธิ์จัดการ']);
+        }
+        if (!$this->canEditRegisterPeriod($teacherId, $registerYear)) {
+            return $this->rejectHistoricalWrite();
+        }
+        $registeredStudents = $this->db->table('tb_register')->where('TeacherID', $teacherId)->where('RegisterYear', $registerYear)
+            ->where('SubjectID', $subjectId)->whereIn('StudentID', $studentIDs)->countAllResults();
+        if ($registeredStudents < count(array_unique($studentIDs))) {
+            return $this->response->setStatusCode(403)->setJSON(['status' => 'error', 'message' => 'มีนักเรียนที่ไม่ได้อยู่ในรายวิชานี้']);
+        }
 
         foreach ($studentIDs as $num => $studentID) {
             $scores = $this->request->getPost($studentID); // Array of scores for this student
@@ -304,6 +412,17 @@ class ControllerSaveScore extends BaseController
         if (empty($studentID) || empty($subjectID) || empty($registerYear)) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Missing required identifiers.']);
         }
+        $teacherId = (string) $this->session->get('person_id');
+        if (!$this->hasTeacherPeriodRegistration($teacherId, $registerYear, $subjectID)) {
+            return $this->response->setStatusCode(403)->setJSON(['status' => 'error', 'message' => 'ไม่พบรายวิชาที่คุณมีสิทธิ์จัดการ']);
+        }
+        if (!$this->canEditRegisterPeriod($teacherId, $registerYear)) {
+            return $this->rejectHistoricalWrite();
+        }
+        if (!$this->db->table('tb_register')->where('TeacherID', $teacherId)->where('RegisterYear', $registerYear)
+            ->where('SubjectID', $subjectID)->where('StudentID', $studentID)->countAllResults()) {
+            return $this->response->setStatusCode(403)->setJSON(['status' => 'error', 'message' => 'ไม่มีสิทธิ์แก้ไขข้อมูลนักเรียนนี้']);
+        }
 
         $grade = '';
         if ((($timeNum * 80) / 100) > $study_time) {
@@ -345,6 +464,82 @@ class ControllerSaveScore extends BaseController
         } else {
             return $this->response->setJSON(['status' => 'success', 'message' => 'Score up-to-date.']);
         }
+    }
+
+    public function historicalScoreAccess()
+    {
+        if (!$this->isAcademicAccessManager()) {
+            return $this->response->setStatusCode(403)->setBody('คุณไม่มีสิทธิ์จัดการการปลดล็อกคะแนนย้อนหลัง');
+        }
+
+        $currentYear = $this->getCurrentSchoolYear();
+        $pairs = $this->db->table('tb_register')->select('TeacherID, RegisterYear')
+            ->where('RegisterYear !=', $currentYear)->groupBy(['TeacherID', 'RegisterYear'])
+            ->orderBy('RegisterYear', 'DESC')->get()->getResultArray();
+        usort($pairs, function ($a, $b) {
+            $periodComparison = $this->compareRegisterYears((string) $a['RegisterYear'], (string) $b['RegisterYear']);
+            return $periodComparison !== 0 ? $periodComparison : strcmp((string) $a['TeacherID'], (string) $b['TeacherID']);
+        });
+
+        $teacherIds = array_values(array_unique(array_map(static fn ($pair) => (string) $pair['TeacherID'], $pairs)));
+        $teacherNames = [];
+        if (!empty($teacherIds)) {
+            $teachers = $this->personnelDb->table('tb_personnel')->select('pers_id, pers_prefix, pers_firstname, pers_lastname')
+                ->whereIn('pers_id', $teacherIds)->get()->getResultArray();
+            foreach ($teachers as $teacher) {
+                $teacherNames[(string) $teacher['pers_id']] = trim(($teacher['pers_prefix'] ?? '') . ($teacher['pers_firstname'] ?? '') . ' ' . ($teacher['pers_lastname'] ?? ''));
+            }
+        }
+
+        $grants = $this->db->table('tb_register_score_access')->get()->getResultArray();
+        $grantStates = [];
+        foreach ($grants as $grant) {
+            $grantStates[$grant['teacher_id'] . '|' . $grant['register_year']] = $grant;
+        }
+
+        $data = [
+            'title' => 'จัดการสิทธิ์แก้ไขคะแนนย้อนหลัง',
+            'pairs' => $pairs,
+            'teacher_names' => $teacherNames,
+            'grant_states' => $grantStates,
+        ];
+        return view('teacher/register/SaveScore/HistoricalAccess', $data);
+    }
+
+    public function updateHistoricalScoreAccess()
+    {
+        if (!$this->isAcademicAccessManager()) {
+            return $this->response->setStatusCode(403)->setBody('คุณไม่มีสิทธิ์จัดการการปลดล็อกคะแนนย้อนหลัง');
+        }
+
+        $teacherId = trim((string) $this->request->getPost('teacher_id'));
+        $registerYear = trim((string) $this->request->getPost('register_year'));
+        $enabled = (string) $this->request->getPost('enabled') === '1';
+        if ($teacherId === '' || $registerYear === '' || $registerYear === $this->getCurrentSchoolYear()
+            || !$this->hasTeacherPeriodRegistration($teacherId, $registerYear)) {
+            return redirect()->to(site_url('assessment/historical-score-access'))->with('error', 'ข้อมูลครูหรือปีการศึกษาไม่ถูกต้อง');
+        }
+
+        $actorId = (string) $this->session->get('person_id');
+        $builder = $this->db->table('tb_register_score_access');
+        $existing = $builder->where('teacher_id', $teacherId)->where('register_year', $registerYear)->get()->getRowArray();
+        $now = date('Y-m-d H:i:s');
+
+        if ($enabled) {
+            $values = ['is_enabled' => 1, 'granted_by' => $actorId, 'granted_at' => $now, 'revoked_by' => null, 'revoked_at' => null];
+        } else {
+            $values = ['is_enabled' => 0, 'revoked_by' => $actorId, 'revoked_at' => $now];
+        }
+
+        if ($existing) {
+            $builder->where('teacher_id', $teacherId)->where('register_year', $registerYear)->update($values);
+        } elseif ($enabled) {
+            $builder->insert(array_merge(['teacher_id' => $teacherId, 'register_year' => $registerYear], $values));
+        }
+
+        return redirect()->to(site_url('assessment/historical-score-access'))->with('message', $enabled
+            ? 'ปลดล็อกให้แก้ไขคะแนนสำหรับครูและปีการศึกษาที่เลือกแล้ว'
+            : 'เพิกถอนสิทธิ์แก้ไขคะแนนย้อนหลังแล้ว');
     }
 
     public function checkroomReport(){

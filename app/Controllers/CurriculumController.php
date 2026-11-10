@@ -902,12 +902,9 @@ class CurriculumController extends BaseController
             ->where('pers_id', $userId)
             ->get()->getRow();
 
-        if (!$teacherInfo) {
-            return redirect()->back()->with('error', 'ไม่พบข้อมูลครูผู้สอน');
-        }
-
         $zip = new \ZipArchive();
-        $zipFileName = $this->beautifyFilename($teacherInfo->pers_prefix . $teacherInfo->pers_firstname . '_' . $teacherInfo->pers_lastname) . '.zip';
+        $teacherName = trim(($teacherInfo->pers_prefix ?? '') . ($teacherInfo->pers_firstname ?? '') . '_' . ($teacherInfo->pers_lastname ?? ''));
+        $zipFileName = $this->beautifyFilename($teacherName !== '_' ? $teacherName : (string) $userId) . '.zip';
         $zipFilePath = WRITEPATH . 'uploads/' . $zipFileName; // Use WRITEPATH for temporary files
 
         if ($zip->open($zipFilePath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== TRUE) {
@@ -961,9 +958,14 @@ class CurriculumController extends BaseController
         $data['CheckHomeVisitManager'] = null; // Fetch if needed
         $data['OnOff'] = [$this->setup];
 
-        $data['teacher'] = $this->db_personnel->table('tb_personnel')
-                                     ->select('pers_id,pers_prefix,pers_firstname,pers_lastname,pers_groupleade,pers_learning')
-                                     ->where('pers_learning !=', '')
+        // Use historical plan submissions as the source of teachers. Current personnel
+        // group and position can change after a teacher has submitted plans.
+        $data['teacher'] = $this->db->table('tb_send_plan')
+                                     ->distinct()
+                                     ->select('tb_send_plan.seplan_usersend AS pers_id, tb_personnel.pers_prefix, tb_personnel.pers_firstname, tb_personnel.pers_lastname, tb_personnel.pers_groupleade, tb_personnel.pers_learning, tb_personnel.pers_position, tb_personnel.pers_img')
+                                     ->join($this->db_personnel->database . '.tb_personnel', 'tb_personnel.pers_id = tb_send_plan.seplan_usersend', 'left')
+                                     ->where('tb_send_plan.seplan_usersend !=', '')
+                                     ->orderBy('tb_personnel.pers_firstname', 'ASC')
                                      ->get()->getResult();
 
         return view('teacher/curriculum/plan_download', $data);

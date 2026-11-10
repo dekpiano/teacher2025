@@ -47,7 +47,16 @@
                     </div>
                     <div class="col-md-4 bg-primary d-flex align-items-center justify-content-center p-4 text-white">
                         <div class="text-center">
-                            <?php if (!empty($set_score)) : ?>
+                            <?php if (!empty($is_read_only)) : ?>
+                                <div class="badge bg-light text-dark p-3 rounded-3">
+                                    <i class="bi bi-eye me-2"></i>ดูคะแนนได้เท่านั้น
+                                </div>
+                                <p class="mb-0 mt-2 opacity-75 small">ช่วงที่เลือกถูกล็อกการแก้ไข</p>
+                            <?php elseif (!empty($is_historical_period)) : ?>
+                                <div class="badge bg-success p-3 rounded-3">
+                                    <i class="bi bi-unlock-fill me-2"></i>ได้รับอนุมัติให้แก้ไขย้อนหลัง
+                                </div>
+                            <?php elseif (!empty($set_score)) : ?>
                                 <button type="button" subject-id="<?= esc($check_student[0]->SubjectID ?? ($subject_info->SubjectID ?? '')) ?>" 
                                         class="btn btn-white text-primary shadow-sm hover-elevate mb-2 btn-lg w-100 btn-check-score" 
                                         data-bs-toggle="modal" data-bs-target="#myModal">
@@ -72,7 +81,7 @@
                     </div>
                     <div>
                         <h5 class="card-title mb-0">รายชื่อนักเรียนและบันทึกคะแนน</h5>
-                        <small class="text-muted">ผลการเรียนจะถูกบันทึกอัตโนมัติเมื่อมีการแก้ไข</small>
+                        <small class="text-muted"><?= !empty($is_read_only) ? 'ข้อมูลในปีการศึกษานี้เปิดให้ตรวจสอบเท่านั้น' : 'ผลการเรียนจะถูกบันทึกอัตโนมัติเมื่อมีการแก้ไข' ?></small>
                     </div>
                 </div>
                 
@@ -184,7 +193,7 @@
                                                     <div class="score-input-wrapper">
                                                         <input type="text" class="form-control study_time KeyEnter text-center fw-bold bg-label-info border-transparent" 
                                                                check-time="<?= $timeNum ?>" name="study_time[]" 
-                                                               value="<?= esc($v_check_student->StudyTime) ?>" autocomplete="off">
+                                                               value="<?= esc($v_check_student->StudyTime) ?>" autocomplete="off" <?= !empty($is_read_only) ? 'readonly' : '' ?>>
                                                     </div>
                                                 </td>
                                                 <?php
@@ -197,13 +206,16 @@
                                                             break;
                                                         }
                                                     }
+                                                    if (!empty($is_historical_period) && empty($is_read_only)) {
+                                                        $onoff_status = 'on';
+                                                    }
                                                 ?>
                                                     <td class="text-center border-start">
                                                         <div class="score-input-wrapper">
                                                             <input type="text" class="form-control check_score KeyEnter text-center fw-bold <?= $onoff_status == "off" ? "bg-light opacity-50 cursor-not-allowed" : "border-transparent focus-ring shadow-none" ?>" 
                                                                    check-score-key="<?= esc($v_set_score->regscore_score) ?>" 
                                                                    name="<?= esc($v_check_student->StudentID) ?>[]" 
-                                                                   value="<?= esc($scores[$key] ?? '') ?>" <?= $onoff_status == "off" ? "readonly" : "" ?> autocomplete="off">
+                                                                   value="<?= esc($scores[$key] ?? '') ?>" <?= (!empty($is_read_only) || $onoff_status == "off") ? "readonly" : "" ?> autocomplete="off">
                                                         </div>
                                                     </td>
                                                 <?php endforeach; ?>
@@ -249,10 +261,14 @@
                         </div>
                         <h4 class="text-danger">ยังไม่ได้ตั้งค่าสัดส่วนคะแนน!</h4>
                         <p class="text-muted mb-4">กรุณาตั้งค่าคะแนนเก็บสำหรับรายวิชานี้ก่อนเริ่มการบันทึกคะแนน</p>
-                        <button type="button" subject-id="<?= esc($check_student[0]->SubjectID) ?>" 
-                                class="btn btn-primary shadow px-5 btn-check-score" data-bs-toggle="modal" data-bs-target="#myModal">
-                            <i class="bi bi-gear-fill me-2"></i> ไปหน้าตั้งค่าคะแนน
-                        </button>
+                        <?php if (empty($is_read_only)) : ?>
+                            <button type="button" subject-id="<?= esc($check_student[0]->SubjectID) ?>"
+                                    class="btn btn-primary shadow px-5 btn-check-score" data-bs-toggle="modal" data-bs-target="#myModal">
+                                <i class="bi bi-gear-fill me-2"></i> ไปหน้าตั้งค่าคะแนน
+                            </button>
+                        <?php else : ?>
+                            <p class="text-muted mb-0">การตั้งค่าสัดส่วนคะแนนถูกล็อกในปีการศึกษานี้</p>
+                        <?php endif; ?>
                     </div>
                 <?php endif; ?>
             </div>
@@ -260,6 +276,7 @@
     </div>
 </div>
 
+<?php if (empty($is_read_only)) : ?>
 <!-- Modal Set Score -->
 <div class="modal fade" id="myModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -311,6 +328,7 @@
                         </div>
                     </div>
                     <input id="regscore_subjectID" type="hidden" name="regscore_subjectID" value="<?= esc($check_student[0]->SubjectID ?? ($subject_info->SubjectID ?? '')); ?>">
+                    <input type="hidden" name="register_year" value="<?= esc($register_year ?? ($check_student[0]->RegisterYear ?? '')); ?>">
                 </div>
                 <div class="modal-footer border-0 p-4 pt-0">
                     <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">ยกเลิก</button>
@@ -322,6 +340,7 @@
         </div>
     </div>
 </div>
+<?php endif; ?>
 
 <style>
     /* Auto zoom for better visibility on large screens */

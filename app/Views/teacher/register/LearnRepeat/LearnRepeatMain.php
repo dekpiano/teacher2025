@@ -5,10 +5,10 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
-<div class="row g-4">
+<div class="row g-4 repeat-dashboard">
     <!-- Hero Section -->
     <div class="col-12">
-        <div class="card border-0 shadow-none bg-label-warning mb-4">
+        <div class="card border-0 shadow-none bg-label-warning mb-4 repeat-hero">
             <div class="card-body d-flex align-items-center p-4">
                 <div class="avatar avatar-lg bg-warning rounded me-3">
                     <i class="bi bi-journal-bookmark-fill fs-2 text-white"></i>
@@ -16,12 +16,16 @@
                 <div>
                     <h4 class="mb-1 text-warning">ระบบบันทึกผลการเรียน (นักเรียนเรียนซ้ำ)</h4>
                     <p class="mb-0 opacity-75">จัดการข้อมูลคะแนนสำหรับนักเรียนที่ลงทะเบียนเรียนซ้ำในปีการศึกษาปัจจุบัน</p>
+                    <div class="repeat-active-period mt-3" aria-label="ปีการศึกษาและรายการที่เปิดรับ">
+                        <span class="repeat-period-chip"><i class="bi bi-calendar3 me-2"></i>ปีการศึกษา <?= esc($onoff[0]->onoff_year ?? '-') ?></span>
+                        <span class="repeat-period-chip"><i class="bi bi-arrow-repeat me-2"></i>เปิดรับ <?= esc($onoff[0]->onoff_detail ?? '-') ?></span>
+                    </div>
                 </div>
 <?php 
     $statusOff = (($onoff[0]->onoff_status ?? 'off') == 'off');
     $systemClosed = $statusOff || !(isset($isDateTimeOpen) ? $isDateTimeOpen : true);
 ?>
-                <div class="ms-auto d-none d-md-block">
+                <div class="ms-auto">
                     <?php if ($systemClosed) : ?>
                         <span class="badge bg-danger p-2 px-3">
                             <i class="bi bi-clock-history me-1"></i> ระบบปิดการบันทึกคะแนน
@@ -38,7 +42,7 @@
 
     <!-- Stats Cards -->
     <div class="col-12 col-md-6 col-lg-3">
-        <div class="card h-100">
+        <div class="card h-100 repeat-stat repeat-stat-subjects">
             <div class="card-body">
                 <div class="d-flex align-items-center mb-2 pb-1">
                     <div class="avatar me-2">
@@ -54,7 +58,7 @@
         </div>
     </div>
     <div class="col-12 col-md-6 col-lg-3">
-        <div class="card h-100">
+        <div class="card h-100 repeat-stat repeat-stat-year">
             <div class="card-body">
                 <div class="d-flex align-items-center mb-2 pb-1">
                     <div class="avatar me-2">
@@ -70,7 +74,7 @@
         </div>
     </div>
     <div class="col-12 col-md-6 col-lg-3">
-        <div class="card h-100">
+        <div class="card h-100 repeat-stat repeat-stat-round">
             <div class="card-body">
                 <div class="d-flex align-items-center mb-2 pb-1">
                     <div class="avatar me-2">
@@ -86,7 +90,7 @@
         </div>
     </div>
     <div class="col-12 col-md-6 col-lg-3">
-        <div class="card h-100 <?= $systemClosed ? 'bg-label-danger' : 'bg-label-success' ?> border-0">
+        <div class="card h-100 repeat-stat repeat-stat-status <?= $systemClosed ? 'bg-label-danger' : 'bg-label-success' ?> border-0">
             <div class="card-body">
                 <div class="d-flex align-items-center mb-2 pb-1">
                     <div class="avatar me-2">
@@ -116,7 +120,7 @@
 
     <!-- Subject List -->
     <div class="col-12">
-        <div class="card shadow-sm border-0">
+        <div class="card shadow-sm border-0 repeat-table-card">
             <div class="card-header d-flex justify-content-between align-items-center border-bottom mb-3 pb-3">
                 <div class="d-flex align-items-center">
                     <div class="avatar avatar-sm bg-label-warning me-2 rounded">
@@ -146,7 +150,7 @@
                 <?php endif; ?>
 
                 <div class="table-responsive text-nowrap">
-                    <table class="table table-hover align-middle datatable-init">
+                    <table class="table table-hover align-middle datatable-init repeat-table">
                         <thead class="bg-light">
                             <tr>
                                 <th class="text-center" style="width: 80px;">ลำดับ</th>
@@ -281,6 +285,74 @@
 </div>
 
 <style>
+    .repeat-dashboard {
+        --repeat-ink: #243248;
+        --repeat-muted: #68788e;
+        --repeat-line: #e9edf2;
+        color: var(--repeat-ink);
+    }
+    .repeat-hero {
+        overflow: hidden;
+        border-radius: 1.15rem;
+        background: linear-gradient(115deg, #5b21b6 0%, #7c3aed 52%, #9333ea 100%) !important;
+        box-shadow: 0 12px 28px rgba(91, 33, 182, .24);
+    }
+    .repeat-hero .card-body { min-height: 116px; gap: .25rem; }
+    .repeat-hero .avatar { background: rgba(255, 255, 255, .18) !important; box-shadow: 0 8px 20px rgba(35, 10, 79, .22); }
+    .repeat-hero h4 { color: #fff !important; font-weight: 750; letter-spacing: -.02em; }
+    .repeat-hero p { color: rgba(255, 255, 255, .82); }
+    .repeat-active-period { display: flex; flex-wrap: wrap; gap: .5rem; }
+    .repeat-period-chip { display: inline-flex; align-items: center; padding: .4rem .75rem; border: 1px solid rgba(255,255,255,.28); border-radius: 999px; background: rgba(255,255,255,.14); color: #fff; font-size: .82rem; font-weight: 650; }
+    .repeat-hero .badge { border-radius: 999px; font-weight: 650; }
+    .repeat-hero .badge.bg-success { color: #146c43 !important; background: #d1fae5 !important; }
+    .repeat-hero .badge.bg-danger { color: #a61b29 !important; background: #ffe1e5 !important; }
+    .repeat-stat {
+        border: 1px solid var(--repeat-line) !important;
+        border-radius: 1rem;
+        box-shadow: 0 5px 18px rgba(27, 48, 79, .045);
+        transition: transform .18s ease, box-shadow .18s ease;
+    }
+    .repeat-stat:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(27, 48, 79, .09); }
+    .repeat-stat .card-body { padding: 1.25rem; }
+    .repeat-stat h4, .repeat-stat h5 { color: var(--repeat-ink); font-weight: 750; letter-spacing: -.025em; }
+    .repeat-stat p.mb-1 { color: #344761; font-weight: 650; }
+    .repeat-stat small { color: var(--repeat-muted) !important; }
+    .repeat-stat-status { background: linear-gradient(145deg, #eefaf4, #f8fcfa) !important; }
+    .repeat-stat-status.bg-label-danger { background: linear-gradient(145deg, #fff1f0, #fffafa) !important; }
+    .repeat-table-card { overflow: hidden; border-radius: 1rem; box-shadow: 0 8px 28px rgba(27, 48, 79, .06) !important; }
+    .repeat-table-card > .card-header { padding: 1.1rem 1.35rem; border-color: var(--repeat-line) !important; }
+    .repeat-table-card .card-title { color: var(--repeat-ink); font-weight: 700; }
+    .repeat-table-card > .card-body { padding: .25rem 1.25rem 1.15rem; }
+    .repeat-table { margin-bottom: 0; }
+    .repeat-table thead th {
+        padding: .85rem .75rem;
+        color: #687991;
+        background: #f7f9fc;
+        border-bottom: 1px solid var(--repeat-line);
+        font-size: .72rem;
+        letter-spacing: .055em;
+        white-space: nowrap;
+    }
+    .repeat-table tbody td { padding: .9rem .75rem; border-color: #edf1f6; }
+    .repeat-table tbody tr { transition: background-color .15s ease; }
+    .repeat-table tbody tr:hover { background-color: #fffaf2; }
+    .repeat-table .btn { min-height: 36px; border-radius: .6rem; font-weight: 600; }
+    .repeat-table .btn-warning { color: #3d2b05; box-shadow: 0 3px 9px rgba(217, 151, 20, .18) !important; }
+    .repeat-table .badge { border-radius: .5rem; }
+    .repeat-table td[colspan] { padding: 3rem 1rem !important; }
+    .repeat-dashboard .alert { border-radius: .85rem; }
+    @media (max-width: 767.98px) {
+        .repeat-dashboard { --bs-gutter-y: 1rem; }
+        .repeat-hero .card-body { align-items: flex-start !important; padding: 1.25rem !important; }
+        .repeat-hero h4 { font-size: 1.05rem; line-height: 1.5; }
+        .repeat-period-chip { font-size: .76rem; padding: .38rem .65rem; }
+        .repeat-hero .avatar { width: 2.75rem; height: 2.75rem; flex: 0 0 auto; }
+        .repeat-stat .card-body { padding: 1rem; }
+        .repeat-table-card > .card-header { padding: .9rem 1rem; }
+        .repeat-table-card > .card-body { padding: 0 .75rem .75rem; }
+        .repeat-table td:last-child { min-width: 230px; }
+        .repeat-table td:last-child .d-flex { flex-wrap: wrap; gap: .4rem !important; }
+    }
     .fs-tiny { font-size: 0.65rem; }
     .hover-elevate:hover {
         transform: translateY(-2px);

@@ -154,6 +154,8 @@ $routes->post('verify-email/reset-password', 'ControlTeacherVerification::resetP
         $routes->get('', 'ControllerSaveScore::normal');
         $routes->get('save-score-main', 'ControllerSaveScore::normal');
         $routes->get('save-score-normal', 'ControllerSaveScore::normal');
+        $routes->get('historical-score-access', 'ControllerSaveScore::historicalScoreAccess');
+        $routes->post('historical-score-access/update', 'ControllerSaveScore::updateHistoricalScoreAccess');
         $routes->get('add-score-normal/(:any)/(:num)/(:any)', 'ControllerSaveScore::saveScoreAdd/$1/$2/$3');
         $routes->get('add/(:num)/(:num)/(:num)/(:any)', 'ControllerSaveScore::saveScoreAdd/$1/$2/$3/$4');
         

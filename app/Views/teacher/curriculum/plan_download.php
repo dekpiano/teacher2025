@@ -74,16 +74,23 @@
                 <div class="col-xl-3 col-lg-4 col-md-6">
                     <div class="teacher-card-luxe p-4 text-center d-flex flex-column">
                         <div class="teacher-avatar-wrapper">
-                            <img src="https://personnel.skj.ac.th/uploads/admin/Personnal/<?= esc($v_teacher->pers_img) ?>" 
-                                 alt="<?= esc($v_teacher->pers_firstname) ?>" 
-                                 class="rounded-circle">
+                            <?php if (!empty($v_teacher->pers_img)) : ?>
+                                <img src="https://personnel.skj.ac.th/uploads/admin/Personnal/<?= esc($v_teacher->pers_img) ?>"
+                                     alt="<?= esc($v_teacher->pers_firstname ?? '') ?>"
+                                     class="rounded-circle">
+                            <?php else : ?>
+                                <div class="rounded-circle bg-label-primary d-flex align-items-center justify-content-center w-100 h-100">
+                                    <i class="bi bi-person fs-1 text-primary"></i>
+                                </div>
+                            <?php endif; ?>
                             <span class="position-absolute bottom-0 end-0 badge bg-success border border-white rounded-circle p-2" title="พร้อมดาวน์โหลด">
                                 <span class="visually-hidden">Status</span>
                             </span>
                         </div>
                         
-                        <h6 class="fw-bold mb-1"><?= esc($v_teacher->pers_prefix . $v_teacher->pers_firstname . ' ' . $v_teacher->pers_lastname) ?></h6>
-                        <p class="text-muted small mb-4"><?= esc($v_teacher->pers_position ?? 'ครูผู้สอน') ?></p>
+                        <?php $teacherName = trim(($v_teacher->pers_prefix ?? '') . ($v_teacher->pers_firstname ?? '') . ' ' . ($v_teacher->pers_lastname ?? '')); ?>
+                        <h6 class="fw-bold mb-1"><?= esc($teacherName !== '' ? $teacherName : 'รหัสครู ' . $v_teacher->pers_id) ?></h6>
+                        <p class="text-muted small mb-4"><?= esc($v_teacher->pers_position ?? '') ?: 'ครูผู้สอนเดิม' ?></p>
                         
                         <div class="mt-auto">
                             <a href="<?= site_url('curriculum/download-plan-zip/' . $v_teacher->pers_id) ?>" 
