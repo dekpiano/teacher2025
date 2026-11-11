@@ -253,8 +253,10 @@ $routes->post('verify-email/reset-password', 'ControlTeacherVerification::resetP
         $routes->get('delete-plan/(:num)', 'CurriculumController::deletePlan/$1');
         $routes->get('download-plan-file/(:num)', 'CurriculumController::downloadPlanFile/$1');
         $routes->get('check-file-exists/(:num)', 'CurriculumController::checkFileExists/$1');
-        $routes->get('download-plan', 'CurriculumController::loadPlan');
+        $routes->get('get-teachers-by-learning', 'CurriculumController::getTeachersByLearning');
+        $routes->get('download-plan/(:any)/(:num)/(:num)/(:any)', 'CurriculumController::loadPlan/$1/$2/$3/$4');
         $routes->get('download-plan/(:num)/(:num)/(:any)', 'CurriculumController::loadPlan/$1/$2/$3');
+        $routes->get('download-plan', 'CurriculumController::loadPlan');
         $routes->get('download-plan-zip/(:any)', 'CurriculumController::downloadPlanZip/$1');
         $routes->post('update-status1', 'CurriculumController::update_status1');
         $routes->post('update-status2', 'CurriculumController::update_status2');

@@ -787,31 +787,195 @@ class CurriculumController extends BaseController
         }
     }
 
-    public function loadPlan($year = null, $term = null, $selectedTeacher = 'All')
+    /**
+     * Helper to fetch teachers list for a specific learning group or all.
+     * Integrates both historical teachers from tb_send_plan and currently active teachers from tb_personnel.
+     */
+    private function _getTeachersList($learningId = 'All')
+    {
+        $db_personnel = $this->db_personnel->database;
+        $db_skj = $this->db_skj->database;
+
+        // 1. Teachers from historical plan submissions
+        $builderHist = $this->db->table('tb_send_plan')
+            ->select("tb_send_plan.seplan_usersend AS pers_id, 
+                      {$db_personnel}.tb_personnel.pers_prefix, 
+                      {$db_personnel}.tb_personnel.pers_firstname, 
+                      {$db_personnel}.tb_personnel.pers_lastname, 
+                      {$db_personnel}.tb_personnel.pers_position, 
+                      {$db_personnel}.tb_personnel.pers_learning, 
+                      {$db_skj}.tb_position.posi_name,
+                      tb_send_plan.seplan_learning")
+            ->join($db_personnel . '.tb_personnel', "{$db_personnel}.tb_personnel.pers_id = tb_send_plan.seplan_usersend", 'left')
+            ->join($db_skj . '.tb_position', "{$db_skj}.tb_position.posi_id = {$db_personnel}.tb_personnel.pers_position", 'left')
+            ->where('tb_send_plan.seplan_usersend !=', '');
+
+        if ($learningId !== 'All' && !empty($learningId)) {
+            $builderHist->where('tb_send_plan.seplan_learning', $learningId);
+        }
+
+        $histTeachers = $builderHist->groupBy('tb_send_plan.seplan_usersend')->get()->getResult();
+
+        // 2. Currently active teachers in tb_personnel
+        $builderCurr = $this->db_personnel->table('tb_personnel')
+            ->select("tb_personnel.pers_id, 
+                      tb_personnel.pers_prefix, 
+                      tb_personnel.pers_firstname, 
+                      tb_personnel.pers_lastname, 
+                      tb_personnel.pers_position, 
+                      tb_personnel.pers_learning, 
+                      {$db_skj}.tb_position.posi_name")
+            ->join($db_skj . '.tb_position', "{$db_skj}.tb_position.posi_id = tb_personnel.pers_position", 'left')
+            ->where('tb_personnel.pers_status', 'กำลังใช้งาน');
+
+        if ($learningId !== 'All' && !empty($learningId)) {
+            $builderCurr->where('tb_personnel.pers_learning', $learningId);
+        } else {
+            $builderCurr->where('tb_personnel.pers_position >=', 'posi_003')
+                        ->where('tb_personnel.pers_position <=', 'posi_006');
+        }
+
+        $currTeachers = $builderCurr->get()->getResult();
+
+        // Merge and deduplicate by pers_id
+        $teachersMap = [];
+        foreach ($histTeachers as $t) {
+            if (!empty($t->pers_id) && !empty($t->pers_firstname)) {
+                $teachersMap[$t->pers_id] = $t;
+            }
+        }
+        foreach ($currTeachers as $t) {
+            if (!empty($t->pers_id) && !empty($t->pers_firstname) && !isset($teachersMap[$t->pers_id])) {
+                $teachersMap[$t->pers_id] = $t;
+            }
+        }
+
+        // Sort alphabetically by firstname
+        usort($teachersMap, function($a, $b) {
+            return strcmp($a->pers_firstname ?? '', $b->pers_firstname ?? '');
+        });
+
+        return array_values($teachersMap);
+    }
+
+    /**
+     * AJAX endpoint to return teachers based on selected learning group
+     */
+    public function getTeachersByLearning()
+    {
+        $learningId = $this->request->getGet('learning') ?? ($_GET['learning'] ?? 'All');
+        $teachers = $this->_getTeachersList($learningId);
+
+        $res = [];
+        foreach ($teachers as $t) {
+            $fullName = trim(($t->pers_prefix ?? '') . ($t->pers_firstname ?? '') . ' ' . ($t->pers_lastname ?? ''));
+            if (empty($fullName)) {
+                $fullName = 'รหัสครู ' . $t->pers_id;
+            }
+            $position = !empty($t->posi_name) ? " ({$t->posi_name})" : '';
+            $res[] = [
+                'id'       => $t->pers_id,
+                'name'     => $fullName,
+                'position' => $t->posi_name ?? '',
+                'label'    => $fullName . $position,
+            ];
+        }
+
+        return $this->response->setJSON($res);
+    }
+
+    public function loadPlan($param1 = null, $param2 = null, $param3 = null, $param4 = null)
     {
         $data['title'] = "ดาวน์โหลดแผนการสอน";
         $data['CheckHomeVisitManager'] = null; // Fetch if needed
         $data['OnOff'] = [$this->setup];
 
-        // Get current year/term if not provided
+        // 1. Determine user's learning group from session / personnel profile
+        $userRow = $this->db_personnel->table('tb_personnel')
+            ->select('pers_learning, pers_position')
+            ->where('pers_id', $this->session->get('person_id'))
+            ->get()->getRow();
+        $userLearning = $userRow->pers_learning ?? '';
+        $isLockedLearning = !empty($userLearning);
+
+        // 2. Resolve parameters from URL segments or GET query parameters
+        $hasSearched = false;
+        if ($isLockedLearning) {
+            // Strictly scope to the user's assigned learning group
+            $selectedLearning = $userLearning;
+
+            if ($param4 !== null) {
+                // 4 segments: learning, year, term, teacher (ignore segment 1, use user group)
+                $year = $param2;
+                $term = $param3;
+                $selectedTeacher = $param4;
+                $hasSearched = true;
+            } elseif ($param1 !== null && is_numeric($param1) && $param2 !== null) {
+                // 3 segments: year, term, teacher
+                $year = $param1;
+                $term = $param2;
+                $selectedTeacher = $param3 ?? 'All';
+                $hasSearched = true;
+            } else {
+                $year = $this->request->getGet('year') ?? ($_GET['year'] ?? null);
+                $term = $this->request->getGet('term') ?? ($_GET['term'] ?? null);
+                $selectedTeacher = $this->request->getGet('teacher') ?? ($_GET['teacher'] ?? 'All');
+                if ($year !== null && $term !== null) {
+                    $hasSearched = true;
+                }
+            }
+        } else {
+            // For executives/administrators without a specific department, allow choosing
+            if ($param4 !== null) {
+                $selectedLearning = $param1;
+                $year = $param2;
+                $term = $param3;
+                $selectedTeacher = $param4;
+                $hasSearched = true;
+            } elseif ($param1 !== null && is_numeric($param1) && $param2 !== null) {
+                $selectedLearning = $this->request->getGet('learning') ?? ($_GET['learning'] ?? 'lear_001');
+                $year = $param1;
+                $term = $param2;
+                $selectedTeacher = $param3 ?? 'All';
+                $hasSearched = true;
+            } else {
+                $selectedLearning = $this->request->getGet('learning') ?? ($_GET['learning'] ?? ($param1 ?? 'lear_001'));
+                $year = $this->request->getGet('year') ?? ($_GET['year'] ?? null);
+                $term = $this->request->getGet('term') ?? ($_GET['term'] ?? null);
+                $selectedTeacher = $this->request->getGet('teacher') ?? ($_GET['teacher'] ?? 'All');
+                if ($year !== null && $term !== null) {
+                    $hasSearched = true;
+                }
+            }
+        }
+
+        $data['hasSearched'] = $hasSearched;
+
+        // 3. Learning group details
+        $learningRow = null;
+        if (!empty($selectedLearning) && $selectedLearning !== 'All') {
+            $learningRow = $this->db_skj->table('tb_learning')->where('lear_id', $selectedLearning)->get()->getRow();
+        }
+        $data['current_learning'] = $selectedLearning;
+        $data['current_learning_name'] = $learningRow ? $learningRow->lear_namethai : ($selectedLearning === 'All' ? 'ทุกกลุ่มสาระการเรียนรู้' : 'กลุ่มสาระการเรียนรู้');
+        $data['is_locked_learning'] = $isLockedLearning;
+        $data['learnings'] = $this->db_skj->table('tb_learning')->orderBy('lear_id', 'ASC')->get()->getResult();
+
+        // 4. Resolve Year and Term (defaults for filters)
         if ($year === null || $term === null) {
-            // Priority 1: Use year/term from setup table
             if ($this->setup && !empty($this->setup->seplanset_year) && !empty($this->setup->seplanset_term)) {
                 $year = $this->setup->seplanset_year;
                 $term = $this->setup->seplanset_term;
             } else {
-                // Priority 2: Get the latest year/term from the plan table
                 $latestPlan = $this->curriculumModel
-                                    ->select('seplan_year, seplan_term')
-                                    ->orderBy('seplan_year', 'DESC')
-                                    ->orderBy('seplan_term', 'DESC')
-                                    ->first();
-                
+                    ->select('seplan_year, seplan_term')
+                    ->orderBy('seplan_year', 'DESC')
+                    ->orderBy('seplan_term', 'DESC')
+                    ->first();
                 if ($latestPlan) {
                     $year = $latestPlan['seplan_year'];
                     $term = $latestPlan['seplan_term'];
                 } else {
-                    // Fallback
                     $year = date('Y') + 543;
                     $term = 1;
                 }
@@ -820,55 +984,57 @@ class CurriculumController extends BaseController
 
         $data['current_year'] = $year;
         $data['current_term'] = $term;
-
-        $CheckLearning = $this->db_personnel->table('tb_personnel')
-                                     ->select('pers_learning')
-                                     ->where('pers_id', $this->session->get('person_id'))
-                                     ->get()->getRow();
-
-        $data['SelTeacher'] = $this->db_personnel->table('tb_personnel')
-                                         ->select('pers_id,pers_prefix,pers_firstname,pers_lastname')
-                                         ->where('pers_learning', $CheckLearning->pers_learning)
-                                         ->get()->getResult();
-
-        $builder = $this->curriculumModel
-                                   ->select('tb_send_plan.*, tb_send_plan_type.type_name') // Added type_name
-                                   ->join('tb_send_plan_type', 'tb_send_plan_type.type_id = tb_send_plan.seplan_typeplan_id', 'left') // Added join
-                                   ->where('seplan_learning', $CheckLearning->pers_learning)
-                                   ->where('seplan_year', $year)
-                                   ->where('seplan_term', $term);
-
-        if ($selectedTeacher !== "All") {
-            $builder->where('seplan_usersend', $selectedTeacher);
-        }
-        $data['plan'] = $builder->get()->getResult();
-
-        $planNewBuilder = $this->curriculumModel
-                                          ->select('tb_send_plan.*, tb_send_plan_type.type_name') // Added type_name
-                                          ->join('tb_send_plan_type', 'tb_send_plan_type.type_id = tb_send_plan.seplan_typeplan_id', 'left') // Added join
-                                          ->where('seplan_learning', $CheckLearning->pers_learning)
-                                          ->where('seplan_year', $year)
-                                          ->where('seplan_term', $term);
-        if ($selectedTeacher !== "All") {
-            $planNewBuilder->where('seplan_usersend', $selectedTeacher);
-        }
-        $data['planNew'] = $planNewBuilder->groupBy('seplan_coursecode')
-                                          ->groupBy('seplan_year')
-                                          ->groupBy('seplan_term')
-                                          ->get()->getResult();
-
         $data['CheckTeach'] = $selectedTeacher;
 
-        $data['CheckYear'] = $this->curriculumModel->select('seplan_year,seplan_term')
-                                            ->distinct()
-                                            ->get()->getResult();
+        // 5. Fetch teachers for the selected learning group (or all)
+        $data['SelTeacher'] = $this->_getTeachersList($selectedLearning);
 
-        // Fetch active plan types for the view
+        // 6. Query plans and selected teacher info only when search is executed
+        if ($hasSearched) {
+            $builder = $this->curriculumModel
+                ->select('tb_send_plan.*, tb_send_plan_type.type_name, tb_personnel.pers_prefix, tb_personnel.pers_firstname, tb_personnel.pers_lastname')
+                ->join($this->db_personnel->database . '.tb_personnel', 'tb_personnel.pers_id = tb_send_plan.seplan_usersend', 'left')
+                ->join('tb_send_plan_type', 'tb_send_plan_type.type_id = tb_send_plan.seplan_typeplan_id', 'left')
+                ->where('seplan_year', $year)
+                ->where('seplan_term', $term);
+
+            if ($selectedLearning !== 'All' && !empty($selectedLearning)) {
+                $builder->where('seplan_learning', $selectedLearning);
+            }
+
+            if ($selectedTeacher !== 'All' && !empty($selectedTeacher)) {
+                $builder->where('seplan_usersend', $selectedTeacher);
+            }
+
+            $data['plan'] = $builder->orderBy('seplan_coursecode', 'ASC')->get()->getResult();
+
+            $data['selectedTeacherInfo'] = null;
+            if ($selectedTeacher !== 'All') {
+                $data['selectedTeacherInfo'] = $this->db_personnel->table('tb_personnel')
+                    ->select("tb_personnel.*, {$this->db_skj->database}.tb_position.posi_name")
+                    ->join($this->db_skj->database . '.tb_position', "{$this->db_skj->database}.tb_position.posi_id = tb_personnel.pers_position", 'left')
+                    ->where('pers_id', $selectedTeacher)
+                    ->get()->getRow();
+            }
+        } else {
+            $data['plan'] = [];
+            $data['selectedTeacherInfo'] = null;
+        }
+
+        // 7. CheckYear (distinct years sorted DESC)
+        $data['CheckYear'] = $this->curriculumModel
+            ->select('seplan_year, seplan_term')
+            ->distinct()
+            ->orderBy('seplan_year', 'DESC')
+            ->orderBy('seplan_term', 'DESC')
+            ->get()->getResult();
+
+        // 8. Active plan types
         $data['activePlanTypes'] = $this->db->table('tb_send_plan_type')
-                                            ->select('type_name')
-                                            ->where('is_active', 1)
-                                            ->orderBy('type_id', 'ASC')
-                                            ->get()->getResultArray();
+            ->select('type_name')
+            ->where('is_active', 1)
+            ->orderBy('type_id', 'ASC')
+            ->get()->getResultArray();
 
         return view('teacher/curriculum/plan_loadplan', $data);
     }
