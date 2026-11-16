@@ -126,8 +126,14 @@
                     <i class="bi bi-calendar-week me-2"></i><?= esc($club->club_name) ?>
                 </h1>
                 <div class="d-flex align-items-center flex-wrap gap-2 mt-3">
-                    <span class="badge-meta-pill">
-                        <i class="bi bi-info-circle-fill me-1 text-primary"></i> บันทึกเวลาเรียนประจำเทอม
+                    <span class="badge-meta-pill" style="background: rgba(255,255,255,0.25); border: 1px solid rgba(255,255,255,0.4); color: #fff;">
+                        <i class="bi bi-calendar2-range-fill me-1 text-warning"></i> 
+                        กำลังดู: <strong>ภาคเรียนที่ <?= esc($selectedTerm ?? $currentTerm ?? 1) ?> / ปีการศึกษา <?= esc($club->club_year) ?></strong>
+                        <?php if (!empty($isActiveTerm)): ?>
+                            <span class="badge bg-success ms-1 small"><i class="bi bi-unlock-fill me-1"></i>เปิดให้เช็คชื่อ</span>
+                        <?php else: ?>
+                            <span class="badge bg-danger ms-1 small"><i class="bi bi-lock-fill me-1"></i>ยังไม่เปิดให้เช็คชื่อ</span>
+                        <?php endif; ?>
                     </span>
                     <?php if (!empty($studyTimeInfo)): ?>
                         <span class="badge-meta-pill">
@@ -160,6 +166,19 @@
         </div>
     </div>
 
+    <!-- Warning Banner when viewing inactive term -->
+    <?php if (empty($isActiveTerm)): ?>
+        <div class="alert alert-warning border-0 shadow-sm d-flex align-items-center mb-4 rounded-3 p-3 animate__animated animate__fadeIn" style="background-color: #fff9db; border-left: 5px solid #f59f00 !important;">
+            <i class="bi bi-exclamation-triangle-fill fs-2 text-warning me-3 flex-shrink-0"></i>
+            <div>
+                <h6 class="fw-bold mb-1 text-dark">ภาคเรียนที่ <?= esc($selectedTerm ?? '1') ?> ยังไม่เปิดให้เช็คชื่อ</h6>
+                <div class="small text-muted">
+                    ตามการตั้งค่าปีการศึกษาในระบบวิชาการ ขณะนี้เปิดให้บันทึกเวลาเรียนเฉพาะ <strong>ภาคเรียนที่ <?= esc($currentTerm) ?> / ปีการศึกษา <?= esc($currentAcademicYear) ?></strong> เท่านั้นครับ
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
+
     <!-- Note Section -->
     <div class="alert alert-warning border-0 shadow-sm rounded-4 mb-4 d-flex align-items-center p-3 animate__animated animate__fadeIn">
         <div class="bg-warning bg-opacity-10 p-2 rounded-circle me-3">
@@ -180,10 +199,31 @@
 
     <!-- Main Content -->
     <div class="card table-card shadow-sm">
-        <div class="card-header bg-white py-3 border-bottom">
+        <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2">
             <h5 class="card-title mb-0 fw-bold text-dark">
-                <i class="bi bi-list-stars text-primary me-2"></i>รายสัปดาห์กิจกรรม
+                <i class="bi bi-list-stars text-primary me-2"></i>รายสัปดาห์กิจกรรม (ภาคเรียนที่ <?= esc($selectedTerm ?? $currentTerm ?? 1) ?> / <?= esc($club->club_year) ?>)
             </h5>
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-muted small fw-semibold d-none d-md-inline">เลือกดูภาคเรียน:</span>
+                <div class="btn-group btn-group-sm shadow-sm rounded-pill p-1 bg-light border" role="group">
+                    <a href="?term=1" class="btn btn-sm rounded-pill px-3 fw-bold <?= (($selectedTerm ?? $currentTerm ?? '1') == '1') ? 'btn-success text-white' : 'btn-light text-muted' ?>">
+                        <i class="bi bi-1-circle me-1"></i> เทอม 1
+                        <?php if ((string)($currentTerm ?? '') === '1'): ?>
+                            <span class="badge bg-white text-success ms-1 small">เปิดเช็ค</span>
+                        <?php else: ?>
+                            <span class="badge bg-secondary ms-1 small opacity-75">ยังไม่เปิด</span>
+                        <?php endif; ?>
+                    </a>
+                    <a href="?term=2" class="btn btn-sm rounded-pill px-3 fw-bold <?= (($selectedTerm ?? $currentTerm ?? '1') == '2') ? 'btn-success text-white' : 'btn-light text-muted' ?>">
+                        <i class="bi bi-2-circle me-1"></i> เทอม 2
+                        <?php if ((string)($currentTerm ?? '') === '2'): ?>
+                            <span class="badge bg-white text-success ms-1 small">เปิดเช็ค</span>
+                        <?php else: ?>
+                            <span class="badge bg-secondary ms-1 small opacity-75">ยังไม่เปิด</span>
+                        <?php endif; ?>
+                    </a>
+                </div>
+            </div>
         </div>
         <div class="card-body p-0">
             <?php if (!empty($schedules) && is_array($schedules)): ?>
@@ -272,7 +312,11 @@
                                                 <i class="bi bi-pencil-square me-1"></i> กิจกรรม
                                             </button>
                                             
-                                            <?php if ($isAttendanceDisabled): ?>
+                                            <?php if (empty($isActiveTerm)): ?>
+                                                <button class="btn btn-secondary btn-sm btn-action shadow-sm opacity-60" disabled title="ยังไม่เปิดให้เช็คชื่อในภาคเรียนนี้">
+                                                    <i class="bi bi-lock-fill me-1"></i> ยังไม่เปิดให้เช็ค
+                                                </button>
+                                            <?php elseif ($isAttendanceDisabled): ?>
                                                 <button class="btn btn-secondary btn-sm btn-action shadow-sm opacity-50" disabled title="กรุณาบันทึกกิจกรรมก่อนเช็คชื่อ">
                                                     <i class="bi bi-lock-fill me-1"></i> เช็คชื่อ
                                                 </button>
@@ -291,8 +335,19 @@
             <?php else: ?>
                 <div class="text-center py-5">
                     <i class="bi bi-calendar-x text-muted opacity-25" style="font-size: 4rem;"></i>
-                    <h5 class="mt-3 text-muted">ไม่พบข้อมูลตารางกิจกรรม</h5>
-                    <p class="text-muted small">ผู้ดูแลระบบยังไม่ได้ตั้งค่าสัปดาห์กิจกรรมสำหรับเทอมนี้</p>
+                    <h5 class="mt-3 fw-bold text-dark">ยังไม่เปิดให้เช็คชื่อในภาคเรียนที่ <?= esc($selectedTerm) ?></h5>
+                    <p class="text-muted small">
+                        <?php if (empty($isActiveTerm)): ?>
+                            ภาคเรียนนี้ยังไม่เปิดให้เช็คชื่อ (ระบบเปิดให้เช็คเฉพาะ <strong>ภาคเรียนที่ <?= esc($currentTerm) ?> / ปีการศึกษา <?= esc($currentAcademicYear) ?></strong>)
+                        <?php else: ?>
+                            ผู้ดูแลระบบยังไม่ได้ตั้งค่าสัปดาห์กิจกรรมสำหรับเทอมนี้
+                        <?php endif; ?>
+                    </p>
+                    <?php if (empty($isActiveTerm)): ?>
+                        <a href="?term=<?= esc($currentTerm) ?>" class="btn btn-primary btn-sm rounded-pill px-3 mt-2 shadow-sm">
+                            <i class="bi bi-arrow-return-left me-1"></i> ไปที่ภาคเรียนที่เปิดอยู่ (เทอม <?= esc($currentTerm) ?>)
+                        </a>
+                    <?php endif; ?>
                 </div>
             <?php endif; ?>
         </div>

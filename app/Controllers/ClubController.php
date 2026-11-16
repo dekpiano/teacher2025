@@ -51,13 +51,27 @@ class ClubController extends BaseController
         $db = db_connect();
         $club_onoff = $db->table('tb_club_onoff')
                          ->select('c_onoff_year, c_onoff_term')
-                         ->orderBy('c_onoff_id', 'DESC')
+                         ->where('c_onoff_for', 'active_config')
                          ->get()
                          ->getRow();
         
+        if (!$club_onoff) {
+            $club_onoff = $db->table('tb_club_onoff')
+                             ->select('c_onoff_year, c_onoff_term')
+                             ->orderBy('c_onoff_id', 'DESC')
+                             ->get()
+                             ->getRow();
+        }
+
         if ($club_onoff) {
-            $this->currentAcademicYear = $club_onoff->c_onoff_year;
-            $this->currentTerm = $club_onoff->c_onoff_term;
+            $raw_year = $club_onoff->c_onoff_year;
+            if (strpos($raw_year, '/') !== false) {
+                $parts = explode('/', $raw_year);
+                $this->currentAcademicYear = end($parts);
+            } else {
+                $this->currentAcademicYear = $raw_year;
+            }
+            $this->currentTerm = (string)$club_onoff->c_onoff_term;
         } else {
             $this->currentAcademicYear = null;
             $this->currentTerm = null;
@@ -127,11 +141,11 @@ class ClubController extends BaseController
         $data['registrationStartDate'] = $clubOnOffSettings ? $clubOnOffSettings->c_onoff_regisstart : null;
         $data['registrationEndDate'] = $clubOnOffSettings ? $clubOnOffSettings->c_onoff_regisend : null;
 
-        // Check if the teacher has already created a club for the current year and term
+        // Check if the teacher has already created a club for the current academic year (Annual Club)
         $hasClubForCurrentYear = false;
         if (!empty($data['clubs'])) { // Corrected condition: check if clubs array is NOT empty
             foreach ($data['clubs'] as $club) {
-                if ($club->club_year == $this->currentAcademicYear && $club->club_trem == $this->currentTerm) {
+                if ($club->club_year == $this->currentAcademicYear) {
                     $hasClubForCurrentYear = true;
                     break;
                 }
@@ -297,7 +311,8 @@ class ClubController extends BaseController
         $data['members'] = $this->clubModel->getClubMembers($clubId);
         $data['advisors'] = $this->clubModel->getAdvisorsDetails($club->club_faculty_advisor);
         $data['photos'] = $this->clubModel->getClubPhotos($clubId);
-        $data['schedules'] = $this->clubModel->getSchedulesByYear($club->club_year, $club->club_trem, $clubId);
+        $targetTerm = $this->currentTerm ?: $club->club_trem;
+        $data['schedules'] = $this->clubModel->getSchedulesByYear($club->club_year, $targetTerm, $clubId);
 
         return $this->renderClubView('teacher/club/manage', $data);
     }
@@ -322,7 +337,14 @@ class ClubController extends BaseController
         $isScout = $this->isScoutContext($club);
         $data['title'] = ($isScout ? "ตารางกิจกรรมลูกเสือ: " : "ตารางกิจกรรมชุมนุม: ") . $club->club_name;
         $data['club'] = $club;
-        $data['schedules'] = $this->clubModel->getSchedulesByYear($club->club_year, $club->club_trem, $clubId);
+        $selectedTerm = (string)($this->request->getGet('term') ?: ($this->currentTerm ?: ($club->club_trem ?: '1')));
+        $isActiveTerm = ($selectedTerm === (string)$this->currentTerm);
+
+        $data['schedules'] = $this->clubModel->getSchedulesByYear($club->club_year, $selectedTerm, $clubId);
+        $data['currentTerm'] = (string)$this->currentTerm;
+        $data['currentAcademicYear'] = (string)$this->currentAcademicYear;
+        $data['selectedTerm'] = $selectedTerm;
+        $data['isActiveTerm'] = $isActiveTerm;
         $data['studyTimeInfo'] = $this->clubModel->getClubStudyTimeInfo($club);
 
         // Add attendance status to each schedule
@@ -428,6 +450,12 @@ class ClubController extends BaseController
             return redirect()->to($this->getRoutePrefix());
         }
 
+        // ตรวจสอบเงื่อนไขว่าภาคเรียนนี้เปิดให้เช็คชื่อหรือไม่ตามการตั้งค่าของ admin ชุมนุม
+        if (!empty($this->currentTerm) && (string)$schedule->tcs_academic_trem !== (string)$this->currentTerm) {
+            session()->setFlashdata('error', 'ภาคเรียนที่ ' . $schedule->tcs_academic_trem . ' ยังไม่เปิดให้เช็คชื่อ (ระบบเปิดให้เช็คเฉพาะภาคเรียนที่ ' . $this->currentTerm . ')');
+            return redirect()->to($this->getRoutePrefix() . '/schedule/' . $clubId . '?term=' . $schedule->tcs_academic_trem);
+        }
+
         $isScout = $this->isScoutContext($club);
         $data['title'] = ($isScout ? "บันทึกการเข้าเรียนลูกเสือ : " : "บันทึกการเข้าเรียนชุมนุม : ") . $club->club_name . " - สัปดาห์ที่ " . $schedule->tcs_week_number;
         $data['club'] = $club;
@@ -478,6 +506,12 @@ class ClubController extends BaseController
         if (!$this->isClubAdvisor($teacherId, $club) || !$schedule) {
             session()->setFlashdata('error', 'ไม่พบข้อมูลหรือคุณไม่มีสิทธิ์จัดการ');
             return redirect()->to($this->getRoutePrefix());
+        }
+
+        // ตรวจสอบเงื่อนไขว่าภาคเรียนนี้เปิดให้เช็คชื่อหรือไม่ตามการตั้งค่าของ admin ชุมนุม
+        if (!empty($this->currentTerm) && (string)$schedule->tcs_academic_trem !== (string)$this->currentTerm) {
+            session()->setFlashdata('error', 'ภาคเรียนที่ ' . $schedule->tcs_academic_trem . ' ยังไม่เปิดให้เช็คชื่อ (ระบบเปิดให้เช็คเฉพาะภาคเรียนที่ ' . $this->currentTerm . ')');
+            return redirect()->to($this->getRoutePrefix() . '/schedule/' . $clubId . '?term=' . $schedule->tcs_academic_trem);
         }
 
         $attendanceData = $this->request->getPost('attendance'); // Array of student_id => status
@@ -547,7 +581,8 @@ class ClubController extends BaseController
         $data['members'] = $this->clubModel->getClubMembers($clubId);
         $data['studyTimeInfo'] = $this->clubModel->getClubStudyTimeInfo($club, $data['members']);
         
-        $schedules = $this->clubModel->getSchedulesByYear($club->club_year, $club->club_trem, $clubId);
+        $targetTerm = $this->currentTerm ?: $club->club_trem;
+        $schedules = $this->clubModel->getSchedulesByYear($club->club_year, $targetTerm, $clubId);
         
         // Group schedules by month
         $schedulesByMonth = [];
@@ -629,7 +664,8 @@ class ClubController extends BaseController
         $data['members'] = $this->clubModel->getClubMembers($clubId);
         $data['studyTimeInfo'] = $this->clubModel->getClubStudyTimeInfo($club, $data['members']);
         
-        $schedules = $this->clubModel->getSchedulesByYear($club->club_year, $club->club_trem, $clubId);
+        $targetTerm = $this->currentTerm ?: $club->club_trem;
+        $schedules = $this->clubModel->getSchedulesByYear($club->club_year, $targetTerm, $clubId);
         
         // Group schedules by month
         $schedulesByMonth = [];

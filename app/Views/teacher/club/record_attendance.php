@@ -155,6 +155,9 @@
                     <i class="bi bi-person-check-fill me-2"></i>เช็คชื่อเข้าเรียน : สัปดาห์ที่ <?= esc($schedule->tcs_week_number) ?>
                 </h1>
                 <div class="d-flex flex-wrap gap-2 align-items-center mt-3">
+                    <span class="badge-meta-pill" style="background: rgba(255,255,255,0.25); border: 1px solid rgba(255,255,255,0.4); color: #fff;">
+                        <i class="bi bi-calendar2-range-fill me-1 text-warning"></i> ภาคเรียนที่ <?= esc($schedule->tcs_academic_trem) ?> / ปีการศึกษา <?= esc($schedule->tcs_academic_year) ?>
+                    </span>
                     <span class="badge-meta-pill">
                         <i class="bi bi-calendar-check me-1 text-primary"></i> วันที่ <?= esc(thai_date($schedule->tcs_start_date, 'short')) ?>
                     </span>

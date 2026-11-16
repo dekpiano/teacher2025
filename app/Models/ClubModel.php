@@ -65,8 +65,15 @@ class ClubModel extends Model
         if ($year) {
             $builder->where('club_year', $year);
         }
-        if ($term) {
-            $builder->where('club_trem', $term);
+        // ชุมนุมเป็นแบบเรียนตลอดทั้งปีการศึกษา: ชุมนุมที่สร้างในปีนี้จะแสดงผลทั้งเทอม 1 และเทอม 2
+        if ($term && $term !== 'all') {
+            $builder->groupStart()
+                    ->where('club_trem', $term)
+                    ->orWhere('club_trem', 'ALL')
+                    ->orWhere('club_trem', '1') // ชุมนุมที่ลงทะเบียนจากต้นปี (เทอม 1) ให้มีผลตลอดทั้งปี
+                    ->orWhere('club_trem IS NULL')
+                    ->orWhere('club_trem', '')
+                    ->groupEnd();
         }
 
         $scoutKeywords = ['ลูกเสือ', 'เนตรนารี', 'ยุวกาชาด', 'ผู้บำเพ็ญประโยชน์', 'นศท', 'รักษาดินแดน', 'รด.'];
